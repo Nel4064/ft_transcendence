@@ -1,0 +1,1 @@
+*This project is being created as part of the 42 curriculum by mgrossi, neandrie, weiyang*
