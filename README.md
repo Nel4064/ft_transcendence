@@ -6,7 +6,8 @@ This project aim to use a fully typed TypeScript stack, from the frontend to the
 
 Frontend:
 TypeScript
-React + Vite
+React
+Tailwind CSS
 
 Backend:
 TypeScript
