@@ -1,0 +1,55 @@
+COMPOSE = podman-compose -p development -f compose.yaml -f compose.dev.yaml --env-file .env.dev
+
+# all secrets live in the podman secret store (external: true in compose.yaml)
+# generated: random values created here / manual: filled in by hand from the 42 intra
+GENERATED_SECRETS = jwt_secret postgres_backend_user_pw postgres_superuser_pw
+MANUAL_SECRETS = fortytwo_client_id fortytwo_client_secret
+
+# 32 random bytes as hex: only 0-9a-f, so safe inside DATABASE_URL (no trailing newline)
+RANDOM_SECRET = openssl rand -hex 32 | tr -d '\n'
+
+up: env secrets
+	$(COMPOSE) up -d
+
+build: env
+	$(COMPOSE) build
+
+down:
+	$(COMPOSE) down
+
+# also removes the volumes: database data and node_modules are lost
+clean:
+	$(COMPOSE) down -v
+
+re: clean up
+
+logs:
+	$(COMPOSE) logs -f
+
+env:
+	@test -f .env.dev || cp .env.dev.example .env.dev
+
+secrets:
+	@mkdir -p secrets
+	@for s in $(GENERATED_SECRETS); do \
+		test -s secrets/$$s.txt || $(RANDOM_SECRET) > secrets/$$s.txt; \
+	done
+	@for s in $(MANUAL_SECRETS); do \
+		touch secrets/$$s.txt; \
+		test -s secrets/$$s.txt || echo "⚠️  secrets/$$s.txt is empty (needed for 42 OAuth)"; \
+	done
+	@chmod 600 secrets/*.txt
+	@for s in $(GENERATED_SECRETS) $(MANUAL_SECRETS); do \
+		if ! podman secret exists $$s && test -s secrets/$$s.txt; then \
+			podman secret create $$s secrets/$$s.txt; \
+		fi; \
+	done
+	@echo "🔑 Secrets are ready."
+
+volumes:
+	podman volume ls
+
+containers:
+	podman ps -a
+
+.PHONY: up build down clean re logs env secrets volumes containers

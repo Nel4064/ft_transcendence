@@ -1,0 +1,92 @@
+# Shared base: services, networks, volumes and secrets common to every environment.
+# Never run on its own: combined with an environment overlay (compose.dev.yaml) by `make up`.
+# No ports are published here; each overlay decides what is reachable from the host.
+
+services:
+  db:
+    build:
+      context: ./database
+    networks:
+      - server-side
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_SUPERUSER}
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_superuser_pw
+      # ours, not read by the official image: used by init.sh to create the backend role
+      POSTGRES_BACKEND_USER: ${POSTGRES_BACKEND_USER}
+      POSTGRES_BACKEND_PW_FILE: /run/secrets/postgres_backend_user_pw
+    secrets:
+      - postgres_superuser_pw
+      - postgres_backend_user_pw
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      # $$ escapes $ so the variable is expanded inside the container, not by compose
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - client-side
+      - server-side
+    environment:
+      POSTGRES_BACKEND_USER: ${POSTGRES_BACKEND_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      DOMAIN: ${DOMAIN}
+      # --- 42 OAuth (enable with auth module) ---
+      # FORTYTWO_REDIRECT_URI: ${FORTYTWO_REDIRECT_URI}
+      # FRONTEND_OAUTH_URI: ${FRONTEND_OAUTH_URI}
+      # --- 2FA (enable with two-factor module) ---
+      # TWO_FACTOR_URL: ${TWO_FACTOR_URL}
+    secrets:
+      - postgres_backend_user_pw
+      - jwt_secret
+      # --- 42 OAuth (enable with auth module) ---
+      # - fortytwo_client_id
+      # - fortytwo_client_secret
+
+  frontend:
+    build:
+      context: ./frontend
+    networks:
+      - client-side
+
+  proxy:
+    build:
+      context: ./proxy
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - client-side
+
+volumes:
+  postgres_data:
+
+# client-side: proxy <-> frontend/backend / server-side: backend <-> db (db is never reachable from the proxy)
+networks:
+  client-side: {}
+  server-side: {}
+
+# All secrets are created in the podman secret store by `make secrets` (from ./secrets/*.txt),
+# so their values never appear in compose files, .env files or `podman inspect`.
+# Mounted read-only in the container at /run/secrets/<name>.
+secrets:
+  postgres_superuser_pw:     # superuser (POSTGRES_SUPERUSER) password
+    external: true
+  postgres_backend_user_pw:  # backend role (POSTGRES_BACKEND_USER) password
+    external: true
+  jwt_secret:
+    external: true
+  # --- 42 OAuth (enable with auth module, once ./secrets/fortytwo_*.txt are filled in) ---
+  # fortytwo_client_id:
+  #   external: true
+  # fortytwo_client_secret:
+  #   external: true
