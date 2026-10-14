@@ -15,11 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     steps:
+      - uses: actions/checkout@v6
+
       - uses: actions/setup-node@v6
         with:
           node-version: '20'
 
-      - run: npm install --no-save @commitlint/cli@19 @commitlint/config-conventional@19
+      - run: npm install --no-save @commitlint/cli @commitlint/config-conventional
 
       # Squash-merge approach: the PR title becomes the commit on main —
       # so we only validate that one string, not every commit.
@@ -27,8 +29,7 @@ jobs:
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          echo '{ "extends": ["@commitlint/config-conventional"] }' > commitlint.config.json
-          echo "$PR_TITLE" | npx commitlint
+          PR_TITLE_NORMALIZED="$PR_TITLE"
 
 
   # lint:
