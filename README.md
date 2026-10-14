@@ -1,6 +1,8 @@
 *This project is being created as part of the 42 curriculum by mgrossi, neandrie, weiyang*
 
-This project uses a fully typed TypeScript stack, from the frontend to the database. The application is containerized for easy deployment and reproducible environments.
+> 🚧 Work in progress.
+
+This project aim to use a fully typed TypeScript stack, from the frontend to the database. The application is containerized for easy deployment and reproducible environments.
 
 Frontend:
 TypeScript
