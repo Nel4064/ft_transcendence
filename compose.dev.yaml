@@ -4,6 +4,8 @@
 services:
   db:
     container_name: development-db
+    ports:
+      - "5432:5432"
 
   backend:
     container_name: development-backend
