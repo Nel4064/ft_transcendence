@@ -66,13 +66,33 @@ make volumes
 
 ## 3. Open the app
 
-| Service  | URL                    |
-|----------|------------------------|
-| Website  | http://localhost:1024  |
-| API      | http://localhost:5555  |
+| Service       | URL                                              |
+|---------------|--------------------------------------------------|
+| Website       | http://localhost:1024                            |
+| API           | http://localhost:3000                            |
+| Prisma Studio | http://localhost:5555 (when started, see below)  |
 
 ⚠️ Type `http://` explicitly: Firefox may silently upgrade to `https://`, which fails in dev.
 
+## Inspect the database (Prisma Studio)
+
+In dev, Postgres is published on `localhost:5433` (this machine only), so tools on your host can reach it.
+From the repo root, with the stack running:
+
+```bash
+npx prisma@7.10.0 studio --url "postgresql://$(grep ^POSTGRES_BACKEND_USER= .env.dev | cut -d= -f2):$(cat secrets/postgres_backend_user_pw.txt)@localhost:5433/transcendence"
+```
+
+Then open http://localhost:5555. Stop it with `Ctrl+C`.
+
+- Run it from the repo root, not `backend/`: it skips `prisma7.config.ts`, which needs the backend's packages installed on the host.
+- The version `7.10.0` must match `prisma` in `backend/package.json`.
+
+Quick look without Studio:
+
+```bash
+podman exec -it development-db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -x -c "SELECT * FROM screenings;"'
+```
 
 ## Troubleshooting
 
