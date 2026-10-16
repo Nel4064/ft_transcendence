@@ -80,13 +80,9 @@ In dev, Postgres is published on `localhost:5433` (this machine only), so tools 
 From the repo root, with the stack running:
 
 ```bash
-npx prisma@7.10.0 studio --url "postgresql://$(grep ^POSTGRES_BACKEND_USER= .env.dev | cut -d= -f2):$(cat secrets/postgres_backend_user_pw.txt)@localhost:5433/transcendence"
+make studio
 ```
-
 Then open http://localhost:5555. Stop it with `Ctrl+C`.
-
-- Run it from the repo root, not `backend/`: it skips `prisma7.config.ts`, which needs the backend's packages installed on the host.
-- The version `7.10.0` must match `prisma` in `backend/package.json`.
 
 Quick look without Studio:
 
