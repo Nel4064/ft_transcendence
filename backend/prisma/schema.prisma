@@ -6,8 +6,61 @@
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+enum ScreeningVersion {
+  VO
+  VF
+  VOSTF
+}
+
+// A screening chosen by the club, copied from the datacinesindes.fr feed if and when picked.
+model Screening {
+  id               String            @id @default(uuid())
+  externalShowId   String            @db.VarChar(20)           // showid (unique per cinema only)
+  externalCinemaId Int                                         // cineid
+
+  // Film (snapshot from the feed)
+  filmTitle        String                                      // filmtitle, raw
+  director         String?                                     // filmdirector
+  cast             String?                                     // filmcast
+  synopsis         String?                                     // filmstoryline
+  genres           String[]          @default([])              // filmgenre, cleaned
+  country          String?                                     // filmcountry
+  runtimeMinutes   Int?                                        // filmduration, null if implausible
+  posterUrl        String?                                     // filmposter, https only
+  trailerUrl       String?                                     // filmtrailer, allowed hosts only
+  version          ScreeningVersion?                           // filmversion, null if blank
+  eventName        String?                                     // evenement
+  bookingUrl       String?                                     // showurl (V3)
+
+  // Showtime
+  startsAt         DateTime          @db.Timestamptz(3)        // showstart
+  endsAt           DateTime          @db.Timestamptz(3)        // showend
+
+  // Cinema
+  cinemaName       String            @db.VarChar(60)           // cinenom
+  cinemaAddress    String            @db.VarChar(100)          // cineadresse
+  cinemaPostalCode String            @db.VarChar(5)            // cinecp
+  cinemaCity       String            @db.VarChar(40)           // cineville
+  cinemaLatitude   Float?                                      // _coords.lat (V3)
+  cinemaLongitude  Float?                                      // _coords.lon (V3)
+
+  // // Club side
+  // curatedById      String?
+  // curatedBy        User?             @relation("curatedBy", fields: [curatedById], references: [id])
+  // isCancelled      Boolean           @default(false)
+  // rsvps            Rsvp[]
+
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@unique([externalCinemaId, externalShowId])
+  @@index([startsAt])
+  @@map("screenings")
 }

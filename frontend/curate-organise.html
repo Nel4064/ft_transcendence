@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Independent cinema schedule</title>
+  <link rel="stylesheet" href="/src/pages/curate-organise/curate-organise.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <h1>Curate Schedule</h1>
+    <h2>Mark the film screenings the club is selecting.<br><i>Source : raw feed from datacinesindes.fr</i></h2>
+    <button id="refresh" type="button">Refresh feed</button>
+    <p id="status" role="status" aria-live="polite"></p>
+  </header>
+
+  <main>
+    <ul id="results"></ul>
+  </main>
+
+  <script type="module" src="/src/pages/curate-organise/curate-organise.ts"></script>
+</body>
+</html>
