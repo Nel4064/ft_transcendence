@@ -66,13 +66,29 @@ make volumes
 
 ## 3. Open the app
 
-| Service  | URL                    |
-|----------|------------------------|
-| Website  | http://localhost:1024  |
-| API      | http://localhost:5555  |
+| Service       | URL                                              |
+|---------------|--------------------------------------------------|
+| Website       | http://localhost:1024                            |
+| API           | http://localhost:3000                            |
+| Prisma Studio | http://localhost:5555 (when started, see below)  |
 
 ⚠️ Type `http://` explicitly: Firefox may silently upgrade to `https://`, which fails in dev.
 
+## Inspect the database (Prisma Studio)
+
+In dev, Postgres is published on `localhost:5433` (this machine only), so tools on your host can reach it.
+From the repo root, with the stack running:
+
+```bash
+make studio
+```
+Then open http://localhost:5555. Stop it with `Ctrl+C`.
+
+Quick look without Studio:
+
+```bash
+podman exec -it development-db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -x -c "SELECT * FROM screenings;"'
+```
 
 ## Troubleshooting
 

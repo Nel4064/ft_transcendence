@@ -8,6 +8,9 @@ MANUAL_SECRETS = fortytwo_client_id fortytwo_client_secret
 # 32 random bytes as hex: only 0-9a-f, so safe inside DATABASE_URL (no trailing newline)
 RANDOM_SECRET = openssl rand -hex 32 | tr -d '\n'
 
+# exact prisma version installed in the backend container (from its lock file)
+PRISMA_VERSION = $(shell node -p "require('./backend/package-lock.json').packages['node_modules/prisma'].version")
+
 up: env secrets
 	$(COMPOSE) up -d
 
@@ -25,6 +28,10 @@ re: clean up
 
 logs:
 	$(COMPOSE) logs -f
+
+# Prisma Studio on http://localhost:5555 (Ctrl+C to stop), reading the dev db published on localhost:5433
+studio:
+	@npx prisma@$(PRISMA_VERSION) studio --port 5555 --url "postgresql://$$(grep ^POSTGRES_BACKEND_USER= .env.dev | cut -d= -f2):$$(cat secrets/postgres_backend_user_pw.txt)@localhost:5433/$$(grep ^POSTGRES_DB= .env.dev | cut -d= -f2)"
 
 env:
 	@test -f .env.dev || cp .env.dev.example .env.dev
@@ -52,4 +59,4 @@ volumes:
 containers:
 	podman ps -a
 
-.PHONY: up build down clean re logs env secrets volumes containers
+.PHONY: up build down clean re logs env secrets volumes containers studio

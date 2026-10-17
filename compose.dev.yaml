@@ -4,13 +4,15 @@
 services:
   db:
     container_name: development-db
+    ports:
+      - "127.0.0.1:5433:5432"                   # dev only: host tools (Prisma Studio) to visualise Postgres DB
 
   backend:
     container_name: development-backend
     build:
       target: dev
     ports:
-      - "5555:3000"                             # direct API access for debugging (bypasses the proxy)
+      - "3000:3000"                             # direct API access for debugging (bypasses the proxy)
     environment:
       CORS_ORIGIN: http://localhost:1024,http://${DOMAIN}:1024
     volumes:
