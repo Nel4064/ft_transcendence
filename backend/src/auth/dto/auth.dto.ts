@@ -9,14 +9,14 @@ export class RegisterDto {
   email: string;
 
   @IsString()
-  @MinLength(6, { message: '密码长度不能少于 6 位' })
+  @MinLength(6, { message: 'Password cannot be less than 6 characters.' })
   password: string;
 }
 
 export class LoginDto {
   @IsString()
   @IsNotEmpty()
-  usernameOrEmail: string; // 允许用户通过用户名或邮箱登录
+  usernameOrEmail: string; 
 
   @IsString()
   @IsNotEmpty()
