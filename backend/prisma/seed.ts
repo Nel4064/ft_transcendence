@@ -18,35 +18,8 @@ async function main() {
   // 清理旧数据
   await prisma.user.deleteMany();
 
-  // 创建测试用户
-  const user1 = await prisma.user.create({
-    data: {
-      username: 'player_one',
-      displayName: 'Player One',
-      email: 'one@42.fr',
-      passwordHash: 'fake_hash_1',
-    },
-  });
 
-  const user2 = await prisma.user.create({
-    data: {
-      username: 'player_two',
-      displayName: 'Player two',
-      email: 'two@42.fr',
-      passwordHash: 'fake_hash_2',
-    },
-  });
-
-  const user3 = await prisma.user.create({
-    data: {
-      username: 'player_three',
-      displayName: 'Player three',
-      email: 'three@42.fr',
-      passwordHash: 'fake_hash_3',
-    },
-  });
-
-  console.log('✅ Seeding finished successfully:', { user1 });
+  //console.log('✅ Seeding finished successfully:', { user1 });
 }
 
 main()

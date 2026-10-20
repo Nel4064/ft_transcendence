@@ -1,24 +1,30 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsString, IsNotEmpty, IsEmail, IsOptional, MinLength } from 'class-validator';
 
 export class RegisterDto {
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Username should not be empty' })
+  @MinLength(2, { message: 'Username must be at least 2 characters long' })
   username: string;
 
-  @IsEmail()
+  @IsString()
+  @IsNotEmpty({ message: 'Email should not be empty' })
+  @IsEmail({}, { message: 'Invalid email format' })
   email: string;
 
   @IsString()
-  @MinLength(6, { message: 'Password cannot be less than 6 characters.' })
-  password: string;
+  @IsOptional() // Optional to support 42 OAuth login
+  @MinLength(6, { message: 'Password must be at least 6 characters long' })
+  password?: string;
 }
 
 export class LoginDto {
   @IsString()
-  @IsNotEmpty()
-  usernameOrEmail: string; 
+  @IsNotEmpty({ message: 'Username or Email should not be empty' })
+  @MinLength(2, { message: 'Username or Email must be at least 2 characters long' })
+  identifier: string; 
 
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Password should not be empty' })
+  @MinLength(6, { message: 'Password must be at least 6 characters long' })
   password: string;
 }
