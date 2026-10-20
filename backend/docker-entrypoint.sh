@@ -18,5 +18,5 @@ if [ "$NODE_ENV" = "production" ]; then
 else
     npx prisma db seed
 fi
-
+npx prisma generate
 exec "$@"
