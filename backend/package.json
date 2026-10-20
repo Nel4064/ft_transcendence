@@ -44,7 +44,8 @@
     "pg": "^8.23.0",
     "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "speakeasy": "^2.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^12.0.0",
@@ -60,6 +61,7 @@
     "@types/otplib": "^7.0.0",
     "@types/passport-jwt": "^4.0.1",
     "@types/qrcode": "^1.5.6",
+    "@types/speakeasy": "^2.0.10",
     "@types/supertest": "^7.2.1",
     "eslint": "^10.9.1",
     "jest": "^30.5.1",
