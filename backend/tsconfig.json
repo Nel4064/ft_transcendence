@@ -22,6 +22,9 @@
     "baseUrl": ".",
     "paths": {
       "@generated/prisma/*": ["src/generated/prisma/*"]
-    },
+    }
+  },
+  "ts-node": {
+    "experimentalResolver": true
   }
 }
