@@ -5,12 +5,16 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 import * as speakeasy from 'speakeasy';
 import * as qrcode from 'qrcode';
+import * as fs from 'fs';
+import { firstValueFrom } from 'rxjs';
+import { HttpService } from '@nestjs/axios'; // 👈 1. 引入 HttpService
 
 @Injectable()
 export class AuthService {
     constructor(
         private prisma: PrismaService,
         private jwtService: JwtService,
+        private readonly httpService: HttpService, // 👈 加上这一行把 HttpService 注入进来
     ) { }
 
     async register(dto: RegisterDto) {
@@ -167,6 +171,93 @@ export class AuthService {
 
         return {
             message: 'Login successful',
+            access_token: accessToken,
+        };
+    }
+
+    // ==================== 42 OAuth 相关方法 ====================
+
+    // 1. 用 Authorization Code 换取 42 Access Token
+    async getFortyTwoToken(code: string, redirectUri: string): Promise<string> {
+        try {
+            const clientId = fs.readFileSync('/run/secrets/fortytwo_client_id', 'utf8').trim();
+            const clientSecret = fs.readFileSync('/run/secrets/fortytwo_client_secret', 'utf8').trim();
+
+            const response = await firstValueFrom(
+                this.httpService.post('https://api.intra.42.fr/oauth/token', {
+                    grant_type: 'authorization_code',
+                    client_id: clientId,
+                    client_secret: clientSecret,
+                    code: code,
+                    redirect_uri: redirectUri,
+                }),
+            );
+
+            return response.data.access_token;
+        } catch (error:any) {
+            console.error('Failed to get 42 token:', error.response?.data || error.message);
+            throw new UnauthorizedException('Failed to authenticate with 42');
+        }
+    }
+
+    // 2. 使用 Access Token 获取 42 用户资料
+    async getFortyTwoUser(accessToken: string): Promise<any> {
+        try {
+            const response = await firstValueFrom(
+                this.httpService.get('https://api.intra.42.fr/v2/me', {
+                    headers: { Authorization: `Bearer ${accessToken}` },
+                }),
+            );
+            return response.data;
+        } catch (error:any) {
+            console.error('Failed to get 42 user profile:', error.response?.data || error.message);
+            throw new UnauthorizedException('Failed to fetch 42 user profile');
+        }
+    }
+
+    // 3. 42 用户登录或自动注册
+    async loginOrRegister42User(ftUser: any) {
+        const login = ftUser.login; // 42 的用户名（如 yzhang）
+        const email = ftUser.email; // 42 邮箱
+
+        // 检查数据库中是否已经存在该用户（优先通过 email 或 username 匹配）
+        let user = await this.prisma.user.findFirst({
+            where: {
+                OR: [
+                    { email: email },
+                    { username: login },
+                ],
+            },
+        });
+
+        if (!user) {
+            // 如果不存在，利用你现有的 register 逻辑或直接创建
+            // 42 注册用户没有密码 (passwordHash 为 null)，这完全契合你 register 里的逻辑！
+            user = await this.prisma.user.create({
+                data: {
+                    username: login,
+                    email: email,
+                    passwordHash: null, // 42 登录没有本地密码
+                    displayName: ftUser.usual_full_name || login,
+                },
+            });
+        }
+
+        // 检查 42 用户是否也开启了 2FA（如果你希望 42 登录也支持 2FA 校验的话）
+        if (user.twoFactorEnabled) {
+            return {
+                requiresTwoFactor: true,
+                userId: user.id,
+                message: 'Please provide your 2FA code',
+            };
+        }
+
+        // 没开启 2FA，直接签发系统内部的 JWT 令牌
+        const payload = { sub: user.id, username: user.username };
+        const accessToken = this.jwtService.sign(payload);
+
+        return {
+            message: '42 Login successful',
             access_token: accessToken,
         };
     }
