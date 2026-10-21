@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import Avatar from '../Avatar/Avatar'
 
 const linkClass = "text-[18px] text-text-muted hover:text-text [&.active]:text-text transition-colors duration-300"
+const linkClassAdmin = "text-[18px] text-text-admin-muted hover:text-admin [&.active]:text-admin transition-colors duration-300"
 
 function Navbar() {
 	const { user } = useAuth()
@@ -16,7 +17,7 @@ function Navbar() {
 			{ user && (
 				<div className="flex gap-10">
 					{user.role === 'admin' && (
-						<NavLink to="/search-movies" className={linkClass}>
+						<NavLink to="/search-movies" className={linkClassAdmin}>
 							Search movies
 						</NavLink>
 					)}

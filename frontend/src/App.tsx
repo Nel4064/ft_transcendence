@@ -13,14 +13,16 @@ import CalendarPage from './pages/calendar/CalendarPage'
 import { AuthProvider } from './context/AuthContext'
 import ProfilePage from './pages/profile/ProfilePage'
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
+import MovieDetailsPage from './pages/movie-details/MovieDetailsPage'
 
 
 function App() {
 	return (
 		<AuthProvider>
 			<BrowserRouter>
+			<div className="min-h-screen flex flex-col">
 			<Navbar />
-			<BottomNav />
+			<div className="flex-1">
 				<Routes>
 				{/* Pages publiques */}
 				<Route path="/" element={<HomePage />} />
@@ -34,6 +36,7 @@ function App() {
 					<Route path="/profile" element={<ProfilePage />} />
 					<Route path="/activity" element={<ActivityPage />} />
 					<Route path="/calendar" element={<CalendarPage />} />
+					<Route path="/movies/:title" element={<MovieDetailsPage />} />
 				</Route>
 
 				<Route element={<ProtectedRoute adminOnly />}>
@@ -46,6 +49,9 @@ function App() {
 					</main>
 				} />
 			</Routes>
+			</div>
+			<BottomNav />
+			</div>
 			</BrowserRouter>
 		</AuthProvider>
 	)

@@ -6,6 +6,9 @@
 	--color-brand: var(--ds-brand);
 	--color-brand-hover: var(--ds-brand-hover);
 	--color-danger: var(--ds-danger);
+	--color-admin: var(--ds-admin);
+	--color-admin-hover: var(--ds-admin-hover);
+	--color-text-admin-muted: var(--ds-text-admin-muted);
 
 	--color-text: var(--ds-text);
 	--color-text-muted: var(--ds-text-muted);
