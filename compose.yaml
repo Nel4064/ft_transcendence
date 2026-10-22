@@ -41,16 +41,16 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       DOMAIN: ${DOMAIN}
       # --- 42 OAuth (enable with auth module) ---
-      # FORTYTWO_REDIRECT_URI: ${FORTYTWO_REDIRECT_URI}
-      # FRONTEND_OAUTH_URI: ${FRONTEND_OAUTH_URI}
+      FORTYTWO_REDIRECT_URI: ${FORTYTWO_REDIRECT_URI}
+      FRONTEND_OAUTH_URI: ${FRONTEND_OAUTH_URI}
       # --- 2FA (enable with two-factor module) ---
-      # TWO_FACTOR_URL: ${TWO_FACTOR_URL}
+      TWO_FACTOR_URL: ${TWO_FACTOR_URL}
     secrets:
       - postgres_backend_user_pw
       - jwt_secret
       # --- 42 OAuth (enable with auth module) ---
-      # - fortytwo_client_id
-      # - fortytwo_client_secret
+      - fortytwo_client_id
+      - fortytwo_client_secret
 
   frontend:
     build:
@@ -86,7 +86,7 @@ secrets:
   jwt_secret:
     external: true
   # --- 42 OAuth (enable with auth module, once ./secrets/fortytwo_*.txt are filled in) ---
-  # fortytwo_client_id:
-  #   external: true
-  # fortytwo_client_secret:
-  #   external: true
+  fortytwo_client_id:
+    external: true
+  fortytwo_client_secret:
+    external: true
