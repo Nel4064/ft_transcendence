@@ -7,14 +7,14 @@ import * as speakeasy from 'speakeasy';
 import * as qrcode from 'qrcode';
 import * as fs from 'fs';
 import { firstValueFrom } from 'rxjs';
-import { HttpService } from '@nestjs/axios'; // 👈 1. 引入 HttpService
+import { HttpService } from '@nestjs/axios'; // 👈 1. Import HttpService
 
 @Injectable()
 export class AuthService {
     constructor(
         private prisma: PrismaService,
         private jwtService: JwtService,
-        private readonly httpService: HttpService, // 👈 加上这一行把 HttpService 注入进来
+        private readonly httpService: HttpService, // 👈 Inject HttpService here
     ) { }
 
     async register(dto: RegisterDto) {
@@ -50,7 +50,7 @@ export class AuthService {
     }
 
     async login(dto: LoginDto) {
-        // 1. 查找用户
+        // 1. Find user by email or username
         const user = await this.prisma.user.findFirst({
             where: {
                 OR: [
@@ -67,15 +67,15 @@ export class AuthService {
             throw new UnauthorizedException('This account has no password set, please use another login method');
         }
 
-        // 2. 比对密码
+        // 2. Compare password
         const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid credentials');
         }
 
-        // 3. 关键点：检查该用户是否开启了 2FA
+        // 3. Key point: Check if 2FA is enabled for this user
         if (user.twoFactorEnabled) {
-            // 如果开启了，不直接给 token，而是返回一个临时标识，告诉前端需要输入 2FA
+            // If enabled, do not issue a token directly; instead, return a temporary flag telling the frontend 2FA is required
             return {
                 requiresTwoFactor: true,
                 userId: user.id,
@@ -83,7 +83,7 @@ export class AuthService {
             };
         }
 
-        // 4. 没开启 2FA，直接签发 Token（正常登录）
+        // 4. 2FA not enabled, issue Token directly (normal login)
         const payload = { sub: user.id, username: user.username };
         const accessToken = this.jwtService.sign(payload);
 
@@ -92,15 +92,17 @@ export class AuthService {
             access_token: accessToken,
         };
     }
-    // 2 factors Authentication (2FA) 相关方法
-    // 1. 生成 2FA 密钥与二维码
+
+    // ==================== 2FA (Two-Factor Authentication) Methods ====================
+
+    // 1. Generate 2FA secret and QR code
     async generateTwoFactorAuthenticationSecret(userId: string) {
         const user = await this.prisma.user.findUnique({ where: { id: userId } });
         if (!user) {
             throw new NotFoundException('User not found');
         }
 
-        // 生成秘钥
+        // Generate secret
         const secret = speakeasy.generateSecret({
             name: `Ft_Transcendence (${user.email})`,
         });
@@ -108,27 +110,27 @@ export class AuthService {
             throw new InternalServerErrorException('Unable to generate 2FA provisioning URL');
         }
 
-        // 将 secret 暂存到数据库中（此时 twoFactorEnabled 依然是 false，等验证成功才变 true）
+        // Temporarily save secret to database (twoFactorEnabled remains false until verification succeeds)
         await this.prisma.user.update({
             where: { id: userId },
             data: { twoFactorSecret: secret.base32 },
         });
 
-        // 生成二维码的 Data URL 传给前端
+        // Return QR code Data URL to frontend
         return {
             qrCodeUrl: await qrcode.toDataURL(secret.otpauth_url),
-            secret: secret.base32, // 可选：给用户展示文本密钥
+            secret: secret.base32, // Optional: show text secret to user
         };
     }
 
-    // 2. 验证用户输入的 6 位码，并正式开启 2FA
+    // 2. Verify the 6-digit code entered by the user and officially turn on 2FA
     async turnOnTwoFactorAuthentication(userId: string, code: string) {
         const user = await this.prisma.user.findUnique({ where: { id: userId } });
         if (!user || !user.twoFactorSecret) {
             throw new BadRequestException('2FA secret not found');
         }
 
-        // 使用 speakeasy 校验验证码
+        // Verify the code using speakeasy
         const isVerified = speakeasy.totp.verify({
             secret: user.twoFactorSecret,
             encoding: 'base32',
@@ -139,7 +141,7 @@ export class AuthService {
             throw new BadRequestException('Invalid 2FA code');
         }
 
-        // 校验成功，正式开启开关
+        // Verification successful, officially enable 2FA switch
         await this.prisma.user.update({
             where: { id: userId },
             data: { twoFactorEnabled: true },
@@ -148,7 +150,7 @@ export class AuthService {
         return { message: '2FA enabled successfully' };
     }
 
-    // 3. 登录时校验 2FA 验证码
+    // 3. Verify 2FA code during login
     async authenticateWith2FA(userId: string, code: string) {
         const user = await this.prisma.user.findUnique({ where: { id: userId } });
         if (!user || !user.twoFactorSecret) {
@@ -165,7 +167,7 @@ export class AuthService {
             throw new UnauthorizedException('Invalid 2FA code');
         }
 
-        // 2FA 校验通过，正式签发 JWT Token
+        // 2FA verification passed, officially issue JWT Token
         const payload = { sub: user.id, username: user.username };
         const accessToken = this.jwtService.sign(payload);
 
@@ -175,9 +177,52 @@ export class AuthService {
         };
     }
 
-    // ==================== 42 OAuth 相关方法 ====================
+    // 4. Disable/remove 2FA
+    async turnOffTwoFactorAuthentication(userId: string, code: string) {
+        // 1. Find user by userId
+        // (Note: If your id is of type number, write it as id: Number(userId))
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
 
-    // 1. 用 Authorization Code 换取 42 Access Token
+        if (!user) {
+            throw new BadRequestException('User not found');
+        }
+
+        // Check if 2FA was actually enabled in the first place
+        if (!user.twoFactorEnabled || !user.twoFactorSecret) {
+            throw new BadRequestException('2FA is not enabled');
+        }
+
+        // 2. Verify that the 6-digit dynamic code entered by the user is correct (prevents unauthorized disabling if token leaks)
+        const isCodeValid = speakeasy.totp.verify({
+            secret: user.twoFactorSecret,
+            encoding: 'base32',
+            token: code,
+            window: 1, // Allow a time drift window of +/- 30 seconds
+        });
+
+        if (!isCodeValid) {
+            throw new BadRequestException('Invalid 2FA verification code');
+        }
+
+        // 3. Verification passed: update database, disable 2FA and clear secret
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                isTwoFactorEnabled: false,
+                twoFactorSecret: null, // Adjust according to your schema.prisma field names
+            },
+        });
+
+        return {
+            message: '2FA disabled successfully',
+        };
+    }
+
+    // ==================== 42 OAuth Related Methods ====================
+
+    // 1. Exchange Authorization Code for 42 Access Token
     async getFortyTwoToken(code: string, redirectUri: string): Promise<string> {
         try {
             const clientId = fs.readFileSync('/run/secrets/fortytwo_client_id', 'utf8').trim();
@@ -194,13 +239,13 @@ export class AuthService {
             );
 
             return response.data.access_token;
-        } catch (error:any) {
+        } catch (error: any) {
             console.error('Failed to get 42 token:', error.response?.data || error.message);
             throw new UnauthorizedException('Failed to authenticate with 42');
         }
     }
 
-    // 2. 使用 Access Token 获取 42 用户资料
+    // 2. Fetch 42 user profile using Access Token
     async getFortyTwoUser(accessToken: string): Promise<any> {
         try {
             const response = await firstValueFrom(
@@ -209,18 +254,18 @@ export class AuthService {
                 }),
             );
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             console.error('Failed to get 42 user profile:', error.response?.data || error.message);
             throw new UnauthorizedException('Failed to fetch 42 user profile');
         }
     }
 
-    // 3. 42 用户登录或自动注册
+    // 3. 42 user login or automatic registration
     async loginOrRegister42User(ftUser: any) {
-        const login = ftUser.login; // 42 的用户名（如 yzhang）
-        const email = ftUser.email; // 42 邮箱
+        const login = ftUser.login; // 42 login username (e.g., yzhang)
+        const email = ftUser.email; // 42 email
 
-        // 检查数据库中是否已经存在该用户（优先通过 email 或 username 匹配）
+        // Check if user already exists in database (matching by email or username first)
         let user = await this.prisma.user.findFirst({
             where: {
                 OR: [
@@ -231,19 +276,19 @@ export class AuthService {
         });
 
         if (!user) {
-            // 如果不存在，利用你现有的 register 逻辑或直接创建
-            // 42 注册用户没有密码 (passwordHash 为 null)，这完全契合你 register 里的逻辑！
+            // If not found, create a new user.
+            // 42 registered users have no local password (passwordHash is null), which fits your register logic completely!
             user = await this.prisma.user.create({
                 data: {
                     username: login,
                     email: email,
-                    passwordHash: null, // 42 登录没有本地密码
+                    passwordHash: null, // No local password for 42 login
                     displayName: ftUser.usual_full_name || login,
                 },
             });
         }
 
-        // 检查 42 用户是否也开启了 2FA（如果你希望 42 登录也支持 2FA 校验的话）
+        // Check if the 42 user has also enabled 2FA (if you want 42 login to support 2FA verification as well)
         if (user.twoFactorEnabled) {
             return {
                 requiresTwoFactor: true,
@@ -252,7 +297,7 @@ export class AuthService {
             };
         }
 
-        // 没开启 2FA，直接签发系统内部的 JWT 令牌
+        // 2FA not enabled, issue internal system JWT token directly
         const payload = { sub: user.id, username: user.username };
         const accessToken = this.jwtService.sign(payload);
 
@@ -261,5 +306,4 @@ export class AuthService {
             access_token: accessToken,
         };
     }
-
 }
