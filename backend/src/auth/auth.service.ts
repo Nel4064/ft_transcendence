@@ -93,6 +93,34 @@ export class AuthService {
         };
     }
 
+    async getProfile(userId: string) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                username: true,
+                displayName: true,
+                email: true,
+                avatarUrl: true,
+                bio: true,
+                language: true,
+                role: true,
+                twoFactorEnabled: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+        });
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        return {
+            message: 'Successfully retrieved full profile',
+            user,
+        };
+    }
+
     // ==================== 2FA (Two-Factor Authentication) Methods ====================
 
     // 1. Generate 2FA secret and QR code

@@ -1,7 +1,7 @@
-import { PrismaClient } from '../src/generated/prisma/client';
+import { Prisma, PrismaClient, Role } from '../src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as dotenv from 'dotenv';
-import * as bcrypt from 'bcrypt'; //  Import bcrypt if password encryption is needed
+import * as bcrypt from 'bcrypt';
 dotenv.config(); 
 
 const connectionString = process.env.DATABASE_URL;
@@ -16,13 +16,24 @@ const prisma = new PrismaClient({
 async function main() {
   console.log('🌱 Start seeding...');
 
-  // 1. Clean up old data (Note: If there are foreign key constraints, you may need to clean up child tables first)
+  // 1. Clean up old data
   await prisma.user.deleteMany();
 
-  // 2. Generate mock data for 10 test users
-  const usersData = [];
-  const hashedPassword = await bcrypt.hash('123456', 10); // Unified default password '123456'
+  const hashedPassword = await bcrypt.hash('123456', 10); // 统一默认密码
 
+  // 2. Prepare user data starting with an ADMIN
+  const usersData: Prisma.UserCreateManyInput[] = [
+    {
+      username: 'admin',
+      email: 'admin@gmail.com',
+      passwordHash: hashedPassword,
+      displayName: 'System Admin',
+      twoFactorEnabled: false,
+      role: Role.ADMIN,   
+    }
+  ];
+
+  // 3. Generate mock data for 10 regular test users
   for (let i = 1; i <= 10; i++) {
     usersData.push({
       username: `testuser${i}`,
@@ -30,16 +41,17 @@ async function main() {
       passwordHash: hashedPassword,
       displayName: `Test User ${i}`,
       twoFactorEnabled: false,
+      role: Role.USER,  // 如果你的 schema 有 role 字段，对应这里也可以写 'USER'
     });
   }
 
-  // 3. Bulk write to the database
+  // 4. Bulk write to the database
   await prisma.user.createMany({
     data: usersData,
-    skipDuplicates: true, // Skip duplicates to prevent errors
+    skipDuplicates: true, // 防止重复执行报错
   });
 
-  console.log('✅ Successfully seeded 10 users!');
+  console.log('✅ Successfully seeded 1 Admin and 10 test users!');
 }
 
 main()

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UseGuards, Query, Res, HttpStatus } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards, Query, Res, HttpStatus, NotFoundException } from '@nestjs/common';
 import { Request } from 'express';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -6,6 +6,7 @@ import { RegisterDto, LoginDto } from './dto/auth.dto';
 import { TwoFactorCodeDto, TwoFactorLoginDto } from './dto/auth.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import * as fs from 'fs';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -16,8 +17,10 @@ interface AuthenticatedRequest extends Request {
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
-
+  constructor(
+    private readonly authService: AuthService,
+    private readonly prisma: PrismaService,
+  ) { }
   // --- Original register and login routes remain unchanged ---
   @Post('register')
   async register(@Body() dto: RegisterDto) {
@@ -56,7 +59,7 @@ export class AuthController {
   async authenticate2FA(@Body() dto: TwoFactorLoginDto) {
     return this.authService.authenticateWith2FA(dto.userId, dto.code);
   }
-  
+
   /**
    * 4. Disable/remove 2FA (requires JWT Token, and verification of the current 6-digit code)
    */
@@ -69,10 +72,40 @@ export class AuthController {
   // Protected test endpoint
   @Get('profile')
   @UseGuards(JwtAuthGuard)
-  getProfile(@Req() req: AuthenticatedRequest) {
+  async getProfile(@Req() req: AuthenticatedRequest) {
+    // 1. 从 JWT 验证后挂载的 req.user 中拿到用户 ID（假设你的 payload 里的字段叫 userId 或 sub）
+    const userId = req.user.userId;
+
+    // 2. 通过 Prisma 去数据库查询该用户的完整信息
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        username: true,
+        displayName: true,
+        email: true,
+        avatarUrl: true,          // 头像
+        bio: true,                // 个人简介
+        language: true,           // 语言偏好
+        role: true,               // 用户角色 (USER / ADMIN)
+        twoFactorEnabled: true,   // 是否开启 2FA
+        createdAt: true,          // 注册时间
+        updatedAt: true,          // 最后更新时间
+
+
+        passwordHash: false,
+        twoFactorSecret: false,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // 3. 返回包含丰富信息的对象
     return {
-      message: 'Successfully retrieved profile',
-      user: req.user,
+      message: 'Successfully retrieved full profile',
+      user,
     };
   }
 
