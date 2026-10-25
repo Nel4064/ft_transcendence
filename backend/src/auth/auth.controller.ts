@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Req, UseGuards, Query, Res, HttpStatus, NotFoundException } from '@nestjs/common';
-import { Request } from 'express';
+import type { Request } from 'express';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
@@ -114,7 +114,7 @@ export class AuthController {
   redirectTo42(@Res() res: Response) {
     try {
       const clientId = fs.readFileSync('/run/secrets/fortytwo_client_id', 'utf8').trim();
-      const redirectUri = process.env.FORTYTWO_REDIRECT_URI || 'http://127.0.0.1:1024/api/auth/oauth/42/callback';
+      const redirectUri = process.env.FORTYTWO_REDIRECT_URI || 'http://127.0.0.1:3000/api/auth/oauth/42/callback';
 
       const authUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code`;
 
@@ -126,37 +126,33 @@ export class AuthController {
 
   // 2. Receive 42 callback code, exchange for token, fetch user, issue JWT and redirect to frontend
   @Get('oauth/42/callback')
-  async handle42Callback(@Query('code') code: string, @Res() res: Response) {
-    if (!code) {
-      return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Authorization code missing' });
-    }
-
-    const redirectUri = process.env.FORTYTWO_REDIRECT_URI || 'http://127.0.0.1:1024/api/auth/oauth/42/callback';
-    const frontendUri = process.env.FRONTEND_OAUTH_URI || 'http://127.0.0.1:1024/';
-
+  async fortyTwoAuthRedirect(
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
     try {
-      // Step 1: Exchange code for 42 token
-      const token = await this.authService.getFortyTwoToken(code, redirectUri);
-
-      // Step 2: Fetch 42 user profile
-      const ftUser = await this.authService.getFortyTwoUser(token);
-
-      // Step 3: Complete internal lookup/registration
-      const authResult = await this.authService.loginOrRegister42User(ftUser);
-
-      // Step 4: Handle 2FA branch
-      if ('requiresTwoFactor' in authResult && authResult.requiresTwoFactor) {
-        // If 2FA is enabled for this 42 user, redirect to frontend 2FA verification page with userId
-        return res.redirect(`${frontendUri}2fa-verify?userId=${authResult.userId}`);
+      const code = req.query.code as string;
+      if (!code) {
+        return res.redirect('http://localhost:1024/?error=NoCodeProvided'); // 👈 改为前端端口
       }
 
-      // Step 5: 2FA is not enabled, obtain access_token and redirect back to frontend
-      const accessToken = authResult.access_token;
-      return res.redirect(`${frontendUri}?token=${accessToken}`);
+      const redirectUri ='http://127.0.0.1:3000/api/auth/oauth/42/callback';
+
+      const fortyTwoToken = await this.authService.getFortyTwoToken(code, redirectUri);
+      const ftUser = await this.authService.getFortyTwoUser(fortyTwoToken);
+      const result = await this.authService.loginOrRegister42User(ftUser);
+
+      const frontendUrl = 'http://localhost:1024'; // 👈 必须指向您的前端真实端口（如 1024）
+
+      if (result.requiresTwoFactor) {
+        return res.redirect(`${frontendUrl}/?requiresTwoFactor=true&userId=${result.userId}`);
+      }
+
+      return res.redirect(`${frontendUrl}/?token=${result.access_token}`);
 
     } catch (error) {
-      console.error('OAuth Callback processing failed:', error);
-      return res.redirect(`${frontendUri}?error=oauth_failed`);
+      console.error('42 OAuth 登录失败:', error);
+      return res.redirect('http://localhost:1024/?error=OAuthFailed'); // 👈 改为前端端口
     }
   }
 }
