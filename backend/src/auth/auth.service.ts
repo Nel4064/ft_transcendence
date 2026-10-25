@@ -17,11 +17,18 @@ export class AuthService {
         private readonly httpService: HttpService, // 👈 Inject HttpService here
     ) { }
 
-    async register(dto: RegisterDto) {
+    async register(dto: RegisterDto & { identifier?: string }) {
+        // 兼容前端传进来的 username 或 identifier
+        const username = dto.username || dto.identifier;
+
+        if (!username) {
+            throw new BadRequestException('Username is required');
+        }
+
         // 1. Check if username or email is already taken
         const existingUser = await this.prisma.user.findFirst({
             where: {
-                OR: [{ email: dto.email }, { username: dto.username }],
+                OR: [{ email: dto.email }, { username: username }],
             },
         });
         if (existingUser) {
@@ -37,10 +44,10 @@ export class AuthService {
         // 3. Save to database (ensure your Prisma schema allows passwordHash to be nullable: passwordHash String?)
         const user = await this.prisma.user.create({
             data: {
-                username: dto.username,
+                username: username, // 👈 使用解析出来的 username
                 email: dto.email,
                 passwordHash: hashedPassword,
-                displayName: dto.username,
+                displayName: username,
             },
         });
 
@@ -48,7 +55,6 @@ export class AuthService {
         const { passwordHash, ...result } = user;
         return { message: 'Registration successful', user: result };
     }
-
     async login(dto: LoginDto) {
         // 1. Find user by email or username
         const user = await this.prisma.user.findFirst({
