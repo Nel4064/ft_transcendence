@@ -16,7 +16,7 @@ function Navbar() {
 			</div>
 			{ user && (
 				<div className="flex gap-10">
-					{user.role === 'admin' && (
+					{user.role === 'ADMIN' && (
 						<NavLink to="/search-movies" className={linkClassAdmin}>
 							Search movies
 						</NavLink>

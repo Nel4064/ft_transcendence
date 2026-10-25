@@ -18,7 +18,7 @@ function ProfilePage() {
                 <div className="flex items-center gap-5 p-5 bg-surface border border-border rounded-md shadow-card">
 					<Avatar size={120} />
 					<div>
-						<h1 className="mb-1 font-serif text-2xl text-text">ExempleUsername</h1>
+						<h1 className="mb-1 font-serif text-2xl text-text">{user?.username}</h1>
 						<p className="text-text-muted">{user?.email}</p>
 					</div>
                 </div>

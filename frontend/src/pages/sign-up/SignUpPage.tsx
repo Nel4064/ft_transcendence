@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { apiFetch, useAuth } from '../../context/AuthContext'
 
 const inputClass = "py-2.5 px-3 border border-border rounded-md text-base"
 const linkClass = "text-brand hover:text-brand-hover"
@@ -11,10 +12,10 @@ function SignUpPage() {
 	const [confirmPassword, setConfirmPassword] = useState('')
 	const [error, setError] = useState('')
 	const [acceptTerms, setAcceptTerms] = useState(false)
+	const { login } = useAuth()
+	const navigate = useNavigate()
 
-
-
-	function handleSubmit(e: React.FormEvent) 
+	async function handleSubmit(e: React.FormEvent) 
 	{
 		e.preventDefault()
 		if (password !== confirmPassword) 
@@ -28,7 +29,20 @@ function SignUpPage() {
 			return
 		}
 		setError('')
-		console.log(email, password)
+		try {
+			// 1. on crée le compte en base
+			await apiFetch('/auth/register', {
+				method: 'POST',
+				body: JSON.stringify({ username, email, password }),
+			})
+			// 2. on connecte directement l'utilisateur
+			await login(username, password)
+			navigate('/')
+		} 
+		catch (err) 
+		{
+			setError(err instanceof Error ? err.message : 'Registration failed')
+		}
 	}
 
 	return (
@@ -44,6 +58,7 @@ function SignUpPage() {
 									value={username}
 									placeholder="your username"
 								onChange={(e) => setUsername(e.target.value)}
+								minLength={2}
 								required
 								className={inputClass}
 						/>
@@ -65,6 +80,7 @@ function SignUpPage() {
                             placeholder="Your password"
                             onChange={(e) => setPassword(e.target.value)}
                             required
+							minLength={6}
                             className={inputClass}
                         />
 
@@ -75,6 +91,7 @@ function SignUpPage() {
                             placeholder="Confirm your password"
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             required
+							minLength={6}
                             className={inputClass}
                         />
 
@@ -92,6 +109,13 @@ function SignUpPage() {
 						{error && <p className="py-2 px-3 rounded-md bg-danger/10 text-danger text-base font-bold text-center">{error}</p>} 
 
                     <button type="submit" className="py-2.5 px-3 rounded-md bg-brand hover:bg-brand-hover text-white text-base cursor-pointer">Sign Up</button>
+					<a
+						href="/api/auth/oauth/42"
+						className="py-2.5 px-3 rounded-md border border-border text-center text-base hover:bg-surface"
+					>
+						Sign in with 42
+					</a>
+
 					<p className="text-text-light">Already have an account? <a href="/signin" className={linkClass}>Sign in</a> </p>
                     </div>
                 </div>
