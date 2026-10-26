@@ -50,6 +50,10 @@ export default function App() {
   const [otherUserProfile, setOtherUserProfile] = useState<any | null>(null);
   const [userList, setUserList] = useState<any[]>([]);
 
+  // 在现有的状态旁边添加：
+  const [oldPassword, setOldPassword] = useState<string>('');
+  const [newPassword, setNewPassword] = useState<string>('');
+
   // Helper function to change view and update browser URL without page reload
   const navigateTo = (view: 'home' | 'login' | 'register' | 'profile') => {
     setCurrentView(view);
@@ -258,6 +262,35 @@ export default function App() {
       setMessageColor('red');
     }
   }
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = localStorage.getItem('jwt_token');
+    setMessage('Changing password...');
+    try {
+      const response = await fetch(`${USERS_API}/me/password`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ oldPassword, newPassword }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setMessage('Password changed successfully!');
+        setMessageColor('green');
+        setOldPassword('');
+        setNewPassword('');
+      } else {
+        setMessage('Failed to change password: ' + (data.message || JSON.stringify(data)));
+        setMessageColor('red');
+      }
+    } catch (error) {
+      setMessage('Network error');
+      setMessageColor('red');
+    }
+  };
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -566,7 +599,7 @@ export default function App() {
           <div>
             <h2>Profile & 2FA Settings</h2>
 
-            {/* avatar upload area*/}
+            {/* 头像上传区域 */}
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
               {userProfile.avatarUrl ? (
                 <img
@@ -593,7 +626,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* edit profile */}
+            {/* 1. 独立表单：更新个人资料 */}
             <form onSubmit={handleUpdateProfile} style={{ marginBottom: '20px' }}>
               <div style={styles.formGroup}>
                 <label>Username (Read-only)</label>
@@ -644,7 +677,41 @@ export default function App() {
 
             <hr style={styles.divider} />
 
-            {/* 2FA unchanged */}
+            {/* 2. 独立表单：修改密码（与上面的 form 平级，绝不嵌套） */}
+            <h3>Change Password</h3>
+            <form onSubmit={handleChangePassword} style={{ marginBottom: '20px' }}>
+              <div style={styles.formGroup}>
+                <label>Old Password</label>
+                <input
+                  type="password"
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  placeholder="Enter old password"
+                  style={styles.input}
+                  required
+                />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label>New Password (min 6 chars)</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password"
+                  style={styles.input}
+                  required
+                />
+              </div>
+
+              <button type="submit" style={{ ...styles.button, backgroundColor: '#28a745' }}>
+                Update Password
+              </button>
+            </form>
+
+            <hr style={styles.divider} />
+
+            {/* 2FA 模块 */}
             <p><strong>Two-Step Verification (2FA):</strong> {userProfile.twoFactorEnabled ? 'Enabled ✅' : 'Disabled ❌'}</p>
 
             {!userProfile.twoFactorEnabled && !qrCodeUrl && (
@@ -671,49 +738,6 @@ export default function App() {
                 </form>
               </div>
             )}
-          </div>
-        )}
-
-        {currentView === 'other-profile' && (
-          <div style={{ textAlign: 'center' }}>
-            <h2>User Public Profile</h2>
-            {otherUserProfile ? (
-              <div>
-                {/* avatar*/}
-                {otherUserProfile.avatarUrl ? (
-                  <img
-                    src={`http://localhost:3000${otherUserProfile.avatarUrl}`}
-                    alt="Avatar"
-                    style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', marginBottom: '15px', border: '2px solid #007bff' }}
-                  />
-                ) : (
-                  <div style={{ width: '90px', height: '90px', borderRadius: '50%', backgroundColor: '#e9ecef', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '15px', color: '#6c757d' }}>
-                    No Image
-                  </div>
-                )}
-
-                <p><strong>Username:</strong> {otherUserProfile.username}</p>
-                <p><strong>Display Name:</strong> {otherUserProfile.displayName || 'None'}</p>
-                <p><strong>Bio:</strong> {otherUserProfile.bio || 'This user has no bio yet.'}</p>
-                <p><strong>Language:</strong> {otherUserProfile.language}</p>
-                <p><strong>Role:</strong> {otherUserProfile.role}</p>
-                <p style={{ fontSize: '12px', color: '#666', marginTop: '15px' }}>
-                  Joined: {new Date(otherUserProfile.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-            ) : (
-              <p style={{ color: '#666' }}>Loading user profile...</p>
-            )}
-
-            <button
-              style={{ ...styles.buttonSecondary, marginTop: '20px' }}
-              onClick={() => {
-                setCurrentView('home');
-                window.history.pushState({}, '', '/');
-              }}
-            >
-              Back to Home
-            </button>
           </div>
         )}
         {message && <p style={{ color: messageColor, textAlign: 'center', marginTop: '15px', fontSize: '14px' }}>{message}</p>}

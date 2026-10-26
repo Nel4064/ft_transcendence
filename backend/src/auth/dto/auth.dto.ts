@@ -61,3 +61,12 @@ export class UpdateProfileDto {
   @IsEnum(Language) // 👈 允许接收 EN, FR, ES 等枚举值
   language?: Language;
 }
+
+export class ChangePasswordDto {
+  @IsString()
+  oldPassword: string;
+
+  @IsString()
+  @MinLength(6, { message: 'New password must be at least 6 characters long' })
+  newPassword: string;
+}

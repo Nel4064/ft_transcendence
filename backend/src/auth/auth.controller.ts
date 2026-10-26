@@ -36,7 +36,6 @@ export class AuthController {
   }
 
   // ==================== 2FA Related Routes ====================
-
   /**
    * 1. Generate 2FA secret and QR code (called from profile, requires JWT Token)
    */
