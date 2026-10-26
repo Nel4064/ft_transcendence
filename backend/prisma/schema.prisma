@@ -81,6 +81,12 @@ model Screening {
   cinemaLatitude   Float?                                      // _coords.lat (V3)
   cinemaLongitude  Float?                                      // _coords.lon (V3)
 
+  // // Club side
+  // curatedById      String?
+  // curatedBy        User?             @relation("curatedBy", fields: [curatedById], references: [id])
+  // isCancelled      Boolean           @default(false)
+  // rsvps            Rsvp[]
+
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
