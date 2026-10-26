@@ -5,6 +5,7 @@ interface UserProfile {
   id: string;
   username: string;
   email: string;
+  avatarUrl: string | null;
   role: string;
   twoFactorEnabled: boolean;
   createdAt: string;
@@ -246,7 +247,39 @@ export default function App() {
       setMessage('Network error');
       setMessageColor('red');
     }
+  }
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const token = localStorage.getItem('jwt_token');
+    setMessage('Uploading avatar...');
+    try {
+      const response = await fetch(`${API_BASE}/profile/avatar`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData, // 注意：传 FormData 时不需要手动设置 Content-Type，浏览器会自动处理
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setMessage('Avatar updated successfully!');
+        setMessageColor('green');
+        const updated = data.user || data;
+        setUserProfile(updated);
+      } else {
+        setMessage('Failed to upload avatar: ' + (data.message || 'Error'));
+        setMessageColor('red');
+      }
+    } catch (error) {
+      setMessage('Network error during upload');
+      setMessageColor('red');
+    }
   };
+
 
   // 6. Generate/Enable 2FA (get QR code)
   const handleGenerate2FA = async () => {
@@ -476,7 +509,28 @@ export default function App() {
           <div>
             <h2>Profile & 2FA Settings</h2>
 
-            {/* 资料修改表单（包含语言选择） */}
+            {/* 🖼️ 头像展示与上传区域 */}
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              {userProfile.avatarUrl ? (
+                <img
+                  src={`http://localhost:3000${userProfile.avatarUrl}`}
+                  alt="User Avatar"
+                  style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', marginBottom: '10px', border: '2px solid #007bff' }}
+                />
+              ) : (
+                <div style={{ width: '90px', height: '90px', borderRadius: '50%', backgroundColor: '#e9ecef', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px', color: '#6c757d' }}>
+                  No Image
+                </div>
+              )}
+              <div>
+                <label style={{ ...styles.buttonSecondary, display: 'inline-block', cursor: 'pointer', padding: '6px 12px', fontSize: '13px' }}>
+                  Change Avatar
+                  <input type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: 'none' }} />
+                </label>
+              </div>
+            </div>
+
+            {/* 原有的资料修改表单 */}
             <form onSubmit={handleUpdateProfile} style={{ marginBottom: '20px' }}>
               <div style={styles.formGroup}>
                 <label>Username (Read-only)</label>
@@ -509,7 +563,6 @@ export default function App() {
                 />
               </div>
 
-              {/* 🌐 新增：语言选择下拉菜单 */}
               <div style={styles.formGroup}>
                 <label>Language</label>
                 <select

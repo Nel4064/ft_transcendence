@@ -127,7 +127,7 @@ export class AuthService {
         };
     }
 
-    async updateProfile(userId: string, dto: { displayName?: string; bio?: string; language?: any}) {
+    async updateProfile(userId: string, dto: { displayName?: string; bio?: string; language?: any }) {
         const updatedUser = await this.prisma.user.update({
             where: { id: userId },
             data: {
@@ -139,6 +139,16 @@ export class AuthService {
 
         const { passwordHash, ...result } = updatedUser;
         return { message: 'Profile updated successfully', user: result };
+    }
+
+    async updateAvatar(userId: string, avatarUrl: string) {
+        const updatedUser = await this.prisma.user.update({
+            where: { id: userId },
+            data: { avatarUrl },
+        });
+
+        const { passwordHash, ...result } = updatedUser;
+        return { message: 'Avatar updated successfully', user: result };
     }
 
     // ==================== 2FA (Two-Factor Authentication) Methods ====================

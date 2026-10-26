@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Patch, Req, UseGuards, Query, Res, HttpStatus, NotFoundException } from '@nestjs/common';
+import { Body, Controller, Get, Post, Patch, Req, UseGuards, Query, Res, HttpStatus, NotFoundException, UseInterceptors, UploadedFile } from '@nestjs/common';
 import type { Request } from 'express';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -7,6 +7,9 @@ import { TwoFactorCodeDto, TwoFactorLoginDto } from './dto/auth.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import * as fs from 'fs';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -113,6 +116,27 @@ export class AuthController {
   @Patch('profile')
   async updateProfile(@Req() req: AuthenticatedRequest, @Body() updateDto: UpdateProfileDto) {
     return this.authService.updateProfile(req.user.userId, updateDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('profile/avatar')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads', // 保存在项目根目录下的 uploads 文件夹
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, uniqueSuffix + extname(file.originalname)); // 重命名防止冲突
+        },
+      }),
+    }),
+  )
+  async uploadAvatar(@Req() req: AuthenticatedRequest, @UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new Error('No file uploaded');
+    }
+    const avatarUrl = `/uploads/${file.filename}`;
+    return this.authService.updateAvatar(req.user.userId, avatarUrl);
   }
 
   // 1. Redirect user to 42 official authorization page
