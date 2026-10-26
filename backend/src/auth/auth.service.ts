@@ -151,6 +151,32 @@ export class AuthService {
         return { message: 'Avatar updated successfully', user: result };
     }
 
+    async getUserPublicProfile(userId: string) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        // 🔒 严格过滤掉敏感隐私数据（如 email, passwordHash, twoFactorSecret 等）
+        const { passwordHash, twoFactorSecret, email, ...publicProfile } = user;
+        return publicProfile;
+    }
+
+    async getAllPublicUsers() {
+        const users = await this.prisma.user.findMany({
+            select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatarUrl: true,
+            },
+        });
+        return users;
+    }
+
     // ==================== 2FA (Two-Factor Authentication) Methods ====================
 
     // 1. Generate 2FA secret and QR code

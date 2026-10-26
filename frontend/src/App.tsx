@@ -23,7 +23,7 @@ export default function App() {
     return 'home';
   };
 
-  const [currentView, setCurrentView] = useState<'home' | 'login' | 'register' | 'profile'>(getInitialView());
+  const [currentView, setCurrentView] = useState<'home' | 'login' | 'register' | 'profile' | 'other-profile'>('home');
 
   // Form states
   const [username, setUsername] = useState<string>('');
@@ -47,6 +47,23 @@ export default function App() {
   const [displayName, setDisplayName] = useState<string>('');
   const [bio, setBio] = useState<string>('');
   const [language, setLanguage] = useState<string>('');
+
+  const [otherUserProfile, setOtherUserProfile] = useState<any | null>(null);
+
+  // 1. 新增用户列表状态
+  const [userList, setUserList] = useState<any[]>([]);
+
+  const fetchUserList = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/users`);
+      const data = await response.json();
+      if (response.ok) {
+        setUserList(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch user list', error);
+    }
+  };
 
   // Helper function to change view and update browser URL without page reload
   const navigateTo = (view: 'home' | 'login' | 'register' | 'profile') => {
@@ -74,6 +91,17 @@ export default function App() {
     const error = params.get('error');
     const tokenFromStorage = localStorage.getItem('jwt_token');
 
+    const path = window.location.pathname;
+    if (path.startsWith('/profile/') && path !== '/profile') {
+      const userId = path.split('/')[2];
+      setCurrentView('other-profile');
+      fetchOtherProfile(userId);
+      return;
+    }
+
+    // 🌐 无论是否登录，只要在首页都可以加载公开的用户头像列表
+    fetchUserList();
+
     if (tokenFromUrl) {
       // Clear token from URL and login successfully
       window.history.replaceState({}, document.title, '/');
@@ -95,7 +123,6 @@ export default function App() {
       fetchProfile(tokenFromStorage);
     }
   }, []);
-
   // 1. Register
   const handleRegister = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -280,6 +307,31 @@ export default function App() {
     }
   };
 
+  const fetchOtherProfile = async (userId: string) => {
+    try {
+      // 注意路径要对应后端的 /api/auth/users/:id
+      const response = await fetch(`${API_BASE}/users/${userId}`);
+      const data = await response.json();
+      if (response.ok) {
+        setOtherUserProfile(data);
+      } else {
+        setMessage('User not found');
+        setMessageColor('red');
+        setOtherUserProfile(null);
+      }
+    } catch (error) {
+      setMessage('Failed to load user profile');
+      setMessageColor('red');
+    }
+  };
+
+  // 3. 页面跳转到指定用户主页的辅助函数
+  const viewOtherProfile = (userId: string) => {
+    setCurrentView('other-profile');
+    window.history.pushState({}, '', `/profile/${userId}`);
+    fetchOtherProfile(userId);
+  };
+
 
   // 6. Generate/Enable 2FA (get QR code)
   const handleGenerate2FA = async () => {
@@ -371,22 +423,35 @@ export default function App() {
 
         {/* View Renderer */}
         {currentView === 'home' && (
-          <div style={{ textAlign: 'center' }}>
-            <h2>Welcome to ft_transcendence</h2>
-            <p style={{ color: '#555', marginTop: '10px' }}>
-              This is a functional demo page showcasing Authentication, 42 OAuth, and 2FA features.
-            </p>
-            {userProfile ? (
-              <div style={{ marginTop: '20px' }}>
-                <p style={{ color: 'green' }}>Logged in as: <strong>{userProfile.username}</strong></p>
-                <button style={styles.button} onClick={() => navigateTo('profile')}>Go to Profile & 2FA Settings</button>
-              </div>
-            ) : (
-              <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-                <button style={styles.button} onClick={() => navigateTo('login')}>Login (/login)</button>
-                <button style={{ ...styles.button, backgroundColor: '#6c757d' }} onClick={() => navigateTo('register')}>Register (/register)</button>
-              </div>
-            )}
+          <div>
+            <h2>Welcome to Home Page</h2>
+            <p>Click on any user's avatar below to view their public profile:</p>
+
+            {/* 👥 用户头像列表展示区 */}
+            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', marginTop: '20px' }}>
+              {userList.map((user) => (
+                <div
+                  key={user.id}
+                  onClick={() => viewOtherProfile(user.id)}
+                  style={{ textAlign: 'center', cursor: 'pointer', width: '80px' }}
+                >
+                  {user.avatarUrl ? (
+                    <img
+                      src={`http://localhost:3000${user.avatarUrl}`}
+                      alt={user.username}
+                      style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #007bff', marginBottom: '5px' }}
+                    />
+                  ) : (
+                    <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 5px auto', color: '#6c757d', fontWeight: 'bold' }}>
+                      {user.username.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                  <div style={{ fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#333' }}>
+                    {user.displayName || user.username}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -518,9 +583,15 @@ export default function App() {
                   style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', marginBottom: '10px', border: '2px solid #007bff' }}
                 />
               ) : (
-                <div style={{ width: '90px', height: '90px', borderRadius: '50%', backgroundColor: '#e9ecef', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px', color: '#6c757d' }}>
-                  No Image
-                </div>
+                <div
+                  style={{
+                    width: '90px',
+                    height: '90px',
+                    borderRadius: '50%',
+                    backgroundColor: '#e9ecef',
+                    margin: '0 auto 15px auto'
+                  }}
+                />
               )}
               <div>
                 <label style={{ ...styles.buttonSecondary, display: 'inline-block', cursor: 'pointer', padding: '6px 12px', fontSize: '13px' }}>
@@ -608,6 +679,49 @@ export default function App() {
                 </form>
               </div>
             )}
+          </div>
+        )}
+
+        {currentView === 'other-profile' && (
+          <div style={{ textAlign: 'center' }}>
+            <h2>User Public Profile</h2>
+            {otherUserProfile ? (
+              <div>
+                {/* 头像展示 */}
+                {otherUserProfile.avatarUrl ? (
+                  <img
+                    src={`http://localhost:3000${otherUserProfile.avatarUrl}`}
+                    alt="Avatar"
+                    style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', marginBottom: '15px', border: '2px solid #007bff' }}
+                  />
+                ) : (
+                  <div style={{ width: '90px', height: '90px', borderRadius: '50%', backgroundColor: '#e9ecef', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '15px', color: '#6c757d' }}>
+                    No Image
+                  </div>
+                )}
+
+                <p><strong>Username:</strong> {otherUserProfile.username}</p>
+                <p><strong>Display Name:</strong> {otherUserProfile.displayName || 'None'}</p>
+                <p><strong>Bio:</strong> {otherUserProfile.bio || 'This user has no bio yet.'}</p>
+                <p><strong>Language:</strong> {otherUserProfile.language}</p>
+                <p><strong>Role:</strong> {otherUserProfile.role}</p>
+                <p style={{ fontSize: '12px', color: '#666', marginTop: '15px' }}>
+                  Joined: {new Date(otherUserProfile.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            ) : (
+              <p style={{ color: '#666' }}>Loading user profile...</p>
+            )}
+
+            <button
+              style={{ ...styles.buttonSecondary, marginTop: '20px' }}
+              onClick={() => {
+                setCurrentView('home');
+                window.history.pushState({}, '', '/');
+              }}
+            >
+              Back to Home
+            </button>
           </div>
         )}
         {message && <p style={{ color: messageColor, textAlign: 'center', marginTop: '15px', fontSize: '14px' }}>{message}</p>}

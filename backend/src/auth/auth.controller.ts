@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Patch, Req, UseGuards, Query, Res, HttpStatus, NotFoundException, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Body, Controller, Get, Post, Patch, Req, UseGuards, Query, Res, HttpStatus, NotFoundException, UseInterceptors, UploadedFile, Param } from '@nestjs/common';
 import type { Request } from 'express';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -137,6 +137,16 @@ export class AuthController {
     }
     const avatarUrl = `/uploads/${file.filename}`;
     return this.authService.updateAvatar(req.user.userId, avatarUrl);
+  }
+
+  @Get('users/:id')
+  async getUserPublicProfile(@Param('id') id: string) {
+    return this.authService.getUserPublicProfile(id);
+  }
+
+  @Get('users')
+  async getAllUsers() {
+    return this.authService.getAllPublicUsers();
   }
 
   // 1. Redirect user to 42 official authorization page
