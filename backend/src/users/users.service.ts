@@ -1,10 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfileDto } from '../auth/dto/auth.dto';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   // 1. 获取所有公开用户列表
   async getAllPublicUsers() {
@@ -81,10 +83,34 @@ export class UsersService {
   }
 
   // 5. 更新头像
-  async updateAvatar(userId: string, avatarUrl: string) {
+
+
+  // 在更新头像的方法中：
+  async updateAvatar(userId: string, newAvatarUrl: string) {
+    // 1. 先查出该用户当前的旧头像路径
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { avatarUrl: true },
+    });
+
+    if (currentUser?.avatarUrl) {
+      // 假设 avatarUrl 格式如 `/uploads/123456.jpg`
+      const oldFilePath = path.join(process.cwd(), currentUser.avatarUrl);
+
+      // 2. 如果旧文件存在，则从磁盘中删除
+      if (fs.existsSync(oldFilePath)) {
+        try {
+          fs.unlinkSync(oldFilePath);
+        } catch (err) {
+          console.error('Failed to delete old avatar file:', err);
+        }
+      }
+    }
+
+    // 3. 更新数据库中的新头像地址
     const updated = await this.prisma.user.update({
       where: { id: userId },
-      data: { avatarUrl },
+      data: { avatarUrl: newAvatarUrl },
       select: {
         id: true,
         username: true,
