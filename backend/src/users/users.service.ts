@@ -1,34 +1,104 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service.js';
-import type { Prisma, User } from '../generated/prisma/client.js';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { UpdateProfileDto } from '../auth/dto/auth.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    userWhereUniqueInput: Prisma.UserWhereUniqueInput,
-  ): Promise<User | null> {
-    return this.prisma.user.findUnique({
-      where: userWhereUniqueInput,
+  // 1. 获取所有公开用户列表
+  async getAllPublicUsers() {
+    return this.prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        displayName: true,
+        avatarUrl: true,
+      },
     });
   }
 
-  async findByUsername(username: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
-      where: { username },
+  // 2. 获取指定用户的公开资料
+  async getUserPublicProfile(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
     });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const { passwordHash, twoFactorSecret, email, ...publicProfile } = user;
+    return publicProfile;
   }
 
-  async findByOauth42Id(oauth42Id: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
-      where: { oauth42Id },
+  // 3. 获取当前登录用户的完整资料 (对应原 /auth/profile)
+  async getProfile(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        username: true,
+        displayName: true,
+        email: true,
+        avatarUrl: true,
+        bio: true,
+        language: true,
+        role: true,
+        twoFactorEnabled: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
   }
 
-  async createUser(data: Prisma.UserCreateInput): Promise<User> {
-    return this.prisma.user.create({
-      data,
+  // 4. 更新当前登录用户资料
+  async updateProfile(userId: string, updateDto: UpdateProfileDto) {
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: updateDto,
+      select: {
+        id: true,
+        username: true,
+        displayName: true,
+        email: true,
+        avatarUrl: true,
+        bio: true,
+        language: true,
+        role: true,
+        twoFactorEnabled: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
+    return { message: 'Profile updated successfully', user: updated };
+  }
+
+  // 5. 更新头像
+  async updateAvatar(userId: string, avatarUrl: string) {
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: { avatarUrl },
+      select: {
+        id: true,
+        username: true,
+        displayName: true,
+        email: true,
+        avatarUrl: true,
+        bio: true,
+        language: true,
+        role: true,
+        twoFactorEnabled: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+    return { message: 'Avatar updated successfully', user: updated };
   }
 }

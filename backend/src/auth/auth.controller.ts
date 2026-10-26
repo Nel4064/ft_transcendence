@@ -72,78 +72,7 @@ export class AuthController {
     return this.authService.turnOffTwoFactorAuthentication(req.user.userId, dto.code);
   }
 
-  // Protected test endpoint
-  @Get('profile')
-  @UseGuards(JwtAuthGuard)
-  async getProfile(@Req() req: AuthenticatedRequest) {
-    const userId = req.user.userId;
-
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        username: true,
-        displayName: true,
-        email: true,
-        avatarUrl: true,          
-        bio: true,                
-        language: true,           
-        role: true,               
-        twoFactorEnabled: true,  
-        createdAt: true,          
-        updatedAt: true,        
-        passwordHash: false,
-        twoFactorSecret: false,
-      },
-    });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    return {
-      message: 'Successfully retrieved full profile',
-      user,
-    };
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Patch('profile')
-  async updateProfile(@Req() req: AuthenticatedRequest, @Body() updateDto: UpdateProfileDto) {
-    return this.authService.updateProfile(req.user.userId, updateDto);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Post('profile/avatar')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads', 
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, uniqueSuffix + extname(file.originalname));
-        },
-      }),
-    }),
-  )
-  async uploadAvatar(@Req() req: AuthenticatedRequest, @UploadedFile() file: Express.Multer.File) {
-    if (!file) {
-      throw new Error('No file uploaded');
-    }
-    const avatarUrl = `/uploads/${file.filename}`;
-    return this.authService.updateAvatar(req.user.userId, avatarUrl);
-  }
-
-  @Get('users/:id')
-  async getUserPublicProfile(@Param('id') id: string) {
-    return this.authService.getUserPublicProfile(id);
-  }
-
-  @Get('users')
-  async getAllUsers() {
-    return this.authService.getAllPublicUsers();
-  }
-
+  
   // Redirect user to 42 official authorization page
   @Get('oauth/42')
   redirectTo42(@Res() res: Response) {

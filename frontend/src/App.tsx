@@ -12,6 +12,7 @@ interface UserProfile {
 }
 
 const API_BASE = 'http://localhost:3000/api/auth';
+const USERS_API = 'http://localhost:3000/api/users';
 
 export default function App() {
   // Determine initial view based on current browser pathname
@@ -43,27 +44,11 @@ export default function App() {
 
   // 2FA binding related states
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
-  // 在 App 组件内添加这两个状态
   const [displayName, setDisplayName] = useState<string>('');
   const [bio, setBio] = useState<string>('');
   const [language, setLanguage] = useState<string>('');
-
   const [otherUserProfile, setOtherUserProfile] = useState<any | null>(null);
-
-  // 1. 新增用户列表状态
   const [userList, setUserList] = useState<any[]>([]);
-
-  const fetchUserList = async () => {
-    try {
-      const response = await fetch(`${API_BASE}/users`);
-      const data = await response.json();
-      if (response.ok) {
-        setUserList(data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch user list', error);
-    }
-  };
 
   // Helper function to change view and update browser URL without page reload
   const navigateTo = (view: 'home' | 'login' | 'register' | 'profile') => {
@@ -99,7 +84,6 @@ export default function App() {
       return;
     }
 
-    // 🌐 无论是否登录，只要在首页都可以加载公开的用户头像列表
     fetchUserList();
 
     if (tokenFromUrl) {
@@ -227,14 +211,13 @@ export default function App() {
   // 5. Fetch profile
   const fetchProfile = async (token: string) => {
     try {
-      const response = await fetch(`${API_BASE}/profile`, {
+      const response = await fetch(`${USERS_API}/me`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       const data = await response.json();
       if (response.ok) {
         const profile = data.user || data;
         setUserProfile(profile);
-        // 🔑 初始化输入框的值
         setDisplayName(profile.displayName || '');
         setBio(profile.bio || '');
         setLanguage(profile.language || '');
@@ -252,8 +235,8 @@ export default function App() {
     const token = localStorage.getItem('jwt_token');
     setMessage('Updating profile...');
     try {
-      const response = await fetch(`${API_BASE}/profile`, {
-        method: 'PATCH', // 或者 PUT，取决于后端定义
+      const response = await fetch(`${USERS_API}/me`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -286,10 +269,10 @@ export default function App() {
     const token = localStorage.getItem('jwt_token');
     setMessage('Uploading avatar...');
     try {
-      const response = await fetch(`${API_BASE}/profile/avatar`, {
+      const response = await fetch(`${USERS_API}/me/avatar`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
-        body: formData, // 注意：传 FormData 时不需要手动设置 Content-Type，浏览器会自动处理
+        body: formData,
       });
       const data = await response.json();
       if (response.ok) {
@@ -307,10 +290,27 @@ export default function App() {
     }
   };
 
+  const viewOtherProfile = (userId: string) => {
+    setCurrentView('other-profile');
+    window.history.pushState({}, '', `/profile/${userId}`);
+    fetchOtherProfile(userId);
+  };
+
+  const fetchUserList = async () => {
+    try {
+      const response = await fetch(USERS_API);
+      const data = await response.json();
+      if (response.ok) {
+        setUserList(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch user list', error);
+    }
+  };
+
   const fetchOtherProfile = async (userId: string) => {
     try {
-      // 注意路径要对应后端的 /api/auth/users/:id
-      const response = await fetch(`${API_BASE}/users/${userId}`);
+      const response = await fetch(`${USERS_API}/${userId}`);
       const data = await response.json();
       if (response.ok) {
         setOtherUserProfile(data);
@@ -324,14 +324,6 @@ export default function App() {
       setMessageColor('red');
     }
   };
-
-  // 3. 页面跳转到指定用户主页的辅助函数
-  const viewOtherProfile = (userId: string) => {
-    setCurrentView('other-profile');
-    window.history.pushState({}, '', `/profile/${userId}`);
-    fetchOtherProfile(userId);
-  };
-
 
   // 6. Generate/Enable 2FA (get QR code)
   const handleGenerate2FA = async () => {
@@ -652,7 +644,7 @@ export default function App() {
 
             <hr style={styles.divider} />
 
-            {/* 2FA 模块保持不变 */}
+            {/* 2FA unchanged */}
             <p><strong>Two-Step Verification (2FA):</strong> {userProfile.twoFactorEnabled ? 'Enabled ✅' : 'Disabled ❌'}</p>
 
             {!userProfile.twoFactorEnabled && !qrCodeUrl && (

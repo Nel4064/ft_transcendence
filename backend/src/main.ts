@@ -8,7 +8,7 @@ async function bootstrap() {
 
   // 🌐 开启 CORS 跨域支持
   app.enableCors({
-    origin: true, 
+    origin: 'http://localhost:1024',
     credentials: true,
   });
   app.setGlobalPrefix('api');
