@@ -740,6 +740,48 @@ export default function App() {
             )}
           </div>
         )}
+        {/* 查看他人公开主页视图 */}
+        {currentView === 'other-profile' && (
+          <div style={{ textAlign: 'center' }}>
+            <h2>User Public Profile</h2>
+            {otherUserProfile ? (
+              <div>
+                {otherUserProfile.avatarUrl ? (
+                  <img
+                    src={`http://localhost:3000${otherUserProfile.avatarUrl}`}
+                    alt="Avatar"
+                    style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', marginBottom: '15px', border: '2px solid #007bff' }}
+                  />
+                ) : (
+                  <div style={{ width: '90px', height: '90px', borderRadius: '50%', backgroundColor: '#e9ecef', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '15px', color: '#6c757d' }}>
+                    No Image
+                  </div>
+                )}
+
+                <p><strong>Username:</strong> {otherUserProfile.username}</p>
+                <p><strong>Display Name:</strong> {otherUserProfile.displayName || 'None'}</p>
+                <p><strong>Bio:</strong> {otherUserProfile.bio || 'This user has no bio yet.'}</p>
+                <p><strong>Language:</strong> {otherUserProfile.language}</p>
+                <p><strong>Role:</strong> {otherUserProfile.role}</p>
+                <p style={{ fontSize: '12px', color: '#666', marginTop: '15px' }}>
+                  Joined: {new Date(otherUserProfile.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            ) : (
+              <p style={{ color: '#666' }}>Loading user profile...</p>
+            )}
+
+            <button
+              style={{ ...styles.buttonSecondary, marginTop: '20px' }}
+              onClick={() => {
+                setCurrentView('home');
+                window.history.pushState({}, '', '/');
+              }}
+            >
+              Back to Home
+            </button>
+          </div>
+        )}
         {message && <p style={{ color: messageColor, textAlign: 'center', marginTop: '15px', fontSize: '14px' }}>{message}</p>}
       </div>
     </div>
