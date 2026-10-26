@@ -1,4 +1,5 @@
-import { IsString, IsNotEmpty, IsEmail, IsOptional, MinLength, Length } from 'class-validator';
+import { IsString, IsNotEmpty, IsEmail, IsEnum, IsOptional, MinLength, Length } from 'class-validator';
+import { Language } from '../../generated/prisma/client.js';
 
 export class RegisterDto {
   @IsString()
@@ -21,7 +22,7 @@ export class LoginDto {
   @IsString()
   @IsNotEmpty({ message: 'Username or Email should not be empty' })
   @MinLength(2, { message: 'Username or Email must be at least 2 characters long' })
-  identifier: string; 
+  identifier: string;
 
   @IsString()
   @IsNotEmpty({ message: 'Password should not be empty' })
@@ -45,4 +46,18 @@ export class TwoFactorLoginDto {
   @IsNotEmpty({ message: '2FA code should not be empty' })
   @Length(6, 6, { message: '2FA code must be exactly 6 digits' })
   code: string;
+}
+
+export class UpdateProfileDto {
+  @IsOptional()
+  @IsString()
+  displayName?: string;
+
+  @IsOptional()
+  @IsString()
+  bio?: string;
+
+  @IsOptional()
+  @IsEnum(Language) // 👈 允许接收 EN, FR, ES 等枚举值
+  language?: Language;
 }

@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Post, Req, UseGuards, Query, Res, HttpStatus, NotFoundException } from '@nestjs/common';
+import { Body, Controller, Get, Post, Patch, Req, UseGuards, Query, Res, HttpStatus, NotFoundException } from '@nestjs/common';
 import type { Request } from 'express';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto, UpdateProfileDto } from './dto/auth.dto';
 import { TwoFactorCodeDto, TwoFactorLoginDto } from './dto/auth.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import * as fs from 'fs';
@@ -109,6 +109,12 @@ export class AuthController {
     };
   }
 
+  @UseGuards(JwtAuthGuard) // 确保有鉴权守卫
+  @Patch('profile')
+  async updateProfile(@Req() req: AuthenticatedRequest, @Body() updateDto: UpdateProfileDto) {
+    return this.authService.updateProfile(req.user.userId, updateDto);
+  }
+
   // 1. Redirect user to 42 official authorization page
   @Get('oauth/42')
   redirectTo42(@Res() res: Response) {
@@ -136,7 +142,7 @@ export class AuthController {
         return res.redirect('http://localhost:1024/?error=NoCodeProvided'); // 👈 改为前端端口
       }
 
-      const redirectUri ='http://127.0.0.1:3000/api/auth/oauth/42/callback';
+      const redirectUri = 'http://127.0.0.1:3000/api/auth/oauth/42/callback';
 
       const fortyTwoToken = await this.authService.getFortyTwoToken(code, redirectUri);
       const ftUser = await this.authService.getFortyTwoUser(fortyTwoToken);

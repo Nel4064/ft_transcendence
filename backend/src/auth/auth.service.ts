@@ -127,6 +127,20 @@ export class AuthService {
         };
     }
 
+    async updateProfile(userId: string, dto: { displayName?: string; bio?: string; language?: any}) {
+        const updatedUser = await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                displayName: dto.displayName,
+                bio: dto.bio,
+                language: dto.language
+            },
+        });
+
+        const { passwordHash, ...result } = updatedUser;
+        return { message: 'Profile updated successfully', user: result };
+    }
+
     // ==================== 2FA (Two-Factor Authentication) Methods ====================
 
     // 1. Generate 2FA secret and QR code

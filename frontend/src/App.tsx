@@ -23,25 +23,29 @@ export default function App() {
   };
 
   const [currentView, setCurrentView] = useState<'home' | 'login' | 'register' | 'profile'>(getInitialView());
-  
+
   // Form states
   const [username, setUsername] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const passwordRef = useRef<HTMLInputElement>(null);
-  
+
   // Messages and user profile states
   const [message, setMessage] = useState<string>('');
   const [messageColor, setMessageColor] = useState<string>('green');
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   // 2FA login related states
-  const [requires2FA, setRequires2FA] = useState<boolean>(false); 
-  const [twoFactorUserId, setTwoFactorUserId] = useState<string>(''); 
-  const [otpCode, setOtpCode] = useState<string>(''); 
-  
+  const [requires2FA, setRequires2FA] = useState<boolean>(false);
+  const [twoFactorUserId, setTwoFactorUserId] = useState<string>('');
+  const [otpCode, setOtpCode] = useState<string>('');
+
   // 2FA binding related states
-  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null); 
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  // 在 App 组件内添加这两个状态
+  const [displayName, setDisplayName] = useState<string>('');
+  const [bio, setBio] = useState<string>('');
+  const [language, setLanguage] = useState<string>('');
 
   // Helper function to change view and update browser URL without page reload
   const navigateTo = (view: 'home' | 'login' | 'register' | 'profile') => {
@@ -92,7 +96,7 @@ export default function App() {
   }, []);
 
   // 1. Register
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMessage('Registering...');
     try {
@@ -117,7 +121,7 @@ export default function App() {
   };
 
   // 2. Login step 1 (verify credentials)
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMessage('Logging in...');
     try {
@@ -131,7 +135,7 @@ export default function App() {
       if (response.ok) {
         if (data.requiresTwoFactor) {
           setRequires2FA(true);
-          setTwoFactorUserId(data.userId || ''); 
+          setTwoFactorUserId(data.userId || '');
           setMessageColor('orange');
           setMessage(data.message || 'Please enter the 2FA code');
           return;
@@ -154,17 +158,17 @@ export default function App() {
   };
 
   // 4. Login step 2: Submit 2FA code to complete final login (Supports both standard & 42 OAuth)
-  const handleVerify2FALogin = async (e: React.FormEvent) => {
+  const handleVerify2FALogin = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMessage('Verifying 2FA...');
     try {
-      const response = await fetch(`${API_BASE}/2fa/authenticate`, { 
+      const response = await fetch(`${API_BASE}/2fa/authenticate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          userId: twoFactorUserId, 
+        body: JSON.stringify({
+          userId: twoFactorUserId,
           identifier: username || undefined, // Safe fallback for 42 OAuth users where username state might be empty
-          code: otpCode 
+          code: otpCode
         }),
       });
       const data = await response.json();
@@ -202,12 +206,45 @@ export default function App() {
       if (response.ok) {
         const profile = data.user || data;
         setUserProfile(profile);
+        // 🔑 初始化输入框的值
+        setDisplayName(profile.displayName || '');
+        setBio(profile.bio || '');
+        setLanguage(profile.language || '');
       } else {
         localStorage.removeItem('jwt_token');
         setUserProfile(null);
       }
     } catch (error) {
       console.error('Error fetching profile', error);
+    }
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = localStorage.getItem('jwt_token');
+    setMessage('Updating profile...');
+    try {
+      const response = await fetch(`${API_BASE}/profile`, {
+        method: 'PATCH', // 或者 PUT，取决于后端定义
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ displayName, bio, language }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setMessage('Profile updated successfully!');
+        setMessageColor('green');
+        const updated = data.user || data;
+        setUserProfile(updated);
+      } else {
+        setMessage('Failed to update: ' + (data.message || 'Error'));
+        setMessageColor('red');
+      }
+    } catch (error) {
+      setMessage('Network error');
+      setMessageColor('red');
     }
   };
 
@@ -221,7 +258,7 @@ export default function App() {
       });
       const data = await response.json();
       if (response.ok) {
-        setQrCodeUrl(data.qrCodeUrl); 
+        setQrCodeUrl(data.qrCodeUrl);
         setMessage('Please scan the QR code below using Google Authenticator');
         setMessageColor('green');
       } else {
@@ -235,15 +272,15 @@ export default function App() {
   };
 
   // 7. Confirm enabling 2FA
-  const handleTurnOn2FA = async (e: React.FormEvent) => {
+  const handleTurnOn2FA = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const token = localStorage.getItem('jwt_token');
     try {
       const response = await fetch(`${API_BASE}/2fa/turn-on`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` 
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ code: otpCode }),
       });
@@ -323,7 +360,7 @@ export default function App() {
         {currentView === 'login' && (
           <div>
             <h2>{requires2FA ? 'Two-Factor Authentication (2FA)' : 'User Login (/login)'}</h2>
-            
+
             {requires2FA ? (
               <form onSubmit={handleVerify2FALogin}>
                 <p style={{ textAlign: 'center', color: '#666', marginBottom: '15px' }}>
@@ -341,9 +378,9 @@ export default function App() {
                   />
                 </div>
                 <button type="submit" style={styles.button}>Verify and Login</button>
-                <button 
-                  type="button" 
-                  style={{ ...styles.buttonSecondary, marginTop: '10px' }} 
+                <button
+                  type="button"
+                  style={{ ...styles.buttonSecondary, marginTop: '10px' }}
                   onClick={() => { setRequires2FA(false); setOtpCode(''); }}
                 >
                   Back to Login
@@ -378,9 +415,9 @@ export default function App() {
 
                 <button type="submit" style={styles.button}>Login</button>
 
-                <button 
-                  type="button" 
-                  style={{ ...styles.button, backgroundColor: '#00babc', marginTop: '10px' }} 
+                <button
+                  type="button"
+                  style={{ ...styles.button, backgroundColor: '#00babc', marginTop: '10px' }}
                   onClick={handle42Login}
                 >
                   Sign in with 42 Intranet
@@ -437,10 +474,61 @@ export default function App() {
 
         {currentView === 'profile' && userProfile && (
           <div>
-            <h2>Profile & 2FA Settings (/profile)</h2>
-            <p><strong>Username:</strong> {userProfile.username}</p>
-            <p><strong>Email:</strong> {userProfile.email}</p>
-            <p><strong>Role:</strong> {userProfile.role}</p>
+            <h2>Profile & 2FA Settings</h2>
+
+            {/* 资料修改表单（包含语言选择） */}
+            <form onSubmit={handleUpdateProfile} style={{ marginBottom: '20px' }}>
+              <div style={styles.formGroup}>
+                <label>Username (Read-only)</label>
+                <input type="text" value={userProfile.username} disabled style={{ ...styles.input, backgroundColor: '#e9ecef' }} />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label>Email (Read-only)</label>
+                <input type="email" value={userProfile.email} disabled style={{ ...styles.input, backgroundColor: '#e9ecef' }} />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label>Display Name</label>
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Enter your display name"
+                  style={styles.input}
+                />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label>Bio</label>
+                <textarea
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Write something about yourself..."
+                  style={{ ...styles.input, height: '60px', resize: 'vertical' }}
+                />
+              </div>
+
+              {/* 🌐 新增：语言选择下拉菜单 */}
+              <div style={styles.formGroup}>
+                <label>Language</label>
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  style={styles.input}
+                >
+                  <option value="EN">English (EN)</option>
+                  <option value="FR">Français (FR)</option>
+                  <option value="ES">Español (ES)</option>
+                </select>
+              </div>
+
+              <button type="submit" style={styles.button}>Save Profile Changes</button>
+            </form>
+
+            <hr style={styles.divider} />
+
+            {/* 2FA 模块保持不变 */}
             <p><strong>Two-Step Verification (2FA):</strong> {userProfile.twoFactorEnabled ? 'Enabled ✅' : 'Disabled ❌'}</p>
 
             {!userProfile.twoFactorEnabled && !qrCodeUrl && (
@@ -469,7 +557,6 @@ export default function App() {
             )}
           </div>
         )}
-
         {message && <p style={{ color: messageColor, textAlign: 'center', marginTop: '15px', fontSize: '14px' }}>{message}</p>}
       </div>
     </div>
