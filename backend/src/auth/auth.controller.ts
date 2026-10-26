@@ -76,10 +76,8 @@ export class AuthController {
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   async getProfile(@Req() req: AuthenticatedRequest) {
-    // 1. 从 JWT 验证后挂载的 req.user 中拿到用户 ID（假设你的 payload 里的字段叫 userId 或 sub）
     const userId = req.user.userId;
 
-    // 2. 通过 Prisma 去数据库查询该用户的完整信息
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -87,15 +85,13 @@ export class AuthController {
         username: true,
         displayName: true,
         email: true,
-        avatarUrl: true,          // 头像
-        bio: true,                // 个人简介
-        language: true,           // 语言偏好
-        role: true,               // 用户角色 (USER / ADMIN)
-        twoFactorEnabled: true,   // 是否开启 2FA
-        createdAt: true,          // 注册时间
-        updatedAt: true,          // 最后更新时间
-
-
+        avatarUrl: true,          
+        bio: true,                
+        language: true,           
+        role: true,               
+        twoFactorEnabled: true,  
+        createdAt: true,          
+        updatedAt: true,        
         passwordHash: false,
         twoFactorSecret: false,
       },
@@ -105,14 +101,13 @@ export class AuthController {
       throw new NotFoundException('User not found');
     }
 
-    // 3. 返回包含丰富信息的对象
     return {
       message: 'Successfully retrieved full profile',
       user,
     };
   }
 
-  @UseGuards(JwtAuthGuard) // 确保有鉴权守卫
+  @UseGuards(JwtAuthGuard)
   @Patch('profile')
   async updateProfile(@Req() req: AuthenticatedRequest, @Body() updateDto: UpdateProfileDto) {
     return this.authService.updateProfile(req.user.userId, updateDto);
@@ -123,10 +118,10 @@ export class AuthController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: './uploads', // 保存在项目根目录下的 uploads 文件夹
+        destination: './uploads', 
         filename: (req, file, cb) => {
           const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, uniqueSuffix + extname(file.originalname)); // 重命名防止冲突
+          cb(null, uniqueSuffix + extname(file.originalname));
         },
       }),
     }),
@@ -149,7 +144,7 @@ export class AuthController {
     return this.authService.getAllPublicUsers();
   }
 
-  // 1. Redirect user to 42 official authorization page
+  // Redirect user to 42 official authorization page
   @Get('oauth/42')
   redirectTo42(@Res() res: Response) {
     try {
@@ -164,7 +159,7 @@ export class AuthController {
     }
   }
 
-  // 2. Receive 42 callback code, exchange for token, fetch user, issue JWT and redirect to frontend
+  // Receive 42 callback code, exchange for token, fetch user, issue JWT and redirect to frontend
   @Get('oauth/42/callback')
   async fortyTwoAuthRedirect(
     @Req() req: Request,
@@ -182,7 +177,7 @@ export class AuthController {
       const ftUser = await this.authService.getFortyTwoUser(fortyTwoToken);
       const result = await this.authService.loginOrRegister42User(ftUser);
 
-      const frontendUrl = 'http://localhost:1024'; // 👈 必须指向您的前端真实端口（如 1024）
+      const frontendUrl = 'http://localhost:1024';
 
       if (result.requiresTwoFactor) {
         return res.redirect(`${frontendUrl}/?requiresTwoFactor=true&userId=${result.userId}`);
@@ -191,8 +186,8 @@ export class AuthController {
       return res.redirect(`${frontendUrl}/?token=${result.access_token}`);
 
     } catch (error) {
-      console.error('42 OAuth 登录失败:', error);
-      return res.redirect('http://localhost:1024/?error=OAuthFailed'); // 👈 改为前端端口
+      console.error('42 OAuth login failed:', error);
+      return res.redirect('http://localhost:1024/?error=OAuthFailed');
     }
   }
 }

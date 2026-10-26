@@ -427,7 +427,7 @@ export default function App() {
             <h2>Welcome to Home Page</h2>
             <p>Click on any user's avatar below to view their public profile:</p>
 
-            {/* 👥 用户头像列表展示区 */}
+            {/* 👥 users avatar list */}
             <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', marginTop: '20px' }}>
               {userList.map((user) => (
                 <div
@@ -574,7 +574,7 @@ export default function App() {
           <div>
             <h2>Profile & 2FA Settings</h2>
 
-            {/* 🖼️ 头像展示与上传区域 */}
+            {/* avatar upload area*/}
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
               {userProfile.avatarUrl ? (
                 <img
@@ -601,7 +601,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* 原有的资料修改表单 */}
+            {/* edit profile */}
             <form onSubmit={handleUpdateProfile} style={{ marginBottom: '20px' }}>
               <div style={styles.formGroup}>
                 <label>Username (Read-only)</label>
@@ -687,7 +687,7 @@ export default function App() {
             <h2>User Public Profile</h2>
             {otherUserProfile ? (
               <div>
-                {/* 头像展示 */}
+                {/* avatar*/}
                 {otherUserProfile.avatarUrl ? (
                   <img
                     src={`http://localhost:3000${otherUserProfile.avatarUrl}`}

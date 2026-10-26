@@ -18,7 +18,6 @@ export class AuthService {
     ) { }
 
     async register(dto: RegisterDto & { identifier?: string }) {
-        // 兼容前端传进来的 username 或 identifier
         const username = dto.username || dto.identifier;
 
         if (!username) {
@@ -160,7 +159,6 @@ export class AuthService {
             throw new NotFoundException('User not found');
         }
 
-        // 🔒 严格过滤掉敏感隐私数据（如 email, passwordHash, twoFactorSecret 等）
         const { passwordHash, twoFactorSecret, email, ...publicProfile } = user;
         return publicProfile;
     }

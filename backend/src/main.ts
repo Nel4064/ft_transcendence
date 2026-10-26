@@ -8,11 +8,10 @@ async function bootstrap() {
 
   // 🌐 开启 CORS 跨域支持
   app.enableCors({
-    origin: true, // 允许所有来源（开发环境推荐，或者指定具体的客户端地址）
-    credentials: true, // 允许前端携带 Cookie 或 Authorization 请求头
+    origin: true, 
+    credentials: true,
   });
   app.setGlobalPrefix('api');
-  // 托管 uploads 文件夹，使其可以通过 http://localhost:3000/uploads/... 访问
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads',
   });
