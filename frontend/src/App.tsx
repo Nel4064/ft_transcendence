@@ -748,7 +748,15 @@ export default function App() {
 
 const styles: { [key: string]: React.CSSProperties } = {
   container: { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#f4f4f9' },
-  card: { background: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', width: '420px' },
+  card: { 
+    background: 'white', 
+    padding: '30px', 
+    borderRadius: '8px', 
+    boxShadow: '0 4px 10px rgba(0,0,0,0.1)', 
+    width: '420px',
+    maxHeight: '90vh',      // 限制卡片最高占屏幕的 90%
+    overflowY: 'auto'       // 内容超出时自动显示垂直滚动条
+  },
   navBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' },
   navLink: { background: 'none', border: 'none', color: '#007bff', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' },
   divider: { border: '0', height: '1px', backgroundColor: '#eee', marginBottom: '20px' },
