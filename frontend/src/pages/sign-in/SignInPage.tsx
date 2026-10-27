@@ -1,7 +1,5 @@
-
-import { useEffect, useState } from 'react'
-import type { FormEvent } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useState, useEffect, type FormEvent } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 const inputClass =
@@ -20,47 +18,42 @@ function SignInPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  // 处理 42 OAuth 回调：正式 Token 或 2FA challenge
+  // 1. 核心：完美对齐 App-test.tsx 的参数捕获逻辑
   useEffect(() => {
     const token = searchParams.get('token')
-    const requiresTwoFactor =
-      searchParams.get('requiresTwoFactor') === 'true'
+    // 同时兼容字符串或布尔值的判定
+    const requiresTwoFactor = searchParams.get('requiresTwoFactor') === 'true'
     const callbackUserId = searchParams.get('userId')
     const oauthError = searchParams.get('error')
 
+    console.log('SignInPage 检测到的 URL 参数:', { token, requiresTwoFactor, callbackUserId, oauthError })
+
     if (token) {
       localStorage.setItem('token', token)
+      localStorage.setItem('jwt_token', token)
       navigate('/', { replace: true })
       return
     }
 
+    // 如果 42 OAuth 带了 2FA 参数进来，直接强行激活 2FA 状态机
     if (requiresTwoFactor && callbackUserId) {
+      console.log('成功捕获 42 OAuth 2FA 挑战，准备展示验证码输入框，userId:', callbackUserId)
       setUserId(callbackUserId)
       setRequires2FA(true)
-      setError('')
-      navigate(
-        {
-          pathname: window.location.pathname,
-          search: '',
-        },
-        { replace: true },
-      )
+      setError('2FA is enabled. Please enter the 6-digit code from your authenticator app.')
+      
+      // 清理 URL 上的明文参数，防止刷新重复触发
+      window.history.replaceState({}, document.title, window.location.pathname)
       return
     }
 
     if (oauthError) {
-      setError('42 OAuth login failed. Please try again.')
-      navigate(
-        {
-          pathname: window.location.pathname,
-          search: '',
-        },
-        { replace: true },
-      )
+      setError('42 OAuth login failed: ' + oauthError)
+      window.history.replaceState({}, document.title, window.location.pathname)
     }
   }, [searchParams, navigate])
 
-  // 第一步：账号密码登录
+  // 第一步：普通账号密码登录
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError('')
@@ -69,10 +62,11 @@ function SignInPage() {
     try {
       const result = await login(email, password)
 
-      if ('twoFactorRequired' in result && result.twoFactorRequired) {
+      if (result && typeof result === 'object' && 'twoFactorRequired' in result && result.twoFactorRequired) {
         setUserId(result.userId)
         setRequires2FA(true)
         setCode('')
+        setError('Please enter the 6-digit code')
         return
       }
 
@@ -84,7 +78,7 @@ function SignInPage() {
     }
   }
 
-  // 第二步：提交 6 位验证码和 userId
+  // 第二步：提交 6 位验证码和 userId -> 完美触发 /api/auth/2fa/authenticate 这一步
   async function handleVerify2FA(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError('')
@@ -103,6 +97,7 @@ function SignInPage() {
     setSubmitting(true)
 
     try {
+      // 核心：调用你在 AuthContext 里面写好的双参数方法
       await authenticate2fa(code, userId)
       navigate('/', { replace: true })
     } catch (err) {
@@ -115,8 +110,7 @@ function SignInPage() {
   }
 
   function handle42Login() {
-    window.location.href =
-      'http://localhost:3000/api/auth/oauth/42'
+    window.location.href = 'http://localhost:3000/api/auth/oauth/42'
   }
 
   function handleBackToLogin() {
@@ -124,6 +118,9 @@ function SignInPage() {
     setUserId('')
     setCode('')
     setError('')
+    setEmail('')
+    setPassword('')
+    navigate('/signin', { replace: true })
   }
 
   return (
@@ -233,12 +230,12 @@ function SignInPage() {
           {!requires2FA && (
             <p className="text-text-light mt-2">
               New ?{' '}
-              <Link
-                to="/signup"
+              <a
+                href="/signup"
                 className="text-brand hover:text-brand-hover"
               >
                 Create an account
-              </Link>
+              </a>
             </p>
           )}
         </div>

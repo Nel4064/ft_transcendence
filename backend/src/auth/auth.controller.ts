@@ -105,7 +105,7 @@ export class AuthController {
       const ftUser = await this.authService.getFortyTwoUser(fortyTwoToken);
       const result = await this.authService.loginOrRegister42User(ftUser);
 
-      const frontendUrl = 'http://localhost:1024';
+      const frontendUrl = 'http://localhost:1024/signin'; // 👈 改为前端端口
 
       if (result.requiresTwoFactor) {
         return res.redirect(`${frontendUrl}/?requiresTwoFactor=true&userId=${result.userId}`);

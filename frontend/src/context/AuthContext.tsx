@@ -1,4 +1,3 @@
-
 import {
   createContext,
   useContext,
@@ -11,6 +10,7 @@ export type User = {
   id: string
   username: string
   email: string
+  avatarUrl?: string | null
   role: 'USER' | 'ADMIN'
   twoFactorEnabled?: boolean
 }
@@ -18,7 +18,7 @@ export type User = {
 type LoginResult =
   | User
   | {
-      twoFactorRequired: true
+      twoFactorRequired: boolean
       userId: string
     }
 
@@ -51,7 +51,7 @@ export async function apiFetch(
   path: string,
   options: RequestInit = {},
 ): Promise<any> {
-  const token = localStorage.getItem('token')
+  const token = localStorage.getItem('token') || localStorage.getItem('jwt_token')
   const url = `${API_BASE_URL}${normalizeApiPath(path)}`
 
   const headers = new Headers(options.headers)
@@ -95,6 +95,7 @@ function getAccessToken(data: any): string | null {
   return (
     payload?.access_token ??
     payload?.accessToken ??
+    payload?.token ??
     payload?.access_token?.token ??
     null
   )
@@ -122,6 +123,7 @@ export function AuthProvider({
 
         if (urlToken) {
           localStorage.setItem('token', urlToken)
+          localStorage.setItem('jwt_token', urlToken)
 
           params.delete('token')
           const query = params.toString()
@@ -135,7 +137,8 @@ export function AuthProvider({
           )
         }
 
-        if (!localStorage.getItem('token')) {
+        const activeToken = localStorage.getItem('token') || localStorage.getItem('jwt_token')
+        if (!activeToken) {
           return
         }
 
@@ -146,6 +149,7 @@ export function AuthProvider({
         }
       } catch (error) {
         localStorage.removeItem('token')
+        localStorage.removeItem('jwt_token')
 
         if (!cancelled) {
           setUser(null)
@@ -177,18 +181,19 @@ export function AuthProvider({
 
     const payload = data?.data ?? data
 
-    // NestJS 后端实际使用的是 requiresTwoFactor
     if (
       payload?.requiresTwoFactor === true ||
-      payload?.twoFactorRequired === true
+      payload?.twoFactorRequired === true ||
+      payload?.requiresTwoFactor === 'true'
     ) {
       if (!payload.userId) {
         throw new Error('2FA response did not contain userId')
       }
 
+      // 修复点：返回二阶验证状态时，必须同时提供 userId
       return {
         twoFactorRequired: true,
-        userId: payload.userId,
+        userId: String(payload.userId),
       }
     }
 
@@ -200,6 +205,7 @@ export function AuthProvider({
     }
 
     localStorage.setItem('token', accessToken)
+    localStorage.setItem('jwt_token', accessToken)
 
     try {
       const profile = await apiFetch('/users/me')
@@ -209,12 +215,13 @@ export function AuthProvider({
       return userData
     } catch (error) {
       localStorage.removeItem('token')
+      localStorage.removeItem('jwt_token')
       setUser(null)
       throw error
     }
   }
 
-  // 第二步：提交 userId + code，不使用临时 Token
+  // 第二步：提交 userId + code
   async function authenticate2fa(
     code: string,
     userId: string,
@@ -239,6 +246,7 @@ export function AuthProvider({
     }
 
     localStorage.setItem('token', accessToken)
+    localStorage.setItem('jwt_token', accessToken)
 
     try {
       const profile = await apiFetch('/users/me')
@@ -248,6 +256,7 @@ export function AuthProvider({
       return userData
     } catch (error) {
       localStorage.removeItem('token')
+      localStorage.removeItem('jwt_token')
       setUser(null)
       throw error
     }
@@ -255,6 +264,7 @@ export function AuthProvider({
 
   function logout() {
     localStorage.removeItem('token')
+    localStorage.removeItem('jwt_token')
     localStorage.removeItem('temp_token')
     setUser(null)
   }
