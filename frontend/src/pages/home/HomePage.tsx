@@ -1,4 +1,4 @@
-import MoviesList from '../../components/movies/MoviesList'
+import ScreeningsList from '../../components/Screenings/ScreeningsList'
 
 
 function HomePage() {
@@ -15,7 +15,7 @@ function HomePage() {
 						<h2 className="text-3xl text-text">Upcoming Events</h2>
 					</div>
 
-					<MoviesList />
+					<ScreeningsList />
 				</section>
 			</main>
 		</>

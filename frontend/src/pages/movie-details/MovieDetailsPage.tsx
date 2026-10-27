@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import defaultMovie from '../../assets/default-movie.jpg'
 import { normalizeTitle } from '../../utils/normalizeTitle'
+import { apiFetch } from '../../context/AuthContext'
 
 const FEED_URL = 'https://datacinesindes.fr/data-fair/api/v1/datasets/programmation-cinemas/lines'
 
@@ -18,6 +19,39 @@ type Screening = {
 function MovieDetailsPage() {
 	const { title = '' } = useParams()
 	const [screenings, setScreenings] = useState<Screening[]>([])
+	const [created, setCreated] = useState<Set<string>>(new Set())
+
+	// Le backend récupère lui-même les infos de la séance dans le flux à partir de (cineid, showid).
+	// Si l'event existe déjà, on le supprime.
+	async function toggleEvent(s: Screening) {
+		const key = `${s.cineid}-${s.showid}`
+		try {
+			if (created.has(key)) {
+				await apiFetch(`/screenings/${s.cineid}/${encodeURIComponent(s.showid)}`, { method: 'DELETE' })
+				setCreated((prev) => {
+					const next = new Set(prev)
+					next.delete(key)
+					return next
+				})
+			} else {
+				await apiFetch('/screenings', {
+					method: 'POST',
+					body: JSON.stringify({ cineid: s.cineid, showid: s.showid }),
+				})
+				setCreated((prev) => new Set(prev).add(key))
+			}
+		} catch (err) {
+			alert(`Could not update event: ${(err as Error).message}`)
+		}
+	}
+
+	// Events déjà créés, pour que le bouton soit dans le bon état au chargement.
+	useEffect(() => {
+		apiFetch('/screenings')
+			.then((list: { externalCinemaId: number, externalShowId: string }[]) =>
+				setCreated(new Set(list.map((e) => `${e.externalCinemaId}-${e.externalShowId}`))))
+			.catch(() => {})
+	}, [])
 
 	useEffect(() => {
 		// Séances des 7 prochains jours à Paris, puis on garde celles de ce film.
@@ -52,7 +86,11 @@ function MovieDetailsPage() {
 							<p>📅 {new Date(s.showstart).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</p>
 							<p>📍 {s.cineville} · {s.cinenom}</p>
 						</div>
-						<button className="py-2.5 px-3 rounded-md bg-admin hover:bg-admin-hover text-white text-base cursor-pointer">Create Event</button>
+						<button
+							onClick={() => toggleEvent(s)}
+							className="py-2.5 px-3 rounded-md bg-admin hover:bg-admin-hover text-white text-base cursor-pointer">
+							{created.has(`${s.cineid}-${s.showid}`) ? 'Remove Event' : 'Create Event'}
+						</button>
 					</li>
 				))}
 			</ul>

@@ -14,7 +14,7 @@ import { AuthProvider } from './context/AuthContext'
 import ProfilePage from './pages/profile/ProfilePage'
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
 import MovieDetailsPage from './pages/movie-details/MovieDetailsPage'
-
+import ScreenDetailsPage from './pages/screenings-details/ScreenDetailsPage'
 
 function App() {
 	return (
@@ -37,8 +37,10 @@ function App() {
 					<Route path="/activity" element={<ActivityPage />} />
 					<Route path="/calendar" element={<CalendarPage />} />
 					<Route path="/movies/:title" element={<MovieDetailsPage />} />
+					<Route path="/screenings/:id" element={<ScreenDetailsPage />} />
 				</Route>
 
+				{/* Pages réservées aux admins */}
 				<Route element={<ProtectedRoute adminOnly />}>
 					<Route path="/search-movies" element={<SearchMoviesPage />} />
 				</Route>
