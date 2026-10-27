@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { ActivityService } from '../activity/activity.service';
 
 const FEED = 'https://datacinesindes.fr/data-fair/api/v1/datasets/programmation-cinemas/lines';
 const clean = (v?: string | null) => (v && v !== 'null' && v.trim()) || null;
@@ -9,7 +10,11 @@ const VERSION: Record<string, 'VO' | 'VF' | 'VOSTF'> = {
 
 @Injectable()
 export class ScreeningsService {
-  constructor(private readonly prisma: PrismaService) {}
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activity: ActivityService,
+  ) {}
 
   findAll() {
     return this.prisma.screening.findMany({ orderBy: { startsAt: 'asc' } });
@@ -45,12 +50,26 @@ export class ScreeningsService {
       cinemaLongitude: r['_coords.lon'] ?? null,
     };
     const key = { externalCinemaId: data.externalCinemaId, externalShowId: data.externalShowId };
-    return this.prisma.screening.upsert({ where: { externalCinemaId_externalShowId: key }, create: data, update: data });
+    const screening = await this.prisma.screening.upsert({ where: { externalCinemaId_externalShowId: key }, create: data, update: data });
+    await this.activity.notifyAllUsers('CLUB_PICK', {
+      screeningId: screening.id,
+      filmTitle: screening.filmTitle,
+      cinemaName: screening.cinemaName,
+      startsAt: screening.startsAt.toISOString(),
+    });
+    return screening;
   }
 
-  unpick(cineid: number, showid: string) {
+  async unpick(cineid: number, showid: string) {
     const key = { externalCinemaId: cineid, externalShowId: showid };
-    return this.prisma.screening.delete({ where: { externalCinemaId_externalShowId: key } });
+    const screening = await this.prisma.screening.delete({ where: { externalCinemaId_externalShowId: key } });
+    await this.activity.notifyAllUsers('CLUB_PICK_REMOVED', {
+      screeningId: screening.id,
+      filmTitle: screening.filmTitle,
+      cinemaName: screening.cinemaName,
+      startsAt: screening.startsAt.toISOString(),
+    });
+    return screening;
   }
 
 }

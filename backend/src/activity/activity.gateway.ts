@@ -9,4 +9,8 @@ export class ActivityGateway {
   sendToAll(msg: string) {
     this.wss.emit('activityToClient', { type: 'Activity', message: msg });
   }
+
+  sendNotification(notification: { type: string; payload: Record<string, string>; createdAt: string }) {
+    this.wss.emit('notification', notification);
+  }
 }
