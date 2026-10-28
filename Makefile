@@ -12,7 +12,7 @@ RANDOM_SECRET = openssl rand -hex 32 | tr -d '\n'
 PRISMA_VERSION = $(shell node -p "require('./backend/package-lock.json').packages['node_modules/prisma'].version")
 
 up: env secrets
-	$(COMPOSE) up -d
+	$(COMPOSE) up -d --build 
 
 build: env
 	$(COMPOSE) build
