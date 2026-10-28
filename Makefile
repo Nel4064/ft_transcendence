@@ -11,11 +11,13 @@ RANDOM_SECRET = openssl rand -hex 32 | tr -d '\n'
 # exact prisma version installed in the backend container (from its lock file)
 PRISMA_VERSION = $(shell node -p "require('./backend/package-lock.json').packages['node_modules/prisma'].version")
 
-up: env secrets
-	$(COMPOSE) up -d
+all : build up
 
 build: env
 	$(COMPOSE) build
+
+up: env secrets
+	$(COMPOSE) up -d
 
 down:
 	$(COMPOSE) down
@@ -24,7 +26,18 @@ down:
 clean:
 	$(COMPOSE) down -v
 
-re: clean up
+re: clean all
+
+# rebuild images and refresh node_modules volumes (the database is kept)
+rebuild: env secrets
+	$(COMPOSE) down
+	-podman volume rm development_frontend_node_modules development_backend_node_modules
+	$(COMPOSE) build
+	$(COMPOSE) up -d
+
+# restart the app containers, and the proxy so nginx picks up their new IP addresses
+restart:
+	podman restart development-backend development-frontend development-proxy
 
 logs:
 	$(COMPOSE) logs -f
@@ -59,4 +72,4 @@ volumes:
 containers:
 	podman ps -a
 
-.PHONY: up build down clean re logs env secrets volumes containers studio
+.PHONY: up build down clean re rebuild restart logs env secrets volumes containers studio
