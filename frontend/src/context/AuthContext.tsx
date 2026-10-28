@@ -24,6 +24,7 @@ type LoginResult =
 
 type AuthContextType = {
   user: User | null
+  setUser: (user: User | null) => void 
   loading: boolean
   login: (identifier: string, password: string) => Promise<LoginResult>
   authenticate2fa: (code: string, userId: string) => Promise<User>
@@ -273,6 +274,7 @@ export function AuthProvider({
     <AuthContext.Provider
       value={{
         user,
+        setUser,
         loading,
         login,
         authenticate2fa,

@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import Avatar from '../../components/Avatar/Avatar'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 function ProfilePage() {
 	const { user, logout, apiFetch } = useAuth()
@@ -12,8 +12,17 @@ function ProfilePage() {
 	const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
 	const [totpCode, setTotpCode] = useState('')
 	const [setupStep, setSetupStep] = useState<'idle' | 'qr'>('idle')
+
+	// 头像上传相关状态
+	const [uploading, setUploading] = useState(false)
+	const fileInputRef = useRef<HTMLInputElement>(null)
+
 	const [error, setError] = useState('')
 	const [successMsg, setSuccessMsg] = useState('')
+
+	useEffect(() => {
+		console.log("🔥 当前全局 user 对象的内容:", user);
+	}, [user]);
 
 	function handleLogout() {
 		logout()
@@ -25,9 +34,8 @@ function ProfilePage() {
 		setError('')
 		setSuccessMsg('')
 		try {
-			// 注意：请根据你们后端实际的 2FA 生成路由调整路径（例如 /auth/2fa/generate）
 			const data = await apiFetch('/api/auth/2fa/generate', { method: 'POST' })
-			setQrCodeUrl(data.qrCodeUrl || data) // 兼容返回 URL 或 Base64 图片数据的格式
+			setQrCodeUrl(data.qrCodeUrl || data)
 			setSetupStep('qr')
 		} catch (err: any) {
 			setError(err.message || 'Failed to initialize 2FA')
@@ -40,7 +48,6 @@ function ProfilePage() {
 		setError('')
 		setSuccessMsg('')
 		try {
-			// 请根据你们后端实际的 2FA 校验开启路由调整（例如 /auth/2fa/turn-on）
 			await apiFetch('/api/auth/2fa/turn-on', {
 				method: 'POST',
 				body: JSON.stringify({ code: totpCode }),
@@ -59,7 +66,6 @@ function ProfilePage() {
 		setError('')
 		setSuccessMsg('')
 		try {
-			// 请根据你们后端实际的关闭 2FA 路由调整（例如 /auth/2fa/turn-off）
 			await apiFetch('/api/auth/2fa/turn-off', { method: 'POST' })
 			setIs2faEnabled(false)
 			setSuccessMsg('2FA has been disabled.')
@@ -68,12 +74,78 @@ function ProfilePage() {
 		}
 	}
 
+	// 4. 💡 处理头像上传
+	// 4. 💡 处理头像上传
+	// 4. 处理头像上传
+	async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+		const file = e.target.files?.[0]
+		if (!file) return
+
+		setError('')
+		setSuccessMsg('')
+		setUploading(true)
+
+		try {
+			const formData = new FormData()
+			formData.append('file', file)
+
+			// 💡 必须改成和你登录时完全一致的 'jwt_token'
+			const token = localStorage.getItem('jwt_token')
+
+			const res = await fetch('/api/users/me/avatar', {
+				method: 'POST',
+				headers: {
+					...(token ? { Authorization: `Bearer ${token}` } : {}),
+				},
+				body: formData,
+			})
+
+			const data = await res.json()
+			if (!res.ok) throw new Error(data.message || 'Failed to upload avatar')
+
+			setSuccessMsg('Avatar uploaded successfully! Refreshing...')
+
+			setTimeout(() => {
+				window.location.reload()
+			}, 500)
+		} catch (err: any) {
+			setError(err.message || 'Failed to upload avatar')
+		} finally {
+			setUploading(false)
+		}
+	}
+
 	return (
 		<main>
 			<div className="flex flex-col gap-4 max-w-[800px] mx-auto my-[100px]">
 				{/* 用户信息卡片 */}
 				<div className="flex items-center gap-5 p-5 bg-surface border border-border rounded-md shadow-card">
-					<Avatar size={120} />
+					{/* 点击头像区域可以触发文件选择框 */}
+					<div
+						className="relative cursor-pointer group"
+						onClick={() => fileInputRef.current?.click()}
+						title="Click to change avatar"
+					>
+						{/* 💡 修复 2：把 user?.avatarUrl 明确传给 Avatar 组件 */}
+						{/* 如果 avatarUrl 不是以 http 开头，就自动拼上后端的基础地址（比如 http://localhost:3000） */}
+						<Avatar
+							src={user?.avatarUrl ? (user.avatarUrl.startsWith('http') ? user.avatarUrl : `http://localhost:3000${user.avatarUrl}`) : undefined}
+							size={120}
+						/>
+						<div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs font-bold">
+							{uploading ? 'Uploading...' : 'Change'}
+						</div>
+					</div>
+
+					{/* 隐藏的 file input */}
+					<input
+						type="file"
+						ref={fileInputRef}
+						onChange={handleFileChange}
+						accept="image/*"
+						className="hidden"
+					/>
+
 					<div>
 						<h1 className="mb-1 font-serif text-2xl text-text">{user?.username}</h1>
 						<p className="text-text-muted">{user?.email}</p>
