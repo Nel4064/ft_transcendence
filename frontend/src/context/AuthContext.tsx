@@ -13,6 +13,9 @@ export type User = {
   avatarUrl?: string | null
   role: 'USER' | 'ADMIN'
   twoFactorEnabled?: boolean
+  displayName: string
+  language: string
+  bio?: string | null
 }
 
 type LoginResult =
