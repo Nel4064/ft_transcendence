@@ -6,7 +6,7 @@ import { ActivityModule } from '../activity/activity.module';
 
 @Module({
   controllers: [ScreeningsController],
-  providers: [ScreeningsService, PrismaService]
+  providers: [ScreeningsService, PrismaService],
   imports: [ActivityModule]
 })
 export class ScreeningsModule {}
