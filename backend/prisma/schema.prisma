@@ -22,6 +22,16 @@ enum ScreeningVersion {
   VOSTF
 }
 
+enum NotificationType {
+  FRIEND_REQUEST     // user sending the request → invited user
+  FRIEND_ACCEPTED    // user accepting           → user who asked
+  EVENT_CANCELLED    // organizer who cancels    → everyone who RSVPed
+  CLUB_PICK          // organizer who picks      → members
+  CLUB_PICK_REMOVED  // organizer who unpicks    → members, those who RSVPed
+  FRIEND_RSVP        // friend who RSVPs         → their friends
+  ROLE_CHANGED       // admin who changes role   → user whose role changed
+}
+
 model User {
   id               String   @id @default(uuid()) @db.Uuid
   username         String   @unique @db.VarChar(50)
@@ -45,6 +55,10 @@ model User {
   // Audit Timestamps
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+
+  // Relations
+  notificationsRecv  Notification[] @relation("NotificationRecipient")  // received by this user
+  notificationsSent  Notification[] @relation("NotificationActor")     // caused by this user
 
   @@map("users") // Maps the model to a lowercase "users" table in the database
 }
@@ -81,10 +95,36 @@ model Screening {
   cinemaLatitude   Float?                                      // _coords.lat (V3)
   cinemaLongitude  Float?                                      // _coords.lon (V3)
 
+  // // Club side
+  // curatedById      String?
+  // curatedBy        User?             @relation("curatedBy", fields: [curatedById], references: [id])
+  // isCancelled      Boolean           @default(false)
+  // rsvps            Rsvp[]
+
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
   @@unique([externalCinemaId, externalShowId])
   @@index([startsAt])
   @@map("screenings")
+}
+
+model Notification {
+  id              String           @id @default(uuid()) @db.Uuid
+
+  // Recipient: who reads it
+  userId          String           @db.Uuid
+  user            User             @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Actor: who caused it (null if their account was deleted)
+  actorId         String?          @db.Uuid
+  actor           User?            @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  type            NotificationType
+  payload         Json
+  readAt          DateTime?
+  createdAt       DateTime         @default(now())
+
+  @@index([userId, readAt, createdAt])
+  @@map("notifications")
 }
