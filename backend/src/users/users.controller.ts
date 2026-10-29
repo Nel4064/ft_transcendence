@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Body, Req, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, UseFilters, Get, Post, Patch, Param, Body, Req, UseGuards, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ChangePasswordDto, UpdateProfileDto } from '../auth/dto/auth.dto';
@@ -6,6 +6,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import type { Request } from 'express';
+import { MulterErrorFilter } from './multer-error.filter';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -41,8 +42,10 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Post('me/avatar')
+  @UseFilters(new MulterErrorFilter())
   @UseInterceptors(
     FileInterceptor('file', {
+      // 1. 存储配置
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, cb) => {
@@ -50,6 +53,21 @@ export class UsersController {
           cb(null, uniqueSuffix + extname(file.originalname));
         },
       }),
+      // 2. 文件格式过滤
+      fileFilter: (req, file, cb) => {
+        const allowedExtensions = /\.(jpg|jpeg|png|webp)$/i;
+        if (!file.originalname.match(allowedExtensions)) {
+          return cb(
+            new BadRequestException('只允许上传 jpg、jpeg、png、webp 格式的图片！'),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+      // 3. 文件大小限制（例如：最大 2MB）
+      limits: {
+        fileSize: 2 * 1024 * 1024, // 2MB 单位是字节 (Bytes)
+      },
     }),
   )
   async uploadAvatar(@Req() req: AuthenticatedRequest, @UploadedFile() file: Express.Multer.File) {
