@@ -162,7 +162,7 @@ function ProfilePage() {
                         title="Click to change avatar"
                     >
                         <Avatar
-                            src={user?.avatarUrl ? (user.avatarUrl.startsWith('http') ? user.avatarUrl : `http://localhost:3000${user.avatarUrl}`) : undefined}
+                            src={user?.avatarUrl ? (user.avatarUrl.startsWith('http') ? user.avatarUrl : user.avatarUrl) : undefined}
                             size={120}
                         />
                         <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs font-bold">

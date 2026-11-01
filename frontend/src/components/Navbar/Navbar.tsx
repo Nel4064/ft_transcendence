@@ -8,13 +8,13 @@ const linkClassAdmin = "text-[18px] text-text-admin-muted hover:text-admin [&.ac
 
 function Navbar() {
     const { user } = useAuth()
-    
+
     return (
         <nav className="flex items-center py-[18px] px-10 bg-surface border-b border-border shadow-card">
             <div className="mr-auto">
-                <Logo/>
+                <Logo />
             </div>
-            { user && (
+            {user && (
                 <div className="flex gap-10">
                     {user.role === 'ADMIN' && (
                         <NavLink to="/search-movies" className={linkClassAdmin}>
@@ -31,15 +31,15 @@ function Navbar() {
             )}
 
             {user ? (
-                    /* 💡 修复：把 user.avatarUrl 传给 Avatar，并加上路径补全（如果需要的话） */
-                    <NavLink to="/profile" className="ml-7 ">
-                        <Avatar 
-                            src={user?.avatarUrl ? (user.avatarUrl.startsWith('http') ? user.avatarUrl : `http://localhost:3000${user.avatarUrl}`) : undefined} 
-                            size={70} 
-                        /> 
-                    </NavLink>
+                /* 💡 修复：把 user.avatarUrl 传给 Avatar，并加上路径补全（如果需要的话） */
+                <NavLink to="/profile" className="ml-7 ">
+                    <Avatar
+                        src={user?.avatarUrl ? (user.avatarUrl.startsWith('http') ? user.avatarUrl : user.avatarUrl) : undefined}
+                        size={70}
+                    />
+                </NavLink>
             ) : (
-                    <NavLink to="/signin" className="ml-7 py-2 px-4 rounded-md bg-brand hover:bg-brand-hover text-white text-base font-bold transition-colors">Login</NavLink>
+                <NavLink to="/signin" className="ml-7 py-2 px-4 rounded-md bg-brand hover:bg-brand-hover text-white text-base font-bold transition-colors">Login</NavLink>
             )}
         </nav>
     )

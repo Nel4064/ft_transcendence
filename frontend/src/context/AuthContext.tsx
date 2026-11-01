@@ -38,10 +38,10 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
+// 将默认值改为空字符串 ''
 const API_BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+  import.meta.env.VITE_API_BASE_URL || ''
 ).replace(/\/+$/, '')
-
 function normalizeApiPath(path: string): string {
   const cleanPath = path.startsWith('/') ? path : `/${path}`
 

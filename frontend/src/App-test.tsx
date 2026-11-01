@@ -11,8 +11,8 @@ interface UserProfile {
   createdAt: string;
 }
 
-const API_BASE = 'http://localhost:3000/api/auth';
-const USERS_API = 'http://localhost:3000/api/users';
+const API_BASE = '/api/auth';
+const USERS_API = '/api/users';
 
 export default function App() {
   // Determine initial view based on current browser pathname
@@ -462,7 +462,7 @@ export default function App() {
                 >
                   {user.avatarUrl ? (
                     <img
-                      src={`http://localhost:3000${user.avatarUrl}`}
+                      src={user?.avatarUrl}
                       alt={user.username}
                       style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #007bff', marginBottom: '5px' }}
                     />
@@ -603,7 +603,7 @@ export default function App() {
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
               {userProfile.avatarUrl ? (
                 <img
-                  src={`http://localhost:3000${userProfile.avatarUrl}`}
+                  src={userProfile.avatarUrl}
                   alt="User Avatar"
                   style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', marginBottom: '10px', border: '2px solid #007bff' }}
                 />
@@ -748,7 +748,7 @@ export default function App() {
               <div>
                 {otherUserProfile.avatarUrl ? (
                   <img
-                    src={`http://localhost:3000${otherUserProfile.avatarUrl}`}
+                    src={otherUserProfile.avatarUrl}
                     alt="Avatar"
                     style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', marginBottom: '15px', border: '2px solid #007bff' }}
                   />
