@@ -10,18 +10,23 @@ export JWT_SECRET=$(cat /run/secrets/jwt_secret)
 export FORTYTWO_CLIENT_ID=$(cat /run/secrets/fortytwo_client_id)
 export FORTYTWO_CLIENT_SECRET=$(cat /run/secrets/fortytwo_client_secret)
 
-# 1. 先生成 Prisma 客户端（必须在最前面，保证依赖完整）
+# 1. Generate Prisma client first (must be at the beginning to ensure complete dependencies)
 npx prisma generate
 
-# 2. apply schema.prisma changes to the database
+# 2. Apply schema.prisma changes to the database
 npx prisma db push
 
-# 3. 最后再跑 seed
+# 3. Run the seed script last
 echo "Seeding bot users and games..."
 if [ "$NODE_ENV" = "production" ]; then
     node ./dist/prisma/seed.js
 else
     npx prisma db seed
+fi
+
+if [ -d "./uploads" ]; then
+    echo "Clearing uploads directory..."
+    rm -rf ./uploads/*
 fi
 
 exec "$@"

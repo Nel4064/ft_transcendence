@@ -16,6 +16,7 @@ import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
 import MovieDetailsPage from './pages/movie-details/MovieDetailsPage'
 import ScreenDetailsPage from './pages/screenings-details/ScreenDetailsPage'
 
+
 function App() {
 	return (
 		<AuthProvider>
@@ -40,7 +41,6 @@ function App() {
 					<Route path="/screenings/:id" element={<ScreenDetailsPage />} />
 				</Route>
 
-				{/* Pages réservées aux admins */}
 				<Route element={<ProtectedRoute adminOnly />}>
 					<Route path="/search-movies" element={<SearchMoviesPage />} />
 				</Route>
