@@ -110,7 +110,7 @@ function SignInPage() {
   }
 
   function handle42Login() {
-    window.location.href = 'http://localhost/api/auth/oauth/42'
+    window.location.href = 'http://localhost:3000/api/auth/oauth/42'
   }
 
   function handleBackToLogin() {

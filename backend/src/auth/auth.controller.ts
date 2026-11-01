@@ -36,35 +36,23 @@ export class AuthController {
   }
 
   // ==================== 2FA Related Routes ====================
-  /**
-   * 1. Generate 2FA secret and QR code (called from profile, requires JWT Token)
-   */
   @UseGuards(JwtAuthGuard)
   @Post('2fa/generate')
   async generateTwoFactorSecret(@Req() req: AuthenticatedRequest) {
     return this.authService.generateTwoFactorAuthenticationSecret(req.user.userId);
   }
 
-  /**
-   * 2. Verify and officially turn on 2FA (confirmed by entering code after scanning, requires JWT Token)
-   */
   @UseGuards(JwtAuthGuard)
   @Post('2fa/turn-on')
   async turnOnTwoFactor(@Req() req: AuthenticatedRequest, @Body() dto: TwoFactorCodeDto) {
     return this.authService.turnOnTwoFactorAuthentication(req.user.userId, dto.code);
   }
 
-  /**
-   * 3. 2FA secondary verification during login (no Token needed, exchange userId + 6-digit code for a formal Token)
-   */
   @Post('2fa/authenticate')
   async authenticate2FA(@Body() dto: TwoFactorLoginDto) {
     return this.authService.authenticateWith2FA(dto.userId, dto.code);
   }
 
-  /**
-   * 4. Disable/remove 2FA (requires JWT Token, and verification of the current 6-digit code)
-   */
   @UseGuards(JwtAuthGuard)
   @Post('2fa/turn-off')
   async turnOffTwoFactor(@Req() req: AuthenticatedRequest, @Body() dto: TwoFactorCodeDto) {
@@ -77,7 +65,8 @@ export class AuthController {
   redirectTo42(@Res() res: Response) {
     try {
       const clientId = fs.readFileSync('/run/secrets/fortytwo_client_id', 'utf8').trim();
-      const redirectUri = process.env.FORTYTWO_REDIRECT_URI || 'http://127.0.0.1:3000/api/auth/oauth/42/callback';
+      // 💡 统一使用带有 1024 网关端口的绝对 URL
+      const redirectUri = process.env.FORTYTWO_REDIRECT_URI || 'http://localhost:1024/api/auth/oauth/42/callback';
 
       const authUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code`;
 
@@ -96,16 +85,17 @@ export class AuthController {
     try {
       const code = req.query.code as string;
       if (!code) {
-        return res.redirect('http://localhost:1024/?error=NoCodeProvided'); // 👈 改为前端端口
+        return res.redirect('http://localhost:1024/?error=NoCodeProvided');
       }
 
-      const redirectUri = 'http://127.0.0.1:3000/api/auth/oauth/42/callback';
+      // 💡 必须与 redirectTo42 中的 redirectUri 保持完全一致！
+      const redirectUri = process.env.FORTYTWO_REDIRECT_URI || 'http://localhost:1024/api/auth/oauth/42/callback';
 
       const fortyTwoToken = await this.authService.getFortyTwoToken(code, redirectUri);
       const ftUser = await this.authService.getFortyTwoUser(fortyTwoToken);
       const result = await this.authService.loginOrRegister42User(ftUser);
 
-      const frontendUrl = 'http://localhost:1024/signin'; // 👈 改为前端端口
+      const frontendUrl = 'http://localhost:1024/signin';
 
       if (result.requiresTwoFactor) {
         return res.redirect(`${frontendUrl}/?requiresTwoFactor=true&userId=${result.userId}`);
