@@ -8,12 +8,12 @@ export class MulterErrorFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    let message = '文件上传错误';
+    let message = 'File upload error';
     if (exception.code === 'LIMIT_FILE_SIZE') {
-      message = '上传的文件体积过大，请控制在 2MB 以内！'; // 👈 这里可以自定义文件过大的提示语
+      message = 'The uploaded file is too large. Please keep it under 2MB!'; // 👈 Customize the file size limit message here
     }
 
-    // 返回规范的 JSON 错误，前端就不会报 Unexpected token '<' 了
+    // Return a standardized JSON error so the frontend won't encounter Unexpected token '<' errors
     response.status(400).json({
       statusCode: 400,
       message: message,

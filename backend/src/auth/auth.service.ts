@@ -214,7 +214,7 @@ export class AuthService {
         await this.prisma.user.update({
             where: { id: userId },
             data: {
-                isTwoFactorEnabled: false,
+                twoFactorEnabled: false,
                 twoFactorSecret: null, // Adjust according to your schema.prisma field names
             },
         });

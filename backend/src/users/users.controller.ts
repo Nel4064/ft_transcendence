@@ -45,7 +45,7 @@ export class UsersController {
   @UseFilters(new MulterErrorFilter())
   @UseInterceptors(
     FileInterceptor('file', {
-      // 1. 存储配置
+      // 1. Storage configuration
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, cb) => {
@@ -53,20 +53,20 @@ export class UsersController {
           cb(null, uniqueSuffix + extname(file.originalname));
         },
       }),
-      // 2. 文件格式过滤
+      // 2. File type filter
       fileFilter: (req, file, cb) => {
         const allowedExtensions = /\.(jpg|jpeg|png|webp)$/i;
         if (!file.originalname.match(allowedExtensions)) {
           return cb(
-            new BadRequestException('只允许上传 jpg、jpeg、png、webp 格式的图片！'),
+            new BadRequestException('Only jpg, jpeg, png, and webp image formats are allowed!'),
             false,
           );
         }
         cb(null, true);
       },
-      // 3. 文件大小限制（例如：最大 2MB）
+      // 3. File size limit (e.g., max 2MB)
       limits: {
-        fileSize: 2 * 1024 * 1024, // 2MB 单位是字节 (Bytes)
+        fileSize: 2 * 1024 * 1024, // 2MB in Bytes
       },
     }),
   )

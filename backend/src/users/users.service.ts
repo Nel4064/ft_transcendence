@@ -1,4 +1,3 @@
-
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfileDto } from '../auth/dto/auth.dto';
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
@@ -97,7 +96,7 @@ export class UsersService {
       }
     }
 
-    // 3. 更新数据库中的新头像地址
+    // 3. Update the new avatar URL in the database
     const updated = await this.prisma.user.update({
       where: { id: userId },
       data: { avatarUrl: newAvatarUrl },

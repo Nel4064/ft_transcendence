@@ -21,16 +21,17 @@ export type User = {
 type LoginResult =
   | User
   | {
-      twoFactorRequired: boolean
-      userId: string
-    }
+    twoFactorRequired: boolean
+    userId: string
+  }
 
 type AuthContextType = {
   user: User | null
-  setUser: (user: User | null) => void 
+  setUser: (user: User | null) => void
   loading: boolean
   login: (identifier: string, password: string) => Promise<LoginResult>
   authenticate2fa: (code: string, userId: string) => Promise<User>
+  disable2fa: (password: string, code?: string) => Promise<void>
   logout: () => void
   apiFetch: (path: string, options?: RequestInit) => Promise<any>
 }
@@ -136,8 +137,8 @@ export function AuthProvider({
             {},
             '',
             window.location.pathname +
-              (query ? `?${query}` : '') +
-              window.location.hash,
+            (query ? `?${query}` : '') +
+            window.location.hash,
           )
         }
 
@@ -273,6 +274,22 @@ export function AuthProvider({
     setUser(null)
   }
 
+  // ➕ 添加关闭 2FA 的实现（根据你的后端 API 路径和请求体调整）
+  async function disable2fa(password: string, code?: string): Promise<void> {
+    await apiFetch('/auth/2fa/turn-off', {
+      method: 'POST',
+      body: JSON.stringify({ password, code }),
+    })
+
+    // 更新本地 user 状态中的 2FA 状态
+    if (user) {
+      setUser({
+        ...user,
+        twoFactorEnabled: false,
+      })
+    }
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -283,6 +300,7 @@ export function AuthProvider({
         authenticate2fa,
         logout,
         apiFetch,
+        disable2fa,
       }}
     >
       {children}

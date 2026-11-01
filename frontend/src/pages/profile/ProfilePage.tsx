@@ -4,14 +4,15 @@ import Avatar from '../../components/Avatar/Avatar'
 import { useState, useRef, useEffect } from 'react'
 
 function ProfilePage() {
-    const { user, logout, apiFetch } = useAuth()
+    const { user, logout, apiFetch, disable2fa } = useAuth()
     const navigate = useNavigate()
 
     // 2FA 相关状态
     const [is2faEnabled, setIs2faEnabled] = useState(user?.twoFactorEnabled || false)
     const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
     const [totpCode, setTotpCode] = useState('')
-    const [setupStep, setSetupStep] = useState<'idle' | 'qr'>('idle')
+    const [setupStep, setSetupStep] = useState<'idle' | 'qr' | 'disable'>('idle')
+    const [disableCode, setDisableCode] = useState('')
 
     // 个人资料编辑相关状态（初始化为当前 user 的内容或空字符串）
     const [displayName, setDisplayName] = useState(user?.displayName || '')
@@ -67,18 +68,23 @@ function ProfilePage() {
             setSetupStep('idle')
             setTotpCode('')
             setSuccessMsg('2FA successfully enabled!')
+            // 可选：如果希望刷新用户状态，也可以重新加载页面
         } catch (err: any) {
             setError(err.message || 'Invalid verification code')
         }
     }
 
-    // 3. 关闭 2FA
-    async function handleDisable2fa() {
+    // 3. 验证验证码并正式关闭 2FA
+    async function handleDisable2fa(e: React.FormEvent) {
+        e.preventDefault()
         setError('')
         setSuccessMsg('')
         try {
-            await apiFetch('/api/auth/2fa/turn-off', { method: 'POST' })
+            // 调用全局 disable2fa，把用户输入的 6 位验证码传进去
+            await disable2fa('', disableCode)
             setIs2faEnabled(false)
+            setSetupStep('idle')
+            setDisableCode('')
             setSuccessMsg('2FA has been disabled.')
         } catch (err: any) {
             setError(err.message || 'Failed to disable 2FA')
@@ -130,7 +136,7 @@ function ProfilePage() {
             if (!res.ok) throw new Error(data.message || 'Failed to upload avatar')
 
             setSuccessMsg('Avatar uploaded successfully! Refreshing...')
-            
+
             setTimeout(() => {
                 window.location.reload()
             }, 500)
@@ -247,16 +253,16 @@ function ProfilePage() {
                             </button>
                         )}
 
-                        {is2faEnabled && (
+                        {is2faEnabled && setupStep === 'idle' && (
                             <button
-                                onClick={handleDisable2fa}
+                                onClick={() => setSetupStep('disable')} // 👈 点击后切换到输入验证码关闭的表单
                                 className="py-2 px-4 rounded-md bg-danger hover:bg-danger/90 text-white text-sm font-bold cursor-pointer transition-colors">
                                 Disable 2FA
                             </button>
                         )}
                     </div>
 
-                    {/* 扫码与验证码输入区域 */}
+                    {/* 开启 2FA 的扫码区域 */}
                     {setupStep === 'qr' && (
                         <form onSubmit={handleVerify2fa} className="flex flex-col gap-3 mt-2 pt-4 border-t border-border">
                             <p className="text-sm text-text-muted">1. Scan this QR code with Google Authenticator or Authy:</p>
@@ -280,6 +286,35 @@ function ProfilePage() {
                                     type="submit"
                                     className="py-2 px-4 rounded-md bg-brand hover:bg-brand-hover text-white text-sm font-bold cursor-pointer transition-colors">
                                     Verify & Turn On
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setSetupStep('idle')}
+                                    className="py-2 px-4 rounded-md border border-border hover:bg-surface text-text text-sm cursor-pointer">
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    )}
+
+                    {/* ➕ 新增：关闭 2FA 时需要输入验证码的表单 */}
+                    {setupStep === 'disable' && (
+                        <form onSubmit={handleDisable2fa} className="flex flex-col gap-3 mt-2 pt-4 border-t border-border">
+                            <p className="text-sm text-text-muted">Enter the 6-digit code from your authenticator app to disable 2FA:</p>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    maxLength={6}
+                                    placeholder="123456"
+                                    value={disableCode}
+                                    onChange={(e) => setDisableCode(e.target.value)}
+                                    className="py-2 px-3 border border-border rounded-md text-base tracking-widest font-mono bg-surface text-text"
+                                    required
+                                />
+                                <button
+                                    type="submit"
+                                    className="py-2 px-4 rounded-md bg-danger hover:bg-danger/90 text-white text-sm font-bold cursor-pointer transition-colors">
+                                    Confirm & Disable
                                 </button>
                                 <button
                                     type="button"
