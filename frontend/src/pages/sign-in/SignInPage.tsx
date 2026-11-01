@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent } from 'react'
+import { useState, useEffect, type FormEvent} from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
@@ -18,15 +18,15 @@ function SignInPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  // 1. 核心：完美对齐 App-test.tsx 的参数捕获逻辑
+  // 1. Core: Perfectly align with the parameter capturing logic of App-test.tsx
   useEffect(() => {
     const token = searchParams.get('token')
-    // 同时兼容字符串或布尔值的判定
+    // Support both string and boolean checks
     const requiresTwoFactor = searchParams.get('requiresTwoFactor') === 'true'
     const callbackUserId = searchParams.get('userId')
     const oauthError = searchParams.get('error')
 
-    console.log('SignInPage 检测到的 URL 参数:', { token, requiresTwoFactor, callbackUserId, oauthError })
+    console.log('SignInPage detected URL parameters:', { token, requiresTwoFactor, callbackUserId, oauthError })
 
     if (token) {
       localStorage.setItem('token', token)
@@ -35,14 +35,14 @@ function SignInPage() {
       return
     }
 
-    // 如果 42 OAuth 带了 2FA 参数进来，直接强行激活 2FA 状态机
+    // If 42 OAuth brings in 2FA parameters, forcefully activate the 2FA state machine
     if (requiresTwoFactor && callbackUserId) {
-      console.log('成功捕获 42 OAuth 2FA 挑战，准备展示验证码输入框，userId:', callbackUserId)
+      console.log('Successfully captured 42 OAuth 2FA challenge, preparing to show verification code input, userId:', callbackUserId)
       setUserId(callbackUserId)
       setRequires2FA(true)
       setError('2FA is enabled. Please enter the 6-digit code from your authenticator app.')
       
-      // 清理 URL 上的明文参数，防止刷新重复触发
+      // Clean up plaintext parameters in the URL to prevent repeated triggers on refresh
       window.history.replaceState({}, document.title, window.location.pathname)
       return
     }
@@ -53,7 +53,7 @@ function SignInPage() {
     }
   }, [searchParams, navigate])
 
-  // 第一步：普通账号密码登录
+  // Step 1: Standard email/password login
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError('')
@@ -78,7 +78,7 @@ function SignInPage() {
     }
   }
 
-  // 第二步：提交 6 位验证码和 userId -> 完美触发 /api/auth/2fa/authenticate 这一步
+  // Step 2: Submit 6-digit code and userId -> Perfectly triggers the /api/auth/2fa/authenticate step
   async function handleVerify2FA(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError('')
@@ -97,7 +97,7 @@ function SignInPage() {
     setSubmitting(true)
 
     try {
-      // 核心：调用你在 AuthContext 里面写好的双参数方法
+      // Core: Call the two-parameter method defined in AuthContext
       await authenticate2fa(code, userId)
       navigate('/', { replace: true })
     } catch (err) {

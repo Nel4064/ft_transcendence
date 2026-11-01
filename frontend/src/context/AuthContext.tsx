@@ -38,7 +38,7 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
-// 将默认值改为空字符串 ''
+// Change default value to an empty string ''
 const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL || ''
 ).replace(/\/+$/, '')
@@ -174,7 +174,7 @@ export function AuthProvider({
     }
   }, [])
 
-  // 第一步：账号密码登录
+  // Step 1: Standard account/password login
   async function login(
     identifier: string,
     password: string,
@@ -195,7 +195,7 @@ export function AuthProvider({
         throw new Error('2FA response did not contain userId')
       }
 
-      // 修复点：返回二阶验证状态时，必须同时提供 userId
+      // Fix point: When returning 2FA state, userId must be provided simultaneously
       return {
         twoFactorRequired: true,
         userId: String(payload.userId),
@@ -226,7 +226,7 @@ export function AuthProvider({
     }
   }
 
-  // 第二步：提交 userId + code
+  // Step 2: Submit userId + code
   async function authenticate2fa(
     code: string,
     userId: string,
@@ -274,14 +274,14 @@ export function AuthProvider({
     setUser(null)
   }
 
-  // ➕ 添加关闭 2FA 的实现（根据你的后端 API 路径和请求体调整）
+  // Implement disable 2FA
   async function disable2fa(password: string, code?: string): Promise<void> {
     await apiFetch('/auth/2fa/turn-off', {
       method: 'POST',
       body: JSON.stringify({ password, code }),
     })
 
-    // 更新本地 user 状态中的 2FA 状态
+    // Update 2FA status in local user state
     if (user) {
       setUser({
         ...user,

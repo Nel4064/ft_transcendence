@@ -2,14 +2,12 @@ import { Body, Controller, Get, Post, Patch, Req, UseGuards, Query, Res, HttpSta
 import type { Request } from 'express';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, UpdateProfileDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto} from './dto/auth.dto';
 import { TwoFactorCodeDto, TwoFactorLoginDto } from './dto/auth.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import * as fs from 'fs';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+
 
 interface AuthenticatedRequest extends Request {
   user: {
