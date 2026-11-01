@@ -1,14 +1,23 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ScreeningsModule } from './screenings/screenings.module';
 import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module'; 
+import { PrismaModule } from './prisma/prisma.module';
 import { ChatModule } from './chat/chat.module';
 import { ActivityModule } from './activity/activity.module';
+import { ScreeningsModule } from './screenings/screenings.module';
 
 @Module({
-  imports: [ScreeningsModule, AuthModule, ChatModule, ActivityModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    UsersModule,
+    ChatModule,
+    ActivityModule,
+    ScreeningsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

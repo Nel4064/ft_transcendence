@@ -17,11 +17,17 @@ export class AuthService {
         private readonly httpService: HttpService, // 👈 Inject HttpService here
     ) { }
 
-    async register(dto: RegisterDto) {
+    async register(dto: RegisterDto & { identifier?: string }) {
+        const username = dto.username || dto.identifier;
+
+        if (!username) {
+            throw new BadRequestException('Username is required');
+        }
+
         // 1. Check if username or email is already taken
         const existingUser = await this.prisma.user.findFirst({
             where: {
-                OR: [{ email: dto.email }, { username: dto.username }],
+                OR: [{ email: dto.email }, { username: username }],
             },
         });
         if (existingUser) {
@@ -37,10 +43,10 @@ export class AuthService {
         // 3. Save to database (ensure your Prisma schema allows passwordHash to be nullable: passwordHash String?)
         const user = await this.prisma.user.create({
             data: {
-                username: dto.username,
+                username: username, // 👈 使用解析出来的 username
                 email: dto.email,
                 passwordHash: hashedPassword,
-                displayName: dto.username,
+                displayName: username,
             },
         });
 
@@ -48,7 +54,6 @@ export class AuthService {
         const { passwordHash, ...result } = user;
         return { message: 'Registration successful', user: result };
     }
-
     async login(dto: LoginDto) {
         // 1. Find user by email or username
         const user = await this.prisma.user.findFirst({
@@ -93,36 +98,7 @@ export class AuthService {
         };
     }
 
-    async getProfile(userId: string) {
-        const user = await this.prisma.user.findUnique({
-            where: { id: userId },
-            select: {
-                id: true,
-                username: true,
-                displayName: true,
-                email: true,
-                avatarUrl: true,
-                bio: true,
-                language: true,
-                role: true,
-                twoFactorEnabled: true,
-                createdAt: true,
-                updatedAt: true,
-            },
-        });
-
-        if (!user) {
-            throw new NotFoundException('User not found');
-        }
-
-        return {
-            message: 'Successfully retrieved full profile',
-            user,
-        };
-    }
-
     // ==================== 2FA (Two-Factor Authentication) Methods ====================
-
     // 1. Generate 2FA secret and QR code
     async generateTwoFactorAuthenticationSecret(userId: string) {
         const user = await this.prisma.user.findUnique({ where: { id: userId } });
@@ -238,7 +214,7 @@ export class AuthService {
         await this.prisma.user.update({
             where: { id: userId },
             data: {
-                isTwoFactorEnabled: false,
+                twoFactorEnabled: false,
                 twoFactorSecret: null, // Adjust according to your schema.prisma field names
             },
         });
