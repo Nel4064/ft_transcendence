@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 
-const avatarClass = "rounded-full object-cover border-2 border-brand"
-const initialsClass = "rounded-full border-2 border-brand bg-brand text-white font-serif font-bold flex items-center justify-center select-none"
+const avatarClass = "shrink-0 rounded-full object-cover border-2 border-brand"
+const initialsClass = "shrink-0 rounded-full border-2 border-brand bg-brand text-white font-serif font-bold flex items-center justify-center select-none"
 
 type AvatarProps = {
     src?: string | null
@@ -45,6 +45,7 @@ function Avatar({ src, name, size = 50, alt }: AvatarProps) {
             alt={description}
             width={size}
             height={size}
+            style={{ width: size, height: size }}
             className={avatarClass}
             onError={() => setFailedSrc(imageSrc)}
         />
