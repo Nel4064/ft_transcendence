@@ -28,8 +28,8 @@ jobs:
       - name: Lint PR title
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
-        run: |
-          PR_TITLE_NORMALIZED="$PR_TITLE"
+        run:
+          echo "$PR_TITLE" | npx commitlint
 
 
   # lint:
