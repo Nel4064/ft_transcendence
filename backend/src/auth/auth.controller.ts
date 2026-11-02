@@ -64,7 +64,7 @@ export class AuthController {
     try {
       const clientId = fs.readFileSync('/run/secrets/fortytwo_client_id', 'utf8').trim();
       // 💡 统一使用带有 1024 网关端口的绝对 URL
-      const redirectUri = process.env.FORTYTWO_REDIRECT_URI || 'http://localhost:1024/api/auth/oauth/42/callback';
+      const redirectUri = process.env.FORTYTWO_REDIRECT_URI || 'http://localhost:3000/api/auth/oauth/42/callback';
 
       const authUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code`;
 
@@ -87,7 +87,7 @@ export class AuthController {
       }
 
       // 💡 必须与 redirectTo42 中的 redirectUri 保持完全一致！
-      const redirectUri = process.env.FORTYTWO_REDIRECT_URI || 'http://localhost:1024/api/auth/oauth/42/callback';
+      const redirectUri = process.env.FORTYTWO_REDIRECT_URI || 'http://localhost:3000/api/auth/oauth/42/callback';
 
       const fortyTwoToken = await this.authService.getFortyTwoToken(code, redirectUri);
       const ftUser = await this.authService.getFortyTwoUser(fortyTwoToken);
