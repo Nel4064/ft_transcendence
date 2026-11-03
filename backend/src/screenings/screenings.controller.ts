@@ -2,6 +2,9 @@ import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Req, UseGuard
 import { ScreeningsService } from './screenings.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { AuthenticatedRequest } from '../auth/authenticated-request';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../generated/prisma/client.js';
 
 @Controller('screenings')
 export class ScreeningsController {
@@ -9,13 +12,15 @@ export class ScreeningsController {
 
   @Get()    findAll() { return this.screenings.findAll(); }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Post()
   pick(@Req() req: AuthenticatedRequest, @Body() b: { cineid: number; showid: string }) {
     return this.screenings.pick(b.cineid, b.showid, req.user.userId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Delete(':cineid/:showid')
   unpick(@Req() req: AuthenticatedRequest, @Param('cineid', ParseIntPipe) cineid: number, @Param('showid') showid: string) {
     return this.screenings.unpick(cineid, showid, req.user.userId);
