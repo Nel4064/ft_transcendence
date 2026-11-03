@@ -20,7 +20,7 @@ export class ScreeningsService {
     return this.prisma.screening.findMany({ orderBy: { startsAt: 'asc' } });
   }
 
-  async pick(cineid: number, showid: string) {
+  async pick(cineid: number, showid: string, actorId: string) {
     const res = await fetch(`${FEED}?cineid_eq=${cineid}&showid_eq=${encodeURIComponent(showid)}`);
     const r = (await res.json()).results?.[0];
     if (!r) throw new NotFoundException('Screening not in feed');
@@ -56,11 +56,11 @@ export class ScreeningsService {
       filmTitle: screening.filmTitle,
       cinemaName: screening.cinemaName,
       startsAt: screening.startsAt.toISOString(),
-    });
+    }, actorId);
     return screening;
   }
 
-  async unpick(cineid: number, showid: string) {
+  async unpick(cineid: number, showid: string, actorId: string) {
     const key = { externalCinemaId: cineid, externalShowId: showid };
     const screening = await this.prisma.screening.delete({ where: { externalCinemaId_externalShowId: key } });
     await this.activity.notifyAllUsers('CLUB_PICK_REMOVED', {
@@ -68,7 +68,7 @@ export class ScreeningsService {
       filmTitle: screening.filmTitle,
       cinemaName: screening.cinemaName,
       startsAt: screening.startsAt.toISOString(),
-    });
+    }, actorId);
     return screening;
   }
 
