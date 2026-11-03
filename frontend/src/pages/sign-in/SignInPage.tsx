@@ -110,7 +110,7 @@ function SignInPage() {
   }
 
   function handle42Login() {
-    window.location.href = 'http://localhost:3000/api/auth/oauth/42'
+    window.location.href = '/api/auth/oauth/42'   // same origin: nginx sends /api/ to the backend
   }
 
   function handleBackToLogin() {
