@@ -16,6 +16,10 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
+// 42 OAuth URLs come from .env.dev; the redirect URI must match the 42 intra app exactly
+const fortyTwoRedirectUri = () => process.env.FORTYTWO_REDIRECT_URI || 'http://127.0.0.1:1024/api/auth/oauth/42/callback';
+const frontendUri = () => process.env.FRONTEND_OAUTH_URI || 'http://127.0.0.1:1024/';
+
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -63,8 +67,7 @@ export class AuthController {
   redirectTo42(@Res() res: Response) {
     try {
       const clientId = fs.readFileSync('/run/secrets/fortytwo_client_id', 'utf8').trim();
-      // 💡 统一使用带有 1024 网关端口的绝对 URL
-      const redirectUri = process.env.FORTYTWO_REDIRECT_URI || 'http://localhost:1024/api/auth/oauth/42/callback';
+      const redirectUri = fortyTwoRedirectUri();
 
       const authUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code`;
 
@@ -83,17 +86,16 @@ export class AuthController {
     try {
       const code = req.query.code as string;
       if (!code) {
-        return res.redirect('http://localhost:1024/?error=NoCodeProvided');
+        return res.redirect(`${frontendUri()}?error=NoCodeProvided`);
       }
 
-      // 💡 必须与 redirectTo42 中的 redirectUri 保持完全一致！
-      const redirectUri = process.env.FORTYTWO_REDIRECT_URI || 'http://localhost:1024/api/auth/oauth/42/callback';
+      const redirectUri = fortyTwoRedirectUri();
 
       const fortyTwoToken = await this.authService.getFortyTwoToken(code, redirectUri);
       const ftUser = await this.authService.getFortyTwoUser(fortyTwoToken);
       const result = await this.authService.loginOrRegister42User(ftUser);
 
-      const frontendUrl = 'http://localhost:1024/signin';
+      const frontendUrl = `${frontendUri()}signin`;
 
       if (result.requiresTwoFactor) {
         return res.redirect(`${frontendUrl}/?requiresTwoFactor=true&userId=${result.userId}`);
@@ -103,7 +105,7 @@ export class AuthController {
 
     } catch (error) {
       console.error('42 OAuth login failed:', error);
-      return res.redirect('http://localhost:1024/?error=OAuthFailed');
+      return res.redirect(`${frontendUri()}?error=OAuthFailed`);
     }
   }
 }
