@@ -27,6 +27,9 @@ function Navbar() {
                     <NavLink to="/activity" className={linkClass}>
                         Activity
                     </NavLink>
+                    <NavLink to="/friends" className={linkClass}>
+                        Friends
+                    </NavLink>
                 </div>
             )}
 

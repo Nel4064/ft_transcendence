@@ -15,6 +15,8 @@ import ProfilePage from './pages/profile/ProfilePage'
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
 import MovieDetailsPage from './pages/movie-details/MovieDetailsPage'
 import ScreenDetailsPage from './pages/screenings-details/ScreenDetailsPage'
+import FriendsManager from './components/Friends/FriendsManager'
+import UserProfilePage from './pages/profile/UserProfilePage'
 
 
 function App() {
@@ -39,6 +41,8 @@ function App() {
 					<Route path="/calendar" element={<CalendarPage />} />
 					<Route path="/movies/:title" element={<MovieDetailsPage />} />
 					<Route path="/screenings/:id" element={<ScreenDetailsPage />} />
+					<Route path="/friends" element={<FriendsManager />} />
+					<Route path="/users/:id" element={<UserProfilePage />} />
 				</Route>
 
 				<Route element={<ProtectedRoute adminOnly />}>
