@@ -28,6 +28,9 @@
 	--text-sm: var(--ds-text-sm);
 	--text-base: var(--ds-text-base);
 
+	--text-display: var(--ds-text-display);
+	--text-display--line-height: 1;
+	--text-logo: var(--ds-text-logo);
 	--text-title: var(--ds-text-title);
 	--text-title--line-height: 1.11;
 	--text-section: var(--ds-text-section);
@@ -40,6 +43,7 @@
 	--text-small--line-height: 1.43;
 	--text-control: var(--ds-text-control);
 	--text-control--line-height: 1.5;
+	--text-nav: var(--ds-text-nav);
 }
 
 :root {

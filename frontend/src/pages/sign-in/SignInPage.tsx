@@ -1,9 +1,10 @@
 import { useState, useEffect, type FormEvent} from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import Button from '../../components/button/Button'
 
 const inputClass =
-  'py-2.5 px-3 border border-border rounded-md text-base'
+  'py-2.5 px-3 border border-border rounded-md text-control'
 
 function SignInPage() {
   const [email, setEmail] = useState('')
@@ -129,7 +130,7 @@ function SignInPage() {
         className="flex flex-col gap-2 max-w-[320px] mx-auto my-[320px]"
         onSubmit={requires2FA ? handleVerify2FA : handleSubmit}
       >
-        <h1 className="text-center text-5xl font-serif font-bold">
+        <h1 className="text-center text-title font-serif font-bold">
           {requires2FA ? 'Two-Factor Authentication' : 'Welcome Back !'}
         </h1>
 
@@ -163,7 +164,7 @@ function SignInPage() {
               </>
             ) : (
               <>
-                <p className="text-text-light text-sm">
+                <p className="text-text-light text-small">
                   Enter the 6-digit code from your authenticator app.
                 </p>
 
@@ -189,41 +190,28 @@ function SignInPage() {
             {error && (
               <p
                 role="alert"
-                className="py-2 px-3 rounded-md bg-danger/10 text-danger text-base font-bold text-center"
+                className="py-2 px-3 rounded-md bg-danger/10 text-danger text-body font-bold text-center"
               >
                 {error}
               </p>
             )}
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="py-2.5 px-3 rounded-md bg-brand hover:bg-brand-hover text-white text-base cursor-pointer disabled:opacity-50"
-            >
+            <Button type="submit" size="lg" disabled={submitting}>
               {submitting
                 ? 'Please wait...'
                 : requires2FA
                   ? 'Verify Code'
                   : 'Sign In'}
-            </button>
+            </Button>
 
             {!requires2FA ? (
-              <button
-                type="button"
-                onClick={handle42Login}
-                className="py-2.5 px-3 rounded-md border border-border text-center text-base hover:bg-surface cursor-pointer"
-              >
+              <Button variant="secondary" size="lg" onClick={handle42Login}>
                 Sign in with 42
-              </button>
+              </Button>
             ) : (
-              <button
-                type="button"
-                onClick={handleBackToLogin}
-                disabled={submitting}
-                className="py-2.5 px-3 rounded-md border border-border text-center text-base hover:bg-surface cursor-pointer"
-              >
+              <Button variant="secondary" size="lg" onClick={handleBackToLogin} disabled={submitting}>
                 Back to Sign In
-              </button>
+              </Button>
             )}
           </div>
 

@@ -47,7 +47,7 @@ function App() {
 
 					<Route path="*" element={
 					<main className="max-w-[1200px] mx-auto py-12 px-10">
-						<h1 className="font-serif font-bold text-4xl text-text">404 Not Found</h1>
+						<h1 className="font-serif font-bold text-title text-text">404 Not Found</h1>
 					</main>
 				} />
 			</Routes>
