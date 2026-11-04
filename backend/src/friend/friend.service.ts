@@ -3,12 +3,12 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class FriendService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
-  // 1. 发送好友请求
+  // 1. Send friend request
   async sendRequest(senderId: string, receiverId: string) {
     if (senderId === receiverId) {
-      throw new BadRequestException('不能添加自己为好友');
+      throw new BadRequestException('Cannot add yourself as a friend');
     }
 
     const existingFriend = await this.prisma.friendship.findFirst({
@@ -20,14 +20,14 @@ export class FriendService {
       },
     });
     if (existingFriend) {
-      throw new BadRequestException('你们已经是好友了');
+      throw new BadRequestException('You are already friends');
     }
 
     const existingRequest = await this.prisma.friendRequest.findFirst({
       where: { senderId, receiverId, status: 'PENDING' },
     });
     if (existingRequest) {
-      throw new BadRequestException('已经发送过好友请求，请等待对方处理');
+      throw new BadRequestException('Friend request already sent, please wait for the other party to respond');
     }
 
     return this.prisma.friendRequest.create({
@@ -39,14 +39,14 @@ export class FriendService {
     });
   }
 
-  // 2. 接受好友请求
+  // 2. Accept friend request
   async acceptRequest(requestId: string, currentUserId: string) {
     const request = await this.prisma.friendRequest.findUnique({
       where: { id: requestId },
     });
 
     if (!request || request.receiverId !== currentUserId) {
-      throw new BadRequestException('该请求不存在或无权操作');
+      throw new BadRequestException('The request does not exist or you do not have permission');
     }
 
     return this.prisma.$transaction(async (tx) => {
@@ -63,18 +63,18 @@ export class FriendService {
         skipDuplicates: true,
       });
 
-      return { message: '成功添加好友' };
+      return { message: 'Friend added successfully' };
     });
   }
 
-  // ==================== 【新增】3. 拒绝好友请求 ====================
+  // 3. Reject friend request
   async rejectRequest(requestId: string, currentUserId: string) {
     const request = await this.prisma.friendRequest.findUnique({
       where: { id: requestId },
     });
 
     if (!request || request.receiverId !== currentUserId) {
-      throw new BadRequestException('该请求不存在或无权操作');
+      throw new BadRequestException('The request does not exist or you do not have permission');
     }
 
     return this.prisma.friendRequest.update({
@@ -83,7 +83,7 @@ export class FriendService {
     });
   }
 
-  // ==================== 【新增】4. 获取收到的待处理好友请求列表 ====================
+  // 4. Get pending received friend requests list
   async getPendingRequests(userId: string) {
     return this.prisma.friendRequest.findMany({
       where: {
@@ -98,7 +98,7 @@ export class FriendService {
     });
   }
 
-  // 5. 获取当前用户的好友列表
+  // 5. Get current user's friends list
   async getFriends(userId: string) {
     const friendships = await this.prisma.friendship.findMany({
       where: { userId },
@@ -111,22 +111,23 @@ export class FriendService {
     return friendships.map((f) => f.friend);
   }
 
-  // ==================== 【新增】6. 搜索用户（用于添加好友） ====================
+  // 6. Search users (for adding friends)
   async searchUsers(currentUserId: string, keyword: string) {
+    // If the keyword is empty or consists entirely of spaces, return an empty array directly without querying the database!
     if (!keyword || keyword.trim() === '') {
       return [];
     }
 
     return this.prisma.user.findMany({
       where: {
-        id: { not: currentUserId }, // 排除自己
+        id: { not: currentUserId }, // Exclude self
         OR: [
           { username: { contains: keyword, mode: 'insensitive' } },
           { displayName: { contains: keyword, mode: 'insensitive' } },
         ],
       },
       select: { id: true, username: true, displayName: true, avatarUrl: true },
-      take: 10, // 限制最多返回10条结果
+      take: 10,
     });
   }
 }

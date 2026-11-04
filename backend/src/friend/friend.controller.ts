@@ -1,7 +1,7 @@
 import { Controller, Post, Get, Param, Body, Req, UseGuards, Query } from '@nestjs/common';
 import type { Request } from 'express';
 import { FriendService } from './friend.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // 请根据你的项目鉴权 Guard 调整路径
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // Adjust the path based on your project's authentication Guard
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -15,45 +15,42 @@ interface AuthenticatedRequest extends Request {
 export class FriendController {
   constructor(private readonly friendService: FriendService) {}
 
-  // POST /friends/request - 发送好友请求
+  // POST /friends/request - Send friend request
   @Post('request')
   async sendRequest(@Req() req: AuthenticatedRequest, @Body('receiverId') receiverId: string) {
     const senderId = req.user.userId;
     return this.friendService.sendRequest(senderId, receiverId);
   }
 
-  // POST /friends/accept/:id - 接受好友请求
+  // POST /friends/accept/:id - Accept friend request
   @Post('accept/:id')
   async acceptRequest(@Req() req: AuthenticatedRequest, @Param('id') requestId: string) {
     const currentUserId = req.user.userId;
     return this.friendService.acceptRequest(requestId, currentUserId);
   }
 
-  // ==================== 【新增】拒绝好友请求 ====================
-  // POST /friends/reject/:id
+  // POST /friends/reject/:id - Reject friend request
   @Post('reject/:id')
   async rejectRequest(@Req() req: AuthenticatedRequest, @Param('id') requestId: string) {
     const currentUserId = req.user.userId;
     return this.friendService.rejectRequest(requestId, currentUserId);
   }
 
-  // ==================== 【新增】获取待处理的好友请求列表 ====================
-  // GET /friends/requests
+  // GET /friends/requests - Get pending friend requests list
   @Get('requests')
   async getPendingRequests(@Req() req: AuthenticatedRequest) {
     const userId = req.user.userId;
     return this.friendService.getPendingRequests(userId);
   }
 
-  // GET /friends - 获取我的好友列表
+  // GET /friends - Get current user's friends list
   @Get()
   async getFriends(@Req() req: AuthenticatedRequest) {
     const userId = req.user.userId;
     return this.friendService.getFriends(userId);
   }
 
-  // ==================== 【新增】搜索用户接口 ====================
-  // GET /friends/search?keyword=xxx
+  // GET /friends/search?keyword=xxx - Search users interface
   @Get('search')
   async searchUsers(@Req() req: AuthenticatedRequest, @Query('keyword') keyword: string) {
     const currentUserId = req.user.userId;

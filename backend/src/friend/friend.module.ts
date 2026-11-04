@@ -4,9 +4,9 @@ import { FriendService } from './friend.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
-  imports: [PrismaModule], // 如果需要导入其他模块（如 PrismaModule），写在这里
+  imports: [PrismaModule], // Import other modules here if needed, such as PrismaModule
   controllers: [FriendController],
   providers: [FriendService],
-  exports: [FriendService], // 导出 Service，以便以后其他模块（例如 Chat 模块）可能需要调用
+  exports: [FriendService], // Export Service so that other modules (like the Chat module) can use it in the future
 })
 export class FriendModule {}
