@@ -10,7 +10,6 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
-
 @Controller('friends')
 @UseGuards(JwtAuthGuard)
 export class FriendController {
