@@ -1,44 +1,53 @@
-import defaultAvatar from '../../assets/default-avatar.jpg'
+import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 
-const avatarClass = "rounded-full object-cover border-2 border-brand"
+const avatarClass = "shrink-0 rounded-full object-cover border-2 border-brand"
+const initialsClass = "shrink-0 rounded-full border-2 border-brand bg-brand text-white font-serif font-bold flex items-center justify-center select-none"
 
 type AvatarProps = {
     src?: string | null
+    name?: string   // set it to show another user; without it, the logged-in user is shown
     size?: number
     alt?: string
 }
 
-function Avatar({ src, size = 50, alt = 'Avatar' }: AvatarProps) {
+// "Jean Dupont" -> "JD", "neandrie" -> "N"
+function getInitials(name: string) {
+    return name.trim().split(/\s+/).slice(0, 2).map((word) => word[0]).join('').toUpperCase() || '?'
+}
+
+function Avatar({ src, name, size = 50, alt }: AvatarProps) {
     const { user } = useAuth()
+    const [failedSrc, setFailedSrc] = useState<string | null>(null)
 
-    const rawAvatar = src || user?.avatarUrl
+    const isOtherUser = name !== undefined
+    const imageSrc = src || (isOtherUser ? null : user?.avatarUrl)
+    const label = isOtherUser ? name : (user?.displayName || user?.username || '')
+    const description = alt ?? (label ? `${label}'s avatar` : 'Avatar')
 
-    // 智能处理图片路径
-    let imageSrc = defaultAvatar
-    if (rawAvatar && typeof rawAvatar === 'string') {
-        if (rawAvatar.startsWith('http') || rawAvatar.startsWith('data:image')) {
-            // 如果是完整的 URL 或 Base64，直接使用
-            imageSrc = rawAvatar
-        } else {
-            // 如果后端返回的是像 /uploads/... 这样的相对路径
-            // 请根据你的后端实际地址调整（例如若后端在 3000 端口，可写成 http://localhost:3000${rawAvatar}）
-            // 如果前端配置了 vite.js proxy 转发，直接使用 rawAvatar 即可
-            imageSrc = rawAvatar 
-        }
+    // No picture, or it failed to load: show initials instead
+    if (!imageSrc || imageSrc === failedSrc) {
+        return (
+            <div
+                role="img"
+                aria-label={description}
+                className={initialsClass}
+                style={{ width: size, height: size, fontSize: size * 0.4 }}
+            >
+                {getInitials(label)}
+            </div>
+        )
     }
 
     return (
         <img
             src={imageSrc}
-            alt={alt}
+            alt={description}
             width={size}
             height={size}
+            style={{ width: size, height: size }}
             className={avatarClass}
-            onError={(e) => {
-                // 如果图片加载失败，自动回退到默认头像，防止显示裂图或文字
-                (e.target as HTMLImageElement).src = defaultAvatar
-            }}
+            onError={() => setFailedSrc(imageSrc)}
         />
     )
 }
