@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext'; // 引入认证上下文以使用 apiFetch
+import { useAuth } from '../../context/AuthContext';
+import {
+    getFriends,
+    getPendingRequests,
+    searchUsers as apiSearchUsers,
+    sendRequest as apiSendRequest,
+    acceptRequest,
+    rejectRequest,
+} from '../../api/friends'; 
 
 interface User {
     id: string;
@@ -18,9 +26,8 @@ interface FriendRequest {
 }
 
 export default function FriendsManager() {
-    const { apiFetch } = useAuth(); // 获取 apiFetch
+    const { apiFetch } = useAuth(); 
 
-    // 从 sessionStorage 恢复状态，如果没有则使用默认值
     const [activeTab, setActiveTab] = useState<'friends' | 'requests' | 'search'>(() => {
         return (sessionStorage.getItem('friends_activeTab') as any) || 'friends';
     });
@@ -41,7 +48,6 @@ export default function FriendsManager() {
 
     const navigate = useNavigate();
 
-    // 每次状态改变时，实时存入 sessionStorage
     useEffect(() => {
         sessionStorage.setItem('friends_activeTab', activeTab);
     }, [activeTab]);
@@ -56,7 +62,7 @@ export default function FriendsManager() {
 
     const fetchFriends = async () => {
         try {
-            const data = await apiFetch('/friends');
+            const data = await getFriends(apiFetch);
             setFriends(data);
         } catch (err) {
             console.error('Failed to fetch friends list', err);
@@ -65,7 +71,7 @@ export default function FriendsManager() {
 
     const fetchPendingRequests = async () => {
         try {
-            const data = await apiFetch('/friends/requests');
+            const data = await getPendingRequests(apiFetch);
             setPendingRequests(data);
         } catch (err) {
             console.error('Failed to fetch friend requests', err);
@@ -81,7 +87,7 @@ export default function FriendsManager() {
         e.preventDefault();
         if (!searchKeyword.trim()) return;
         try {
-            const data = await apiFetch(`/friends/search?keyword=${encodeURIComponent(searchKeyword)}`);
+            const data = await apiSearchUsers(apiFetch, searchKeyword);
             setSearchResults(data);
         } catch (err) {
             console.error('Failed to search users', err);
@@ -90,10 +96,7 @@ export default function FriendsManager() {
 
     const sendRequest = async (receiverId: string) => {
         try {
-            await apiFetch('/friends/request', {
-                method: 'POST',
-                body: JSON.stringify({ receiverId }),
-            });
+            await apiSendRequest(apiFetch, receiverId);
             showNotification('Friend request sent successfully!', 'success');
         } catch (err: any) {
             showNotification(err.message || 'Failed to send request', 'error');
@@ -102,9 +105,11 @@ export default function FriendsManager() {
 
     const handleRequestAction = async (requestId: string, action: 'accept' | 'reject') => {
         try {
-            await apiFetch(`/friends/${action}/${requestId}`, {
-                method: 'POST',
-            });
+            if (action === 'accept') {
+                await acceptRequest(apiFetch, requestId);
+            } else {
+                await rejectRequest(apiFetch, requestId);
+            }
             showNotification(action === 'accept' ? 'Friend request accepted' : 'Friend request rejected', 'success');
             fetchPendingRequests();
             fetchFriends();

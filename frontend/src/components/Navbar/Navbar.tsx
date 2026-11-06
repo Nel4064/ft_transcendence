@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import Logo from '../Logo/Logo';
 import { useAuth } from '../../context/AuthContext';
 import Avatar from '../Avatar/Avatar';
 import { buttonClass } from '../button/Button';
+import { getPendingRequests } from '../../api/friends';
 
 const linkClass = "text-nav font-bold text-text-muted hover:text-text [&.active]:text-text transition-colors duration-300";
 const linkClassAdmin = "text-nav font-bold text-text-admin-muted hover:text-admin [&.active]:text-admin transition-colors duration-300";
@@ -12,13 +13,12 @@ function Navbar() {
     const { user, apiFetch } = useAuth();
     const [pendingCount, setPendingCount] = useState(0);
 
-    // 获取待处理的好友请求数量
     useEffect(() => {
         if (!user) return;
 
         const fetchPendingCount = async () => {
             try {
-                const data = await apiFetch('/friends/requests');
+                const data = await getPendingRequests(apiFetch);
                 if (Array.isArray(data)) {
                     setPendingCount(data.length);
                 }
@@ -54,7 +54,6 @@ function Navbar() {
                         Reminders
                     </NavLink>
                     
-                    {/* Friends 链接加上 relative 和红点徽标 */}
                     <NavLink to="/friends" className={`${linkClass} relative`}>
                         Friends
                         {pendingCount > 0 && (
