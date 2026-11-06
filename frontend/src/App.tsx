@@ -18,7 +18,6 @@ import ProfilePage from './pages/profile/ProfilePage'
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
 import MovieDetailsPage from './pages/movie-details/MovieDetailsPage'
 import ScreenDetailsPage from './pages/screenings-details/ScreenDetailsPage'
-import FriendsManager from './components/Friends/FriendsManager'
 import UserProfilePage from './pages/profile/UserProfilePage'
 
 
