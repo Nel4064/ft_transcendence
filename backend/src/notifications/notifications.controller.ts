@@ -1,41 +1,41 @@
 import { Controller, Get, Post, Patch, HttpCode, Body, Param, Req, UseGuards, ParseUUIDPipe, NotFoundException } from '@nestjs/common';
-import { ActivityGateway } from './activity.gateway';
-import { ActivityService } from './activity.service';
+import { NotificationsGateway } from './notifications.gateway';
+import { NotificationsService } from './notifications.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { AuthenticatedRequest } from '../auth/authenticated-request';
 
-@Controller('activity')
-export class ActivityController {
+@Controller('notifications')
+export class NotificationsController {
 
     constructor(
-        private activityGateway: ActivityGateway,
-        private activityService: ActivityService,
+        private notificationsGateway: NotificationsGateway,
+        private notificationsService: NotificationsService,
     ) {}
 
     @UseGuards(JwtAuthGuard)
     @Get()
     getMyNotifications(@Req() req: AuthenticatedRequest) {
-        return this.activityService.findForUser(req.user.userId);
+        return this.notificationsService.findForUser(req.user.userId);
     }
 
     @UseGuards(JwtAuthGuard)
     @Patch('read-all')
     markAllRead(@Req() req: AuthenticatedRequest) {
-        return this.activityService.markAllRead(req.user.userId);
+        return this.notificationsService.markAllRead(req.user.userId);
     }
 
     @UseGuards(JwtAuthGuard)
     @Patch(':id/read')
     @HttpCode(204)
     async markRead(@Req() req: AuthenticatedRequest, @Param('id', ParseUUIDPipe) id: string) {
-        if (!(await this.activityService.markRead(req.user.userId, id)))
+        if (!(await this.notificationsService.markRead(req.user.userId, id)))
             throw new NotFoundException('Notification not found');
     }
 
     @Post()
     @HttpCode(200)
-    sendActivityToAll(@Body() dto: { message: string }) {
-        this.activityGateway.sendToAll(dto.message);
+    sendNotificationToAll(@Body() dto: { message: string }) {
+        this.notificationsGateway.sendToAll(dto.message);
         return dto;
     }
 }

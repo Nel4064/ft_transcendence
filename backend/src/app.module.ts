@@ -5,7 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module'; 
 import { PrismaModule } from './prisma/prisma.module';
 import { ChatModule } from './chat/chat.module';
-import { ActivityModule } from './activity/activity.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { ScreeningsModule } from './screenings/screenings.module';
 
 @Module({
@@ -14,7 +14,7 @@ import { ScreeningsModule } from './screenings/screenings.module';
     AuthModule,
     UsersModule,
     ChatModule,
-    ActivityModule,
+    NotificationsModule,
     ScreeningsModule,
   ],
   controllers: [AppController],

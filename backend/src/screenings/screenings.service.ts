@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { ActivityService } from '../activity/activity.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 const FEED = 'https://datacinesindes.fr/data-fair/api/v1/datasets/programmation-cinemas/lines';
 const clean = (v?: string | null) => (v && v !== 'null' && v.trim()) || null;
@@ -13,7 +13,7 @@ export class ScreeningsService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly activity: ActivityService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   findAll() {
@@ -51,7 +51,7 @@ export class ScreeningsService {
     };
     const key = { externalCinemaId: data.externalCinemaId, externalShowId: data.externalShowId };
     const screening = await this.prisma.screening.upsert({ where: { externalCinemaId_externalShowId: key }, create: data, update: data });
-    await this.activity.notifyAllUsers('CLUB_PICK', {
+    await this.notifications.notifyAllUsers('CLUB_PICK', {
       screeningId: screening.id,
       filmTitle: screening.filmTitle,
       cinemaName: screening.cinemaName,
@@ -63,7 +63,7 @@ export class ScreeningsService {
   async unpick(cineid: number, showid: string, actorId: string) {
     const key = { externalCinemaId: cineid, externalShowId: showid };
     const screening = await this.prisma.screening.delete({ where: { externalCinemaId_externalShowId: key } });
-    await this.activity.notifyAllUsers('CLUB_PICK_REMOVED', {
+    await this.notifications.notifyAllUsers('CLUB_PICK_REMOVED', {
       screeningId: screening.id,
       filmTitle: screening.filmTitle,
       cinemaName: screening.cinemaName,

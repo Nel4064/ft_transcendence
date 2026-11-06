@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# End-to-end test of the activity routes (list, mark read, mark all read)
+# End-to-end test of the notifications routes (list, mark read, mark all read)
 # and of who may pick / unpick screenings. Needs the dev stack running, curl and jq.
 set -u
 API=${API:-http://localhost:3000/api}
@@ -62,7 +62,7 @@ SQL
 echo "  test_bob: ADMIN, test_alice: USER"
 
 step "4. Without a token -> 401 Unauthorized"
-check "list notifications"  401 GET  /activity
+check "list notifications"  401 GET  /notifications
 check "pick a screening"    401 POST /screenings "" '{}'
 
 step "5. Pick a screening: Alice (USER) is refused, Bob (ADMIN) succeeds"
@@ -75,32 +75,32 @@ check "Bob picks -> 201 Created"      201 POST /screenings "$BOB"   "$PICK"
 SCREENING_ID=$(jq -r .id <<<"$BODY")
 
 step "6. Alice is notified, with Bob as the actor; Bob is not notified"
-call GET /activity "$ALICE"
+call GET /notifications "$ALICE"
 jq -c '.[:3][] | {type, film: .payload.filmTitle, actor: .actor.displayName, readAt}' <<<"$BODY"
 ID=$(jq -r '.[0].id' <<<"$BODY")
 equals "newest is a CLUB_PICK"        "$(jq -r '.[0].type' <<<"$BODY")" CLUB_PICK
 equals "actor is Bob"                 "$(jq -r '.[0].actor.displayName' <<<"$BODY")" test_bob
-call GET /activity "$BOB"
+call GET /notifications "$BOB"
 equals "Bob got nothing for his pick" "$(jq --arg s "$SCREENING_ID" '[.[] | select(.payload.screeningId == $s)] | length' <<<"$BODY")" 0
 
 step "7. Mark one as read: bad id, unknown id, someone else's, then the real one"
-check "not a uuid -> 400"             400 PATCH /activity/not-a-uuid/read "$ALICE"
-check "unknown uuid -> 404"           404 PATCH /activity/00000000-0000-0000-0000-000000000000/read "$ALICE"
-check "Bob marks Alice's -> 404"      404 PATCH "/activity/$ID/read" "$BOB"
-check "Alice marks her own -> 204"    204 PATCH "/activity/$ID/read" "$ALICE"
-call GET /activity "$ALICE"
+check "not a uuid -> 400"             400 PATCH /notifications/not-a-uuid/read "$ALICE"
+check "unknown uuid -> 404"           404 PATCH /notifications/00000000-0000-0000-0000-000000000000/read "$ALICE"
+check "Bob marks Alice's -> 404"      404 PATCH "/notifications/$ID/read" "$BOB"
+check "Alice marks her own -> 204"    204 PATCH "/notifications/$ID/read" "$ALICE"
+call GET /notifications "$ALICE"
 equals "readAt is now set"            "$(jq -r --arg id "$ID" '.[] | select(.id == $id) | .readAt != null' <<<"$BODY")" true
 
 step "8. Unpick: Alice is refused, Bob succeeds; then Alice marks all as read"
 check "Alice unpicks -> 403 Forbidden" 403 DELETE "/screenings/$CINEID/$SHOWID" "$ALICE"
 check "Bob unpicks -> 200 OK"          200 DELETE "/screenings/$CINEID/$SHOWID" "$BOB"
-call GET /activity "$ALICE"
+call GET /notifications "$ALICE"
 echo "  Alice unread before: $(jq '[.[] | select(.readAt == null)] | length' <<<"$BODY")"
-check "mark all as read -> 200"        200 PATCH /activity/read-all "$ALICE"
+check "mark all as read -> 200"        200 PATCH /notifications/read-all "$ALICE"
 echo "  marked: $(jq -r .count <<<"$BODY")"
-call GET /activity "$ALICE"
+call GET /notifications "$ALICE"
 equals "Alice unread after"            "$(jq '[.[] | select(.readAt == null)] | length' <<<"$BODY")" 0
-call GET /activity "$BOB"
+call GET /notifications "$BOB"
 equals "Bob got nothing for his unpick" "$(jq --arg s "$SCREENING_ID" '[.[] | select(.payload.screeningId == $s)] | length' <<<"$BODY")" 0
 
 printf '\n%s%d passed, %d failed%s\n' "$BOLD" "$PASSED" "$FAILED" "$RESET"

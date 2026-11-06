@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { ActivityGateway } from './activity.gateway';
+import { NotificationsGateway } from './notifications.gateway';
 
 type NotificationKind = 'CLUB_PICK' | 'CLUB_PICK_REMOVED';
 
 @Injectable()
-export class ActivityService {
+export class NotificationsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly gateway: ActivityGateway,
+    private readonly gateway: NotificationsGateway,
   ) {}
 
   // Saves one notification per user except the actor, then pushes it live to connected browsers
