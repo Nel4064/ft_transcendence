@@ -12,7 +12,7 @@ function HomePage() {
 
 				<section className="py-12 px-10">
 					<div className="flex justify-between items-center mb-6">
-						<h2 className="text-section text-text">Upcoming Events</h2>
+						<h2 className="font-serif text-section text-text font-bold">Upcoming Screenings...</h2>
 					</div>
 
 					<ScreeningsList />
