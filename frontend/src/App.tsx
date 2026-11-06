@@ -43,7 +43,7 @@ function App() {
 					<Route path="/activity" element={<ActivityPage />} />
 					<Route path="/screenings" element={<ScreeningsPage />} />
 					<Route path="/reminders" element={<RemindersPage />} />
-					<Route path="/friends" element={<FriendsPage />} />
+					
 					<Route path="/movies/:title" element={<MovieDetailsPage />} />
 					<Route path="/screenings/:id" element={<ScreenDetailsPage />} />
 					<Route path="/friends" element={<FriendsManager />} />

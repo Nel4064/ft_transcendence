@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -36,10 +36,17 @@ export default function UserProfilePage() {
     }
   }, [id, apiFetch]);
 
-  // 辅助函数：获取当前 profile 名字的前两个字母并大写
-  const getInitials = (user: { displayName?: string; username: string }) => {
-    const name = user.displayName || user.username;
-    return name ? name.slice(0, 2).toUpperCase() : 'U';
+  // Helper function: get the first letters of the first two words in the profile name and uppercase them
+  const getInitials = (name?: string) => {
+    if (!name) return 'U';
+    const words = name.trim().split(/\s+/);
+    if (words.length >= 2) {
+      // Take the first letters of the first two words
+      return (words[0][0] + words[1][0]).toUpperCase();
+    } else {
+      // If there is only one word, take the first two letters capitalized
+      return name.slice(0, 2).toUpperCase();
+    }
   };
 
   if (loading) {
@@ -73,7 +80,7 @@ export default function UserProfilePage() {
 
         {/* User profile display card */}
         <div className="flex flex-col items-center gap-4 p-8 bg-surface border border-border rounded-md shadow-card text-center">
-          {/* 自定义头像渲染：有 avatarUrl 显示图片，没有则显示该 profile 的前两个字母 */}
+          {/* Custom avatar rendering: display image if avatarUrl exists, otherwise display profile initials */}
           <div className="w-[100px] h-[100px] bg-brand/20 text-brand rounded-full flex items-center justify-center text-2xl font-bold overflow-hidden shadow-inner">
             {profile.avatarUrl ? (
               <img 
@@ -82,7 +89,7 @@ export default function UserProfilePage() {
                 className="w-full h-full object-cover" 
               />
             ) : (
-              getInitials(profile)
+              getInitials(profile.displayName)
             )}
           </div>
           
