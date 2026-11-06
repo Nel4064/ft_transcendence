@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by mgrossi, neandrie, weiyang, rozhang*
+*This project has been created as part of the 42 curriculum by mgrossi, neandrie, weiyang, rozhang, lhao*
 
 # 🎬 CinéClub
 
