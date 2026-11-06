@@ -3,7 +3,7 @@ import ticket from '../../assets/ticket.svg'
 
 const logoClass = "flex items-center gap-2 text-text"
 const imageClass = "h-16"
-const nameClass = "font-serif font-bold text-[44px]"
+const nameClass = "font-serif font-bold text-logo"
 
 function Logo() {
 	return (

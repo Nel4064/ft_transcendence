@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import defaultMovie from '../../assets/default-movie.jpg'
 import { normalizeTitle } from '../../utils/normalizeTitle'
 import { apiFetch } from '../../context/AuthContext'
+import Button from '../../components/button/Button'
 
 const FEED_URL = 'https://datacinesindes.fr/data-fair/api/v1/datasets/programmation-cinemas/lines'
 
@@ -77,20 +78,18 @@ function MovieDetailsPage() {
 	return (
 		<main className="max-w-[1000px] mx-auto py-12 px-10">
 			<img src={poster} alt={first.filmtitle} className="w-64 rounded-md mb-6" />
-			<h1 className="font-serif font-bold text-5xl text-text mb-6">{first.filmtitle}</h1>
+			<h1 className="font-serif font-bold text-title text-text mb-6">{first.filmtitle}</h1>
 
 			<ul className="flex flex-col gap-4">
 				{screenings.map((s) => (
-					<li key={`${s.cineid}-${s.showid}`} className="flex items-center justify-between p-4 bg-surface border border-border rounded-lg text-xl text-text-muted">
+					<li key={`${s.cineid}-${s.showid}`} className="flex items-center justify-between p-4 bg-surface border border-border rounded-lg text-body text-text-muted">
 						<div>
 							<p>📅 {new Date(s.showstart).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</p>
 							<p>📍 {s.cineville} · {s.cinenom}</p>
 						</div>
-						<button
-							onClick={() => toggleEvent(s)}
-							className="py-2.5 px-3 rounded-md bg-admin hover:bg-admin-hover text-white text-base cursor-pointer">
+						<Button variant="admin" size="lg" onClick={() => toggleEvent(s)}>
 							{created.has(`${s.cineid}-${s.showid}`) ? 'Remove Event' : 'Create Event'}
-						</button>
+						</Button>
 					</li>
 				))}
 			</ul>

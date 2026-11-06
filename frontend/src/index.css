@@ -24,6 +24,26 @@
 	--radius-md: var(--ds-radius);
 	--radius-lg: var(--ds-radius-lg);
 	--shadow-card: var(--ds-shadow);
+
+	--text-sm: var(--ds-text-sm);
+	--text-base: var(--ds-text-base);
+
+	--text-display: var(--ds-text-display);
+	--text-display--line-height: 1;
+	--text-logo: var(--ds-text-logo);
+	--text-title: var(--ds-text-title);
+	--text-title--line-height: 1.11;
+	--text-section: var(--ds-text-section);
+	--text-section--line-height: 1.33;
+	--text-card: var(--ds-text-card);
+	--text-card--line-height: 1.33;
+	--text-body: var(--ds-text-body);
+	--text-body--line-height: 1.5;
+	--text-small: var(--ds-text-small);
+	--text-small--line-height: 1.43;
+	--text-control: var(--ds-text-control);
+	--text-control--line-height: 1.5;
+	--text-nav: var(--ds-text-nav);
 }
 
 :root {

@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import MoviesList from '../../components/movies/MoviesList'
+import Button from '../../components/button/Button'
 
 const boxClass = "flex items-center gap-4 max-w-[1000px] mx-auto my-[100px] p-8 bg-surface border border-border rounded-lg shadow-card"
-const inputClass = "flex-1 py-4 px-5 border border-border rounded-md text-xl"
-const buttonClass = "py-4 px-8 rounded-md bg-admin hover:bg-admin-hover text-white text-xl font-bold cursor-pointer transition-colors"
-const selectClass = "py-4 px-5 border border-border rounded-md text-xl bg-surface cursor-pointer"
+const inputClass = "flex-1 py-4 px-5 border border-border rounded-md text-control"
+const selectClass = "py-4 px-5 border border-border rounded-md text-control bg-surface cursor-pointer"
 
 function SearchMoviesPage() {
 	const [searchTerm, setSearchTerm] = useState('')
@@ -16,9 +16,9 @@ function SearchMoviesPage() {
 			<section className={boxClass}>
 				<input
 					id="search"
-					type="text"
+					type={filter === 'date' ? 'date' : 'text'}
 					value={searchTerm}
-					placeholder={filter === 'date' ? 'MM/DD/YYYY' : 'Search for a movie'}
+					placeholder="Search for a movie"
 					onChange={(e) => setSearchTerm(e.target.value)}
 					className={inputClass}
 				/>
@@ -31,7 +31,7 @@ function SearchMoviesPage() {
 					<option value="cinema">Cinema</option>
 					<option value="date">Date</option>
 				</select>
-				<button onClick={() => setAppliedTerm(searchTerm)} className={buttonClass}>Search</button>
+				<Button variant="admin" size="xl" onClick={() => setAppliedTerm(searchTerm)}>Search</Button>
 			</section>
 			<section className="grid grid-cols-4 gap-5 max-w-[2000px] mx-auto my-[50px]">
 				<MoviesList searchTerm={appliedTerm} filter={filter} perPage={20} />
