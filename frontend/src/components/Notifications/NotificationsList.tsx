@@ -15,6 +15,11 @@ function NotificationsList() {
 	const [notifications, setNotifications] = useState<NotificationItem[]>([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
+    const [, setNow] = useState(Date.now())
+	useEffect(() => {
+		const timer = setInterval(() => setNow(Date.now()), 60 * 1000)
+		return () => clearInterval(timer)
+	}, [])
 
 	// Fetch once on mount, then again whenever the backend pushes a notification
 	useEffect(() => {
