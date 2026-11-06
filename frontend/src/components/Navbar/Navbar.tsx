@@ -36,8 +36,8 @@ function Navbar() {
                     <NavLink to="/friends" className={linkClass}>
                         Friends
                     </NavLink>
-                    <NavLink to="/activity" className={linkClass}>
-                        Activities
+                    <NavLink to="/notifications" className={linkClass}>
+                        Notifications
                     </NavLink>
                 </div>
             )}
