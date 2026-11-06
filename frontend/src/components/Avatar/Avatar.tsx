@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 
-const avatarClass = "shrink-0 rounded-full object-cover border-2 border-brand"
+const avatarClass = "shrink-0 rounded-full object-cover border-2 border-brand max-width: 100%"
 const initialsClass = "shrink-0 rounded-full border-2 border-brand bg-brand text-white font-serif font-bold flex items-center justify-center select-none"
 
 type AvatarProps = {

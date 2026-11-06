@@ -62,9 +62,8 @@ function Navbar() {
                             </span>
                         )}
                     </NavLink>
-
-                    <NavLink to="/activity" className={linkClass}>
-                        Activities
+                    <NavLink to="/notifications" className={linkClass}>
+                        Notifications
                     </NavLink>
                 </div>
             )}
