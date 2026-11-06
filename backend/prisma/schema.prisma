@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
   moduleFormat = "cjs"
 }
 
@@ -35,38 +35,43 @@ enum RequestStatus {
 }
 
 enum NotificationType {
-  FRIEND_REQUEST     // user sending the request → invited user
-  FRIEND_ACCEPTED    // user accepting           → user who asked
-  EVENT_CANCELLED    // organizer who cancels    → everyone who RSVPed
-  CLUB_PICK          // organizer who picks      → members
-  CLUB_PICK_REMOVED  // organizer who unpicks    → members, those who RSVPed
-  FRIEND_RSVP        // friend who RSVPs         → their friends
-  ROLE_CHANGED       // admin who changes role   → user whose role changed
+  FRIEND_REQUEST // user sending the request → invited user
+  FRIEND_ACCEPTED // user accepting           → user who asked
+  EVENT_CANCELLED // organizer who cancels    → everyone who RSVPed
+  CLUB_PICK // organizer who picks      → members
+  CLUB_PICK_REMOVED // organizer who unpicks    → members, those who RSVPed
+  FRIEND_RSVP // friend who RSVPs         → their friends
+  ROLE_CHANGED // admin who changes role   → user whose role changed
+}
+
+enum ChatType {
+  DIRECT
+  EVENT
 }
 
 model User {
-  id               String   @id @default(uuid()) @db.Uuid
-  username         String   @unique @db.VarChar(50)
-  displayName      String   @db.VarChar(50)
-  email            String   @unique @db.VarChar(255)
-  
+  id          String @id @default(uuid()) @db.Uuid
+  username    String @unique @db.VarChar(50)
+  displayName String @db.VarChar(50)
+  email       String @unique @db.VarChar(255)
+
   // Authentication
-  passwordHash     String?  @db.VarChar(255)  // Optional: Only for local registration
-  oauth42Id        String?  @unique           // Optional: Only for 42 OAuth login
-  
+  passwordHash String? @db.VarChar(255) // Optional: Only for local registration
+  oauth42Id    String? @unique // Optional: Only for 42 OAuth login
+
   // Profile Information
-  avatarUrl        String?
-  bio              String?  @db.Text
-  language         Language   @default(EN)    // Default is English
-  role             Role     @default(USER)    // Default is regular user
-  
+  avatarUrl String?
+  bio       String?  @db.Text
+  language  Language @default(EN) // Default is English
+  role      Role     @default(USER) // Default is regular user
+
   // Two-Factor Authentication (2FA)
-  twoFactorEnabled Boolean  @default(false)
-  twoFactorSecret  String?  @db.VarChar(255)
-  
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String? @db.VarChar(255)
+
   // Audit Timestamps
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // ----------------------------------------------------
   // 新增：好友相关的反向关联
@@ -77,8 +82,10 @@ model User {
   friendOf               Friendship[]    @relation("FriendFriendships")
 
   // Relations
-  notificationsRecv  Notification[] @relation("NotificationRecipient")  // received by this user
-  notificationsSent  Notification[] @relation("NotificationActor")     // caused by this user
+  notificationsRecv Notification[] @relation("NotificationRecipient") // received by this user
+  notificationsSent Notification[] @relation("NotificationActor") // caused by this user
+  sentMessages      Message[]      @relation("SentMessages")
+  receivedMessages  Message[]      @relation("ReceivedMessages")
 
   @@map("users") // Maps the model to a lowercase "users" table in the database
 }
@@ -92,58 +99,57 @@ model FriendRequest {
   updatedAt  DateTime      @updatedAt
 
   // 关联到 User 模型
-  sender     User          @relation("SentFriendRequests", fields: [senderId], references: [id], onDelete: Cascade)
-  receiver   User          @relation("ReceivedFriendRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender   User @relation("SentFriendRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedFriendRequests", fields: [receiverId], references: [id], onDelete: Cascade)
 
   @@unique([senderId, receiverId]) // 防止重复向同一个人发送请求
   @@map("friend_requests")
 }
 
 model Friendship {
-  id       String   @id @default(uuid()) @db.Uuid
-  userId   String   @db.Uuid
-  friendId String   @db.Uuid
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  friendId  String   @db.Uuid
   createdAt DateTime @default(now())
 
-  user     User     @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
-  friend   User     @relation("FriendFriendships", fields: [friendId], references: [id], onDelete: Cascade)
+  user   User @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
+  friend User @relation("FriendFriendships", fields: [friendId], references: [id], onDelete: Cascade)
 
   @@unique([userId, friendId])
   @@map("friendships")
 }
 
-
 // A screening chosen by the club, copied from the datacinesindes.fr feed if and when picked.
 model Screening {
-  id               String            @id @default(uuid())
-  externalShowId   String            @db.VarChar(20)           // showid (unique per cinema only)
-  externalCinemaId Int                                         // cineid
+  id               String @id @default(uuid())
+  externalShowId   String @db.VarChar(20) // showid (unique per cinema only)
+  externalCinemaId Int // cineid
 
   // Film (snapshot from the feed)
-  filmTitle        String                                      // filmtitle, raw
-  director         String?                                     // filmdirector
-  cast             String?                                     // filmcast
-  synopsis         String?                                     // filmstoryline
-  genres           String[]          @default([])              // filmgenre, cleaned
-  country          String?                                     // filmcountry
-  runtimeMinutes   Int?                                        // filmduration, null if implausible
-  posterUrl        String?                                     // filmposter, https only
-  trailerUrl       String?                                     // filmtrailer, allowed hosts only
-  version          ScreeningVersion?                           // filmversion, null if blank
-  eventName        String?                                     // evenement
-  bookingUrl       String?                                     // showurl (V3)
+  filmTitle      String // filmtitle, raw
+  director       String? // filmdirector
+  cast           String? // filmcast
+  synopsis       String? // filmstoryline
+  genres         String[]          @default([]) // filmgenre, cleaned
+  country        String? // filmcountry
+  runtimeMinutes Int? // filmduration, null if implausible
+  posterUrl      String? // filmposter, https only
+  trailerUrl     String? // filmtrailer, allowed hosts only
+  version        ScreeningVersion? // filmversion, null if blank
+  eventName      String? // evenement
+  bookingUrl     String? // showurl (V3)
 
   // Showtime
-  startsAt         DateTime          @db.Timestamptz(3)        // showstart
-  endsAt           DateTime          @db.Timestamptz(3)        // showend
+  startsAt DateTime @db.Timestamptz(3) // showstart
+  endsAt   DateTime @db.Timestamptz(3) // showend
 
   // Cinema
-  cinemaName       String            @db.VarChar(60)           // cinenom
-  cinemaAddress    String            @db.VarChar(100)          // cineadresse
-  cinemaPostalCode String            @db.VarChar(5)            // cinecp
-  cinemaCity       String            @db.VarChar(40)           // cineville
-  cinemaLatitude   Float?                                      // _coords.lat (V3)
-  cinemaLongitude  Float?                                      // _coords.lon (V3)
+  cinemaName       String @db.VarChar(60) // cinenom
+  cinemaAddress    String @db.VarChar(100) // cineadresse
+  cinemaPostalCode String @db.VarChar(5) // cinecp
+  cinemaCity       String @db.VarChar(40) // cineville
+  cinemaLatitude   Float? // _coords.lat (V3)
+  cinemaLongitude  Float? // _coords.lon (V3)
 
   // // Club side
   // curatedById      String?
@@ -151,8 +157,9 @@ model Screening {
   // isCancelled      Boolean           @default(false)
   // rsvps            Rsvp[]
 
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  messages  Message[]
 
   @@unique([externalCinemaId, externalShowId])
   @@index([startsAt])
@@ -160,21 +167,43 @@ model Screening {
 }
 
 model Notification {
-  id              String           @id @default(uuid()) @db.Uuid
+  id String @id @default(uuid()) @db.Uuid
 
   // Recipient: who reads it
-  userId          String           @db.Uuid
-  user            User             @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  userId String @db.Uuid
+  user   User   @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
 
   // Actor: who caused it (null if their account was deleted)
-  actorId         String?          @db.Uuid
-  actor           User?            @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  actorId String? @db.Uuid
+  actor   User?   @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
 
-  type            NotificationType
-  payload         Json
-  readAt          DateTime?
-  createdAt       DateTime         @default(now())
+  type      NotificationType
+  payload   Json
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
 
   @@index([userId, readAt, createdAt])
   @@map("notifications")
+}
+
+model Message {
+  id        String   @id @default(uuid()) @db.Uuid
+  content   String   @db.Text
+  type      ChatType @default(DIRECT)
+  createdAt DateTime @default(now())
+
+  senderId String @db.Uuid
+  sender   User   @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  // private message only
+  receiverId String? @db.Uuid
+  receiver   User?   @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  // group message only
+  screeningId String?
+  screening   Screening? @relation(fields: [screeningId], references: [id], onDelete: Cascade)
+
+  @@index([senderId, receiverId])
+  @@index([screeningId])
+  @@map("messages")
 }
