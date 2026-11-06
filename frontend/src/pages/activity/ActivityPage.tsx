@@ -3,7 +3,7 @@ import ActivitiesCard from '../../components/Activity/ActivitiesCard'
 function ActivityPage() {
 	return (
 		<main className="max-w-[560px] mx-auto py-12 px-4">
-			<h1 className="text-4xl font-serif font-bold mb-5">Activity</h1>
+			<h1 className="font-serif font-bold text-title text-text mb-5">Activity</h1>
 			<div className="flex flex-col gap-2.5">
 				<ActivitiesCard message="Perfect Days was added as a Club Pick" time="2 hours ago" unread />
 				<ActivitiesCard message="Théo accepted your friend request" time="Yesterday" actor={{ displayName: "Théo", avatarUrl: null }} unread />

@@ -19,11 +19,25 @@
 	--ds-border: #ddd;
 
 	/* Polices */
-	--ds-font-sans: Arial, sans-serif;
-	--ds-font-serif: Georgia, serif;
+	--ds-font-sans: "Public Sans", sans-serif;
+	--ds-font-serif: "Fraunces", serif;
 
 	/* Formes */
 	--ds-radius: 8px;
 	--ds-radius-lg: 12px;
 	--ds-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+	/* Tailles de texte */
+	--ds-text-sm: 0.875rem;
+	--ds-text-base: 1rem;
+
+	--ds-text-display: 4.5rem;            /* titre héro de la page d'accueil (text-7xl) */
+	--ds-text-logo: 2.75rem;               /* nom du logo (44px) */
+	--ds-text-title: 2.25rem;              /* titre de page (text-4xl) */
+	--ds-text-section: 1.5rem;             /* titre de section (text-2xl) */
+	--ds-text-card: 1.5rem;                /* titre de carte (text-2xl) */
+	--ds-text-body: var(--ds-text-base);   /* texte courant */
+	--ds-text-small: var(--ds-text-sm);    /* texte secondaire, labels, aide */
+	--ds-text-control: var(--ds-text-base); /* boutons et champs */
+	--ds-text-nav: 1.125rem;               /* liens de la navbar (18px) */
 }

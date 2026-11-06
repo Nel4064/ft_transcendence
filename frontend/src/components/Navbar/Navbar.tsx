@@ -2,9 +2,10 @@ import { NavLink } from 'react-router-dom'
 import Logo from '../Logo/Logo'
 import { useAuth } from '../../context/AuthContext'
 import Avatar from '../Avatar/Avatar'
+import { buttonClass } from '../button/Button'
 
-const linkClass = "text-[18px] text-text-muted hover:text-text [&.active]:text-text transition-colors duration-300"
-const linkClassAdmin = "text-[18px] text-text-admin-muted hover:text-admin [&.active]:text-admin transition-colors duration-300"
+const linkClass = "text-nav font-bold text-text-muted hover:text-text [&.active]:text-text transition-colors duration-300"
+const linkClassAdmin = "text-nav font-bold text-text-admin-muted hover:text-admin [&.active]:text-admin transition-colors duration-300"
 
 function Navbar() {
     const { user } = useAuth()
@@ -17,15 +18,26 @@ function Navbar() {
             {user && (
                 <div className="flex gap-10">
                     {user.role === 'ADMIN' && (
-                        <NavLink to="/search-movies" className={linkClassAdmin}>
-                            Search movies
+                        <NavLink to="/select-movies" className={linkClassAdmin}>
+                            Select Movies
                         </NavLink>
                     )}
-                    <NavLink to="/calendar" className={linkClass}>
-                        Calendar
+                    {user.role === 'ADMIN' && (
+                        <NavLink to="/manage-members" className={linkClassAdmin}>
+                            Manage Members
+                        </NavLink>
+                    )}
+                    <NavLink to="/screenings" className={linkClass}>
+                        Screenings
+                    </NavLink>
+                    <NavLink to="/reminders" className={linkClass}>
+                        Reminders
+                    </NavLink>
+                    <NavLink to="/friends" className={linkClass}>
+                        Friends
                     </NavLink>
                     <NavLink to="/activity" className={linkClass}>
-                        Activity
+                        Activities
                     </NavLink>
                 </div>
             )}
@@ -39,7 +51,7 @@ function Navbar() {
                     />
                 </NavLink>
             ) : (
-                <NavLink to="/signin" className="ml-7 py-2 px-4 rounded-md bg-brand hover:bg-brand-hover text-white text-base font-bold transition-colors">Login</NavLink>
+                <NavLink to="/signin" className={buttonClass("primary", "md", "ml-7")}>Login</NavLink>
             )}
         </nav>
     )

@@ -19,7 +19,7 @@ function ScreeningsList() {
 	}, [])
 
 	if (screenings.length === 0)
-		return <p className="text-text-muted">No upcoming events yet.</p>
+		return <p className="text-text-muted">No upcoming screenings yet.</p>
 
 	return (
 		<div className="flex flex-row gap-6 overflow-x-auto pb-4 snap-x">

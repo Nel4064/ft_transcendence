@@ -5,11 +5,14 @@ import HomePage from './pages/home/HomePage'
 import ActivityPage from './pages/activity/ActivityPage'
 import SignInPage from './pages/sign-in/SignInPage'
 import SignUpPage from './pages/sign-up/SignUpPage'
-import SearchMoviesPage from './pages/search-movies/SearchMoviesPage'
+import SelectMoviesPage from './pages/select-movies/SelectMoviesPage'
 import BottomNav from './components/BottomNav/BottomNav'
 import PrivacyPolicyPage from './pages/privacy-policy/PrivacyPolicyPage'
 import TermsOfServicePage from './pages/terms-of-service/TermsOfServicePage'
-import CalendarPage from './pages/calendar/CalendarPage'
+import RemindersPage from './pages/reminders/RemindersPage'
+import FriendsPage from './pages/friends/FriendsPage'
+import ManageMembersPage from './pages/manage-members/ManageMembersPage'
+import ScreeningsPage from './pages/screenings/ScreeningsPage'
 import { AuthProvider } from './context/AuthContext'
 import ProfilePage from './pages/profile/ProfilePage'
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
@@ -36,18 +39,21 @@ function App() {
 				<Route element={<ProtectedRoute />}>
 					<Route path="/profile" element={<ProfilePage />} />
 					<Route path="/activity" element={<ActivityPage />} />
-					<Route path="/calendar" element={<CalendarPage />} />
+					<Route path="/screenings" element={<ScreeningsPage />} />
+					<Route path="/reminders" element={<RemindersPage />} />
+					<Route path="/friends" element={<FriendsPage />} />
 					<Route path="/movies/:title" element={<MovieDetailsPage />} />
 					<Route path="/screenings/:id" element={<ScreenDetailsPage />} />
 				</Route>
 
 				<Route element={<ProtectedRoute adminOnly />}>
-					<Route path="/search-movies" element={<SearchMoviesPage />} />
+					<Route path="/select-movies" element={<SelectMoviesPage />} />
+					<Route path="/manage-members" element={<ManageMembersPage />} />
 				</Route>
 
 					<Route path="*" element={
 					<main className="max-w-[1200px] mx-auto py-12 px-10">
-						<h1 className="font-serif font-bold text-4xl text-text">404 Not Found</h1>
+						<h1 className="font-serif font-bold text-title text-text">404 Not Found</h1>
 					</main>
 				} />
 			</Routes>

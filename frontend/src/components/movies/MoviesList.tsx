@@ -2,6 +2,7 @@ import MoviesCard from './MoviesCard'
 import defaultMovie from '../../assets/default-movie.jpg'
 import { useState, useEffect } from 'react'
 import { normalizeTitle } from '../../utils/normalizeTitle'
+import Button from '../button/Button'
 
 const FEED_URL = 'https://datacinesindes.fr/data-fair/api/v1/datasets/programmation-cinemas/lines'
 const DAYS_AHEAD = 7
@@ -23,15 +24,13 @@ type MoviesListProps = {
 	perPage?: number // si défini, active la pagination
 }
 
-// "2026-10-20T22:30:00Z" -> "10/21/2026" (jour local, même format que la recherche)
+// "2026-10-20T22:30:00Z" -> "2026-10-21" (jour local, même format que <input type="date">)
 function toLocalDay(iso: string) {
 	const d = new Date(iso)
 	const mm = String(d.getMonth() + 1).padStart(2, '0')
 	const dd = String(d.getDate()).padStart(2, '0')
-	return `${mm}/${dd}/${d.getFullYear()}`
+	return `${d.getFullYear()}-${mm}-${dd}`
 }
-
-const pageButtonClass = "py-2 px-5 rounded-md bg-admin hover:bg-admin-hover text-white font-bold cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-default"
 
 function MoviesList({ searchTerm = '', filter = 'title', perPage }: MoviesListProps) {
 	const [rows, setRows] = useState<FeedRow[]>([])
@@ -89,9 +88,9 @@ function MoviesList({ searchTerm = '', filter = 'title', perPage }: MoviesListPr
 			))}
 			{perPage && totalPages > 1 && (
 				<div className="col-span-full flex items-center justify-center gap-4 mt-4">
-					<button onClick={() => setPage(page - 1)} disabled={page === 1} className={pageButtonClass}>Previous</button>
+					<Button variant="admin" onClick={() => setPage(page - 1)} disabled={page === 1}>Previous</Button>
 					<span>Page {page} / {totalPages}</span>
-					<button onClick={() => setPage(page + 1)} disabled={page === totalPages} className={pageButtonClass}>Next</button>
+					<Button variant="admin" onClick={() => setPage(page + 1)} disabled={page === totalPages}>Next</Button>
 				</div>
 			)}
 		</>
