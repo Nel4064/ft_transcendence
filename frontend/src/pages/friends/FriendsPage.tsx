@@ -1,9 +1,12 @@
-function FriendsPage() {
-	return (
-		<main className="py-12 px-10">
-			<h1 className="mb-6 font-serif font-bold text-section text-text">Friends</h1>
-		</main>
-	)
+import FriendsManager from '../../components/Friends/FriendsManager';
+
+export default function FriendsPage() {
+
+    return (
+        <main className="max-w-[1200px] mx-auto px-4 py-8">
+            <FriendsManager />
+        </main>
+    );
 }
 
-export default FriendsPage
+
