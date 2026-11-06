@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, Body, Req, UseGuards, Query } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Param, Body, Req, UseGuards, Query } from '@nestjs/common';
 import type { Request } from 'express';
 import { FriendService } from './friend.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // Adjust the path based on your project's authentication Guard
@@ -56,4 +56,12 @@ export class FriendController {
     const currentUserId = req.user.userId;
     return this.friendService.searchUsers(currentUserId, keyword);
   }
+
+  // DELETE /friends/:friendId - Remove a friend
+  @Delete(':friendId')
+  async removeFriend(@Req() req: AuthenticatedRequest, @Param('friendId') friendId: string) {
+    const currentUserId = req.user.userId;
+    return this.friendService.removeFriend(currentUserId, friendId);
+  }
 }
+

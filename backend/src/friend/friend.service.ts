@@ -130,4 +130,17 @@ export class FriendService {
       take: 10,
     });
   }
+
+  async removeFriend(userId: string, friendId: string) {
+    await this.prisma.friendship.deleteMany({
+      where: {
+        OR: [
+          { userId: userId, friendId: friendId },
+          { userId: friendId, friendId: userId },
+        ],
+      },
+    });
+    return { message: 'Friend removed successfully' };
+  }
 }
+

@@ -20,3 +20,6 @@ export const acceptRequest = (apiFetch: ApiFetch, requestId: string) =>
 
 export const rejectRequest = (apiFetch: ApiFetch, requestId: string) =>
   apiFetch(`/friends/reject/${requestId}`, { method: 'POST' });
+
+export const removeFriend = (apiFetch: ApiFetch, friendId: string) =>
+  apiFetch(`/friends/${friendId}`, { method: 'DELETE' });

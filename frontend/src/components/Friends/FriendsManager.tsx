@@ -8,7 +8,8 @@ import {
     sendRequest as apiSendRequest,
     acceptRequest,
     rejectRequest,
-} from '../../api/friends'; 
+    removeFriend,
+} from '../../api/friends';
 
 interface User {
     id: string;
@@ -26,7 +27,7 @@ interface FriendRequest {
 }
 
 export default function FriendsManager() {
-    const { apiFetch } = useAuth(); 
+    const { apiFetch } = useAuth();
 
     const [activeTab, setActiveTab] = useState<'friends' | 'requests' | 'search'>(() => {
         return (sessionStorage.getItem('friends_activeTab') as any) || 'friends';
@@ -135,6 +136,17 @@ export default function FriendsManager() {
         }
     };
 
+    const handleRemoveFriend = async (friendId: string, friendName: string) => {
+        if (!confirm(`Are you sure you want to remove ${friendName} from your friends?`)) return;
+        try {
+            await removeFriend(apiFetch, friendId);
+            showNotification('Friend removed successfully', 'success');
+            fetchFriends();
+        } catch (err: any) {
+            showNotification(err.message || 'Failed to remove friend', 'error');
+        }
+    };
+
     return (
         <div className="max-w-2xl mx-auto p-6 bg-slate-900 text-white rounded-xl shadow-xl relative">
             {message && (
@@ -215,12 +227,22 @@ export default function FriendsManager() {
                                         <div className="text-xs text-slate-400">@{friend.username}</div>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={() => alert(`Redirecting to chat with ${friend.username}`)}
-                                    className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-sm rounded-lg transition-colors"
-                                >
-                                    Chat
-                                </button>
+
+                                {/* 同时保留 Chat 按钮和 Remove 按钮 */}
+                                <div className="flex items-center space-x-2">
+                                    <button
+                                        onClick={() => alert(`Redirecting to chat with ${friend.username}`)}
+                                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-sm rounded-lg transition-colors"
+                                    >
+                                        Chat
+                                    </button>
+                                    <button
+                                        onClick={() => handleRemoveFriend(friend.id, friend.displayName || friend.username)}
+                                        className="px-3 py-1.5 bg-rose-600/80 hover:bg-rose-600 text-sm rounded-lg transition-colors text-white font-medium"
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
                             </div>
                         ))
                     )}
