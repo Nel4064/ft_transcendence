@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { io } from 'socket.io-client'
 import NotificationsCard from './NotificationsCard'
 import { useAuth } from '../../context/AuthContext'
-import { getNotifications, type NotificationItem } from '../../api/notifications'
+import { getNotifications, markNotificationRead, type NotificationItem } from '../../api/notifications'
 import { describeNotification } from '../../utils/describeNotification'
 import { formatRelativeTime } from '../../utils/formatRelativeTime'
 

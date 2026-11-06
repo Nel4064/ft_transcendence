@@ -32,10 +32,4 @@ export class NotificationsController {
             throw new NotFoundException('Notification not found');
     }
 
-    @Post()
-    @HttpCode(200)
-    sendNotificationToAll(@Body() dto: { message: string }) {
-        this.notificationsGateway.sendToAll(dto.message);
-        return dto;
-    }
 }
