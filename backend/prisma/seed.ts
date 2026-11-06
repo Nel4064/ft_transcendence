@@ -19,10 +19,11 @@ async function main() {
   // 1. Clean up old data
   await prisma.user.deleteMany();
 
-  const hashedPassword = await bcrypt.hash('123456', 10); // 统一默认密码
+  const hashedPassword = await bcrypt.hash('123456', 10); // Default uniform password
 
-  // 2. Prepare user data starting with an ADMIN
+  // 2. Prepare user data with Admins and Test users suggested by the team
   const usersData: Prisma.UserCreateManyInput[] = [
+    // Admins
     {
       username: 'admin',
       email: 'admin@gmail.com',
@@ -30,28 +31,98 @@ async function main() {
       displayName: 'System Admin',
       twoFactorEnabled: false,
       role: Role.ADMIN,   
-    }
+    },
+    {
+      username: 'alice_admin',
+      email: 'alice@gmail.com',
+      passwordHash: hashedPassword,
+      displayName: 'Alice Admin',
+      twoFactorEnabled: false,
+      role: Role.ADMIN,   
+    },
+    {
+      username: 'bob_admin',
+      email: 'bob@gmail.com',
+      passwordHash: hashedPassword,
+      displayName: 'Bob Admin',
+      twoFactorEnabled: false,
+      role: Role.ADMIN,   
+    },
+
+    // Test Users
+    {
+      username: 'wei_test',
+      email: 'wei@gmail.com',
+      passwordHash: hashedPassword,
+      displayName: 'Wei Test',
+      twoFactorEnabled: false,
+      role: Role.USER,  
+    },
+    {
+      username: 'david_test',
+      email: 'david@gmail.com',
+      passwordHash: hashedPassword,
+      displayName: 'David Test',
+      twoFactorEnabled: false,
+      role: Role.USER,  
+    },
+    {
+      username: 'eve_test',
+      email: 'eve@gmail.com',
+      passwordHash: hashedPassword,
+      displayName: 'Eve Test',
+      twoFactorEnabled: false,
+      role: Role.USER,  
+    },
+    {
+      username: 'peter_test',
+      email: 'peter@gmail.com',
+      passwordHash: hashedPassword,
+      displayName: 'Peter Test',
+      twoFactorEnabled: false,
+      role: Role.USER,  
+    },
+    {
+      username: 'claire_test',
+      email: 'claire@gmail.com',
+      passwordHash: hashedPassword,
+      displayName: 'Claire Test',
+      twoFactorEnabled: false,
+      role: Role.USER,  
+    },
+    {
+      username: 'henry_test',
+      email: 'henry@gmail.com',
+      passwordHash: hashedPassword,
+      displayName: 'Henry Test',
+      twoFactorEnabled: false,
+      role: Role.USER,  
+    },
+    {
+      username: 'jing_test',
+      email: 'jing@gmail.com',
+      passwordHash: hashedPassword,
+      displayName: 'Jing Test',
+      twoFactorEnabled: false,
+      role: Role.USER,  
+    },
+    {
+      username: 'mehdi_test',
+      email: 'mehdi@gmail.com',
+      passwordHash: hashedPassword,
+      displayName: 'Mehdi Test',
+      twoFactorEnabled: false,
+      role: Role.USER,  
+    },
   ];
 
-  // 3. Generate mock data for 10 regular test users
-  for (let i = 1; i <= 10; i++) {
-    usersData.push({
-      username: `testuser${i}`,
-      email: `testuser${i}@gmail.com`,
-      passwordHash: hashedPassword,
-      displayName: `Test User ${i}`,
-      twoFactorEnabled: false,
-      role: Role.USER,  // 如果你的 schema 有 role 字段，对应这里也可以写 'USER'
-    });
-  }
-
-  // 4. Bulk write to the database
+  // 3. Bulk write to the database
   await prisma.user.createMany({
     data: usersData,
-    skipDuplicates: true, // 防止重复执行报错
+    skipDuplicates: true, // Prevent duplicate execution errors
   });
 
-  console.log('✅ Successfully seeded 1 Admin and 10 test users!');
+  console.log('✅ Successfully seeded admins and test users with team suggestions!');
 }
 
 main()

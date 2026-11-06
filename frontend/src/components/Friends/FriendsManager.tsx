@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useAuth } from '../../context/AuthContext'; // 引入认证上下文以使用 apiFetch
 
 interface User {
     id: string;
@@ -18,6 +18,8 @@ interface FriendRequest {
 }
 
 export default function FriendsManager() {
+    const { apiFetch } = useAuth(); // 获取 apiFetch
+
     // 从 sessionStorage 恢复状态，如果没有则使用默认值
     const [activeTab, setActiveTab] = useState<'friends' | 'requests' | 'search'>(() => {
         return (sessionStorage.getItem('friends_activeTab') as any) || 'friends';
@@ -37,9 +39,6 @@ export default function FriendsManager() {
 
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
-    const getToken = () => localStorage.getItem('jwt_token') || localStorage.getItem('token') || '';
-    const API_URL = 'http://localhost:3000/api';
-
     const navigate = useNavigate();
 
     // 每次状态改变时，实时存入 sessionStorage
@@ -57,10 +56,8 @@ export default function FriendsManager() {
 
     const fetchFriends = async () => {
         try {
-            const res = await axios.get(`${API_URL}/friends`, {
-                headers: { Authorization: `Bearer ${getToken()}` },
-            });
-            setFriends(res.data);
+            const data = await apiFetch('/friends');
+            setFriends(data);
         } catch (err) {
             console.error('Failed to fetch friends list', err);
         }
@@ -68,10 +65,8 @@ export default function FriendsManager() {
 
     const fetchPendingRequests = async () => {
         try {
-            const res = await axios.get(`${API_URL}/friends/requests`, {
-                headers: { Authorization: `Bearer ${getToken()}` },
-            });
-            setPendingRequests(res.data);
+            const data = await apiFetch('/friends/requests');
+            setPendingRequests(data);
         } catch (err) {
             console.error('Failed to fetch friend requests', err);
         }
@@ -80,16 +75,14 @@ export default function FriendsManager() {
     useEffect(() => {
         fetchFriends();
         fetchPendingRequests();
-    }, []);
+    }, [apiFetch]);
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!searchKeyword.trim()) return;
         try {
-            const res = await axios.get(`${API_URL}/friends/search?keyword=${searchKeyword}`, {
-                headers: { Authorization: `Bearer ${getToken()}` },
-            });
-            setSearchResults(res.data);
+            const data = await apiFetch(`/friends/search?keyword=${encodeURIComponent(searchKeyword)}`);
+            setSearchResults(data);
         } catch (err) {
             console.error('Failed to search users', err);
         }
@@ -97,33 +90,44 @@ export default function FriendsManager() {
 
     const sendRequest = async (receiverId: string) => {
         try {
-            await axios.post(
-                `${API_URL}/friends/request`,
-                { receiverId },
-                { headers: { Authorization: `Bearer ${getToken()}` } }
-            );
+            await apiFetch('/friends/request', {
+                method: 'POST',
+                body: JSON.stringify({ receiverId }),
+            });
             showNotification('Friend request sent successfully!', 'success');
         } catch (err: any) {
-            showNotification(err.response?.data?.message || 'Failed to send request', 'error');
+            showNotification(err.message || 'Failed to send request', 'error');
         }
     };
 
     const handleRequestAction = async (requestId: string, action: 'accept' | 'reject') => {
         try {
-            await axios.post(`${API_URL}/friends/${action}/${requestId}`, {}, {
-                headers: { Authorization: `Bearer ${getToken()}` },
+            await apiFetch(`/friends/${action}/${requestId}`, {
+                method: 'POST',
             });
             showNotification(action === 'accept' ? 'Friend request accepted' : 'Friend request rejected', 'success');
             fetchPendingRequests();
             fetchFriends();
-        } catch (err) {
-            showNotification('Operation failed', 'error');
+        } catch (err: any) {
+            showNotification(err.message || 'Operation failed', 'error');
         }
     };
 
     const showNotification = (text: string, type: 'success' | 'error') => {
         setMessage({ text, type });
         setTimeout(() => setMessage(null), 3000);
+    };
+
+    const getInitials = (user: { displayName?: string; username: string }) => {
+        const name = user.displayName || user.username;
+        if (!name) return 'U';
+
+        const words = name.trim().split(/\s+/);
+        if (words.length >= 2) {
+            return (words[0][0] + words[1][0]).toUpperCase();
+        } else {
+            return name.slice(0, 2).toUpperCase();
+        }
     };
 
     return (
@@ -139,7 +143,6 @@ export default function FriendsManager() {
                 <h2 className="text-2xl font-bold text-indigo-400">Friends Center</h2>
                 <button
                     onClick={() => {
-                        // 离开或关闭时清空缓存，可根据需要保留或清除
                         sessionStorage.removeItem('friends_activeTab');
                         sessionStorage.removeItem('friends_searchKeyword');
                         sessionStorage.removeItem('friends_searchResults');
@@ -193,10 +196,14 @@ export default function FriendsManager() {
                                 <div className="flex items-center space-x-3">
                                     <div
                                         onClick={() => navigate(`/users/${friend.id}`)}
-                                        className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center font-bold cursor-pointer hover:opacity-80 transition-opacity"
+                                        className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-sm font-bold cursor-pointer hover:opacity-80 transition-opacity overflow-hidden"
                                         title="Click to view profile"
                                     >
-                                        {friend.displayName?.[0] || friend.username[0]}
+                                        {friend.avatarUrl ? (
+                                            <img src={friend.avatarUrl} alt={friend.displayName || friend.username} className="w-full h-full object-cover" />
+                                        ) : (
+                                            getInitials(friend)
+                                        )}
                                     </div>
                                     <div>
                                         <div className="font-semibold">{friend.displayName || friend.username}</div>
@@ -226,10 +233,14 @@ export default function FriendsManager() {
                                 <div className="flex items-center space-x-3">
                                     <div
                                         onClick={() => navigate(`/users/${req.sender.id}`)}
-                                        className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center font-bold cursor-pointer hover:opacity-80 transition-opacity"
+                                        className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-sm font-bold cursor-pointer hover:opacity-80 transition-opacity overflow-hidden"
                                         title="Click to view profile"
                                     >
-                                        {req.sender.displayName?.[0] || req.sender.username[0]}
+                                        {req.sender.avatarUrl ? (
+                                            <img src={req.sender.avatarUrl} alt={req.sender.displayName || req.sender.username} className="w-full h-full object-cover" />
+                                        ) : (
+                                            getInitials(req.sender)
+                                        )}
                                     </div>
                                     <div>
                                         <div className="font-semibold">{req.sender.displayName || req.sender.username}</div>
@@ -266,7 +277,6 @@ export default function FriendsManager() {
                             onChange={(e) => {
                                 const val = e.target.value;
                                 setSearchKeyword(val);
-                                // 如果用户把输入框清空了，自动清空搜索结果列表
                                 if (!val.trim()) {
                                     setSearchResults([]);
                                 }
@@ -283,7 +293,6 @@ export default function FriendsManager() {
                     </form>
 
                     <div className="space-y-3">
-                        {/* 只有当输入框有内容，且搜索结果为空时，才显示 No matching users found */}
                         {searchResults.length === 0 ? (
                             <p className="text-slate-500 text-center py-4 text-sm">
                                 {searchKeyword.trim() ? 'No matching users found' : 'Enter keywords to start searching'}
@@ -294,10 +303,14 @@ export default function FriendsManager() {
                                     <div className="flex items-center space-x-3">
                                         <div
                                             onClick={() => navigate(`/users/${user.id}`)}
-                                            className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center font-bold cursor-pointer hover:opacity-80 transition-opacity"
+                                            className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-sm font-bold cursor-pointer hover:opacity-80 transition-opacity overflow-hidden"
                                             title="Click to view profile"
                                         >
-                                            {user.displayName?.[0] || user.username[0]}
+                                            {user.avatarUrl ? (
+                                                <img src={user.avatarUrl} alt={user.displayName || user.username} className="w-full h-full object-cover" />
+                                            ) : (
+                                                getInitials(user)
+                                            )}
                                         </div>
                                         <div>
                                             <div className="font-semibold">{user.displayName || user.username}</div>

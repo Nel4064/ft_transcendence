@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import Avatar from '../../components/Avatar/Avatar';
 
 interface UserProfile {
   id: string;
@@ -37,6 +36,12 @@ export default function UserProfilePage() {
     }
   }, [id, apiFetch]);
 
+  // 辅助函数：获取当前 profile 名字的前两个字母并大写
+  const getInitials = (user: { displayName?: string; username: string }) => {
+    const name = user.displayName || user.username;
+    return name ? name.slice(0, 2).toUpperCase() : 'U';
+  };
+
   if (loading) {
     return <div className="text-center py-20 text-text-muted">Loading...</div>;
   }
@@ -68,10 +73,18 @@ export default function UserProfilePage() {
 
         {/* User profile display card */}
         <div className="flex flex-col items-center gap-4 p-8 bg-surface border border-border rounded-md shadow-card text-center">
-          <Avatar
-            src={profile.avatarUrl ? (profile.avatarUrl.startsWith('http') ? profile.avatarUrl : profile.avatarUrl) : undefined}
-            size={100}
-          />
+          {/* 自定义头像渲染：有 avatarUrl 显示图片，没有则显示该 profile 的前两个字母 */}
+          <div className="w-[100px] h-[100px] bg-brand/20 text-brand rounded-full flex items-center justify-center text-2xl font-bold overflow-hidden shadow-inner">
+            {profile.avatarUrl ? (
+              <img 
+                src={profile.avatarUrl} 
+                alt={profile.displayName || profile.username} 
+                className="w-full h-full object-cover" 
+              />
+            ) : (
+              getInitials(profile)
+            )}
+          </div>
           
           <div>
             <h1 className="font-serif text-2xl text-text font-bold">{profile.displayName || profile.username}</h1>
