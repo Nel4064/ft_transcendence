@@ -7,12 +7,14 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ChatModule } from './chat/chat.module';
 import { ActivityModule } from './activity/activity.module';
 import { ScreeningsModule } from './screenings/screenings.module';
+import { FriendModule } from './friend/friend.module';
 
 @Module({
   imports: [
     PrismaModule,
     AuthModule,
     UsersModule,
+    FriendModule,
     ChatModule,
     ActivityModule,
     ScreeningsModule,
