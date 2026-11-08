@@ -3,34 +3,31 @@ import { io } from 'socket.io-client';
 import { useAuth } from '../../context/AuthContext';
 
 export interface AppNotification {
-  id: string;
-  userId: string;
-  actorId?: string;
-  type: string;
-  payload: {
-    filmTitle: string;
-    cinemaName: string;
-    [key: string]: string;
-  };
-  readAt?: string | null;
-  createdAt?: string;
+    id: string;
+    userId: string;
+    actorId?: string;
+    type: string;
+    payload: {
+        filmTitle: string;
+        cinemaName: string;
+        [key: string]: string;
+    };
+    readAt?: string | null;
+    createdAt?: string;
 }
 
-// 💡 用于跨组件通知刷新
 let refetchListeners: (() => void)[] = [];
-
 export function triggerActivityRefetch() {
-  refetchListeners.forEach(listener => listener());
+    refetchListeners.forEach(listener => listener());
 }
 
 export function useActivityFeed() {
-  const [notifications, setNotifications] = useState<AppNotification[]>([]);
-  const { apiFetch } = useAuth();
-const fetchHistory = async () => {
+    const [notifications, setNotifications] = useState<AppNotification[]>([]);
+    const { apiFetch } = useAuth();
+
+    const fetchHistory = async () => {
         try {
             const data = await apiFetch('/api/activity');
-            console.log("🔍 后端返回的原始 activity 数据:", data); // 👈 看这里打印的 readAt 是什么状态！
-
             let list = [];
             if (Array.isArray(data)) {
                 list = data;
@@ -40,33 +37,35 @@ const fetchHistory = async () => {
                 list = data.data;
             }
             
-            //  tạm时先不要过滤，看看所有的 readAt 是 null 还是都有时间
-            setNotifications(list);
+            // 💡 核心：只把未读的（readAt 为空）拿来展示。
+            // 只要在页面里调用了 read-all，它们的 readAt 就会有值，
+            // 这样无论你怎么离开、怎么刷新，只要再次拉取，它们就永远不会再出现了！
+            const unreadOnly = list.filter((n: AppNotification) => !n.readAt);
+            setNotifications(unreadOnly);
         } catch (err) {
             console.error("Failed to fetch activity history:", err);
         }
     };
 
-  useEffect(() => {
-    fetchHistory();
+    useEffect(() => {
+        fetchHistory();
 
-    // 注册全局刷新监听
-    refetchListeners.push(fetchHistory);
-    return () => {
-      refetchListeners = refetchListeners.filter(l => l !== fetchHistory);
-    };
-  }, [apiFetch]);
+        refetchListeners.push(fetchHistory);
+        return () => {
+            refetchListeners = refetchListeners.filter(l => l !== fetchHistory);
+        };
+    }, [apiFetch]);
 
-  useEffect(() => {
-    const socket = io('/activity');
-    socket.on('notification', (n: AppNotification) => {
-      setNotifications(prev => [n, ...prev]);
-    });
+    useEffect(() => {
+        const socket = io('/activity');
+        socket.on('notification', (n: AppNotification) => {
+            setNotifications(prev => [n, ...prev]);
+        });
 
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
+        return () => {
+            socket.disconnect();
+        };
+    }, []);
 
-  return notifications;
+    return notifications;
 }
