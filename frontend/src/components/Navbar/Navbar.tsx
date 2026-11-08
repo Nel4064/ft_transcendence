@@ -12,26 +12,16 @@ const linkClassAdmin = "text-nav font-bold text-text-admin-muted hover:text-admi
 function Navbar() {
     const { user, apiFetch } = useAuth();
     const [pendingCount, setPendingCount] = useState(0);
-
     const notifications = useActivityFeed();
-
-    // 💡 核心：用正确的 n.actor?.id 和当前登录用户的 id 做比对
     const unreadNotifications = notifications.filter(n => {
         if (!user) return false;
-
-        // 获取通知的发起者 ID（对应后端 include 的 actor.id）
         const senderId = n.actorId || (n as any).actorId;
-
-        // 如果是自己触发的，直接拦截，绝不显示红点
         if (senderId && String(senderId) === String(user.id)) {
             return false;
         }
-
-        // 拦截已读的
         if (n.readAt) {
             return false;
         }
-
         return true;
     });
 

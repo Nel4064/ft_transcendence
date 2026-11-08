@@ -21,7 +21,6 @@ export class ActivityService {
       data: users.map((u) => ({ userId: u.id, type, payload, actorId })),
     });
 
-    // 💡 把 actorId 传给网关，广播出去！
     this.gateway.sendNotification({ type, payload, createdAt: new Date().toISOString(), actorId });
   }
 

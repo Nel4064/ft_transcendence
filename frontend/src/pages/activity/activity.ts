@@ -31,12 +31,10 @@ export function useActivityFeed() {
     const { apiFetch, user } = useAuth();
 
     const fetchHistory = async () => {
-        // 💡 如果用户没登录，直接清空列表返回，避免请求报错
         if (!user) {
             setNotifications([]);
             return;
         }
-
         try {
             const data = await apiFetch('/api/activity');
             let list = [];
@@ -47,8 +45,6 @@ export function useActivityFeed() {
             } else if (data && Array.isArray(data.data)) {
                 list = data.data;
             }
-            
-            // 过滤掉自己发出的和已读的
             const unreadOnly = list.filter((n: AppNotification) => {
                 const senderId = n.actor?.id || n.actorId;
                 if (user && senderId && String(senderId) === String(user.id)) {
@@ -65,10 +61,6 @@ export function useActivityFeed() {
             console.error("Failed to fetch activity history:", err);
         }
     };
-
-    // 💡 关键：把 user 放在依赖项里！
-    // 这样当用户一登录（user 从 null 变成有具体对象），或者切换账号时，
-    // 它会【立刻、自动】去后端重新拉取最新的未读通知，Navbar 的红点瞬间就会亮起！
     useEffect(() => {
         fetchHistory();
 
@@ -76,8 +68,7 @@ export function useActivityFeed() {
         return () => {
             refetchListeners = refetchListeners.filter(l => l !== fetchHistory);
         };
-    }, [apiFetch, user?.id]); // 依赖 user.id，确保登录状态一变就重新拉取
-
+    }, [apiFetch, user?.id]);
     useEffect(() => {
         if (!user) return;
 
@@ -89,11 +80,9 @@ export function useActivityFeed() {
             }
             setNotifications(prev => [n, ...prev]);
         });
-
         return () => {
             socket.disconnect();
         };
     }, [user]);
-
     return notifications;
 }
