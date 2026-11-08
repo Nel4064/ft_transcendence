@@ -1,7 +1,7 @@
 
-const titleClass = "font-serif font-bold text-4xl text-text"
-const subtitleClass = "font-serif font-bold text-2xl text-text-muted"
-const textClass = "my-4 text-lg text-text"
+const titleClass = "font-serif font-bold text-title text-text"
+const subtitleClass = "font-serif font-bold text-section text-text-muted"
+const textClass = "my-4 text-body text-text"
 
 
 

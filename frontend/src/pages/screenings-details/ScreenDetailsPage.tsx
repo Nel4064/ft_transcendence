@@ -25,7 +25,7 @@ function ScreenDetailsPage() {
 	return (
 		<main className="max-w-[1000px] mx-auto py-12 px-10">
 			<img src={screening.posterUrl ?? defaultMovie} alt={screening.filmTitle} className="w-64 rounded-md mb-6" />
-			<h1 className="font-serif font-bold text-4xl text-text">{screening.filmTitle}</h1>
+			<h1 className="font-serif font-bold text-title text-text">{screening.filmTitle}</h1>
 		</main>
 	)
 }

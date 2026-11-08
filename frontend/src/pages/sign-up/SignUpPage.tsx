@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiFetch, useAuth } from '../../context/AuthContext'
+import Button, { buttonClass } from '../../components/button/Button'
 
-const inputClass = "py-2.5 px-3 border border-border rounded-md text-base"
+const inputClass = "py-2.5 px-3 border border-border rounded-md text-control"
 const linkClass = "text-brand hover:text-brand-hover"
 
 function SignUpPage() {
@@ -49,7 +50,7 @@ function SignUpPage() {
         
         <main>
 			<form className="flex flex-col gap-2 max-w-[320px] mx-auto my-[320px]" onSubmit={handleSubmit}>
-                <h1 className="text-center font-serif text-5xl font-bold">Create an Account</h1>
+                <h1 className="text-center font-serif text-title font-bold">Create an Account</h1>
                 <div className="relative p-5 bg-surface border border-border rounded-md shadow-card">
                     <div className="flex flex-col gap-2">
 							<input
@@ -95,7 +96,7 @@ function SignUpPage() {
                             className={inputClass}
                         />
 
-						<label className="mt-3 pb-2 text-base text-text-light">
+						<label className="mt-3 pb-2 text-body text-text-light">
 							<input
 								type="checkbox"
 								checked={acceptTerms}
@@ -106,12 +107,12 @@ function SignUpPage() {
 							</span>
 						</label>
 
-						{error && <p className="py-2 px-3 rounded-md bg-danger/10 text-danger text-base font-bold text-center">{error}</p>} 
+						{error && <p className="py-2 px-3 rounded-md bg-danger/10 text-danger text-body font-bold text-center">{error}</p>} 
 
-                    <button type="submit" className="py-2.5 px-3 rounded-md bg-brand hover:bg-brand-hover text-white text-base cursor-pointer">Sign Up</button>
+                    <Button type="submit" size="lg">Sign Up</Button>
 					<a
 						href="/api/auth/oauth/42"
-						className="py-2.5 px-3 rounded-md border border-border text-center text-base hover:bg-surface"
+						className={buttonClass("secondary", "lg")}
 					>
 						Sign in with 42
 					</a>

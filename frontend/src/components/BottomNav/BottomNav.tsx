@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 
 const navClass = "flex justify-around py-3 border-t border-border bg-surface"
-const linkClass = "text-base text-text-muted transition-colors duration-300 [&.active]:text-brand [&.active]:font-bold"
+const linkClass = "text-control text-text-muted transition-colors duration-300 [&.active]:text-brand [&.active]:font-bold"
 
 function BottomNav() {
 	return (

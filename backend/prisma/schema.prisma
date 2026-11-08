@@ -28,6 +28,12 @@ enum ScreeningVersion {
   VOSTF
 }
 
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 enum NotificationType {
   FRIEND_REQUEST     // user sending the request → invited user
   FRIEND_ACCEPTED    // user accepting           → user who asked
@@ -62,12 +68,50 @@ model User {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
+  // ----------------------------------------------------
+  // 新增：好友相关的反向关联
+  // ----------------------------------------------------
+  sentFriendRequests     FriendRequest[] @relation("SentFriendRequests")
+  receivedFriendRequests FriendRequest[] @relation("ReceivedFriendRequests")
+  friendships            Friendship[]    @relation("UserFriendships")
+  friendOf               Friendship[]    @relation("FriendFriendships")
+
   // Relations
   notificationsRecv  Notification[] @relation("NotificationRecipient")  // received by this user
   notificationsSent  Notification[] @relation("NotificationActor")     // caused by this user
 
   @@map("users") // Maps the model to a lowercase "users" table in the database
 }
+
+model FriendRequest {
+  id         String        @id @default(uuid()) @db.Uuid
+  senderId   String        @db.Uuid // 发送者 ID
+  receiverId String        @db.Uuid // 接收者 ID
+  status     RequestStatus @default(PENDING) // 状态：PENDING(待处理), ACCEPTED(已接受), REJECTED(已拒绝)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  // 关联到 User 模型
+  sender     User          @relation("SentFriendRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver   User          @relation("ReceivedFriendRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId]) // 防止重复向同一个人发送请求
+  @@map("friend_requests")
+}
+
+model Friendship {
+  id       String   @id @default(uuid()) @db.Uuid
+  userId   String   @db.Uuid
+  friendId String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  user     User     @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
+  friend   User     @relation("FriendFriendships", fields: [friendId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, friendId])
+  @@map("friendships")
+}
+
 
 // A screening chosen by the club, copied from the datacinesindes.fr feed if and when picked.
 model Screening {

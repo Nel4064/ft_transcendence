@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import Avatar from '../../components/Avatar/Avatar'
+import Button from '../../components/button/Button'
 import { useState, useRef, useEffect } from 'react'
 
 function ProfilePage() {
@@ -150,8 +151,8 @@ function ProfilePage() {
         <main>
             <div className="flex flex-col gap-6 max-w-[800px] mx-auto my-[60px]">
                 {/* Global alert messages */}
-                {error && <p className="py-2 px-3 rounded-md bg-danger/10 text-danger text-sm font-bold text-center">{error}</p>}
-                {successMsg && <p className="py-2 px-3 rounded-md bg-green-500/10 text-green-600 text-sm font-bold text-center">{successMsg}</p>}
+                {error && <p className="py-2 px-3 rounded-md bg-danger/10 text-danger text-small font-bold text-center">{error}</p>}
+                {successMsg && <p className="py-2 px-3 rounded-md bg-green-500/10 text-green-600 text-small font-bold text-center">{successMsg}</p>}
 
                 {/* User info card (includes avatar and basic display) */}
                 <div className="flex items-center gap-5 p-5 bg-surface border border-border rounded-md shadow-card">
@@ -164,7 +165,7 @@ function ProfilePage() {
                             src={user?.avatarUrl ? (user.avatarUrl.startsWith('http') ? user.avatarUrl : user.avatarUrl) : undefined}
                             size={120}
                         />
-                        <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs font-bold">
+                        <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-small font-bold">
                             {uploading ? 'Uploading...' : 'Change'}
                         </div>
                     </div>
@@ -178,43 +179,43 @@ function ProfilePage() {
                     />
 
                     <div>
-                        <h1 className="mb-1 font-serif text-2xl text-text">{user?.username}</h1>
+                        <h1 className="mb-1 font-serif text-section text-text">{user?.username}</h1>
                         <p className="text-text-muted">{user?.email}</p>
                     </div>
                 </div>
 
                 {/* ✏️ Profile edit card (Display Name, Bio, Language) */}
                 <div className="p-5 bg-surface border border-border rounded-md shadow-card flex flex-col gap-4">
-                    <h2 className="text-xl font-serif font-bold text-text">Edit Profile</h2>
+                    <h2 className="text-card font-serif font-bold text-text">Edit Profile</h2>
 
                     <form onSubmit={handleUpdateProfile} className="flex flex-col gap-4">
                         <div className="flex flex-col gap-1">
-                            <label className="text-sm font-medium text-text">Display Name</label>
+                            <label className="text-small font-medium text-text">Display Name</label>
                             <input
                                 type="text"
                                 value={displayName}
                                 onChange={(e) => setDisplayName(e.target.value)}
                                 placeholder="Enter your display name"
-                                className="py-2 px-3 border border-border rounded-md text-base bg-surface text-text focus:outline-none focus:border-brand"
+                                className="py-2 px-3 border border-border rounded-md text-control bg-surface text-text focus:outline-none focus:border-brand"
                             />
                         </div>
 
                         <div className="flex flex-col gap-1">
-                            <label className="text-sm font-medium text-text">Bio</label>
+                            <label className="text-small font-medium text-text">Bio</label>
                             <textarea
                                 value={bio}
                                 onChange={(e) => setBio(e.target.value)}
                                 placeholder="Write something about yourself..."
-                                className="py-2 px-3 border border-border rounded-md text-base bg-surface text-text h-[80px] resize-y focus:outline-none focus:border-brand"
+                                className="py-2 px-3 border border-border rounded-md text-control bg-surface text-text h-[80px] resize-y focus:outline-none focus:border-brand"
                             />
                         </div>
 
                         <div className="flex flex-col gap-1">
-                            <label className="text-sm font-medium text-text">Language</label>
+                            <label className="text-small font-medium text-text">Language</label>
                             <select
                                 value={language}
                                 onChange={(e) => setLanguage(e.target.value)}
-                                className="py-2 px-3 border border-border rounded-md text-base bg-surface text-text focus:outline-none focus:border-brand"
+                                className="py-2 px-3 border border-border rounded-md text-control bg-surface text-text focus:outline-none focus:border-brand"
                             >
                                 <option value="EN">English (EN)</option>
                                 <option value="FR">Français (FR)</option>
@@ -222,17 +223,15 @@ function ProfilePage() {
                             </select>
                         </div>
 
-                        <button
-                            type="submit"
-                            className="py-2 px-4 rounded-md bg-brand hover:bg-brand-hover text-white text-sm font-bold cursor-pointer transition-colors w-fit">
+                        <Button type="submit" className="w-fit">
                             Save Profile Changes
-                        </button>
+                        </Button>
                     </form>
                 </div>
 
                 {/* 2FA management card */}
                 <div className="p-5 bg-surface border border-border rounded-md shadow-card flex flex-col gap-4">
-                    <h2 className="text-xl font-serif font-bold text-text">Two-Factor Authentication (2FA)</h2>
+                    <h2 className="text-card font-serif font-bold text-text">Two-Factor Authentication (2FA)</h2>
 
                     <div className="flex items-center justify-between flex-wrap gap-4">
                         <div>
@@ -241,36 +240,32 @@ function ProfilePage() {
                                     {is2faEnabled ? "Enabled" : "Disabled"}
                                 </span>
                             </p>
-                            <p className="text-sm text-text-muted">Secure your account using an authenticator app.</p>
+                            <p className="text-small text-text-muted">Secure your account using an authenticator app.</p>
                         </div>
 
                         {!is2faEnabled && setupStep === 'idle' && (
-                            <button
-                                onClick={handleStart2faSetup}
-                                className="py-2 px-4 rounded-md bg-brand hover:bg-brand-hover text-white text-sm font-bold cursor-pointer transition-colors">
+                            <Button onClick={handleStart2faSetup}>
                                 Enable 2FA
-                            </button>
+                            </Button>
                         )}
 
                         {is2faEnabled && setupStep === 'idle' && (
-                            <button
-                                onClick={() => setSetupStep('disable')}
-                                className="py-2 px-4 rounded-md bg-danger hover:bg-danger/90 text-white text-sm font-bold cursor-pointer transition-colors">
+                            <Button variant="danger" onClick={() => setSetupStep('disable')}>
                                 Disable 2FA
-                            </button>
+                            </Button>
                         )}
                     </div>
 
                     {/* QR code setup area for enabling 2FA */}
                     {setupStep === 'qr' && (
                         <form onSubmit={handleVerify2fa} className="flex flex-col gap-3 mt-2 pt-4 border-t border-border">
-                            <p className="text-sm text-text-muted">1. Scan this QR code with Google Authenticator or Authy:</p>
+                            <p className="text-small text-text-muted">1. Scan this QR code with Google Authenticator or Authy:</p>
                             {qrCodeUrl && (
                                 <div className="flex justify-center bg-white p-3 rounded-md w-fit mx-auto border border-border">
                                     <img src={qrCodeUrl} alt="2FA QR Code" className="w-[160px] h-[160px]" />
                                 </div>
                             )}
-                            <p className="text-sm text-text-muted">2. Enter the 6-digit code from your app to verify and activate:</p>
+                            <p className="text-small text-text-muted">2. Enter the 6-digit code from your app to verify and activate:</p>
                             <div className="flex gap-2">
                                 <input
                                     type="text"
@@ -278,20 +273,15 @@ function ProfilePage() {
                                     placeholder="123456"
                                     value={totpCode}
                                     onChange={(e) => setTotpCode(e.target.value)}
-                                    className="py-2 px-3 border border-border rounded-md text-base tracking-widest font-mono bg-surface text-text"
+                                    className="py-2 px-3 border border-border rounded-md text-control tracking-widest font-mono bg-surface text-text"
                                     required
                                 />
-                                <button
-                                    type="submit"
-                                    className="py-2 px-4 rounded-md bg-brand hover:bg-brand-hover text-white text-sm font-bold cursor-pointer transition-colors">
+                                <Button type="submit">
                                     Verify & Turn On
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setSetupStep('idle')}
-                                    className="py-2 px-4 rounded-md border border-border hover:bg-surface text-text text-sm cursor-pointer">
+                                </Button>
+                                <Button variant="secondary" onClick={() => setSetupStep('idle')}>
                                     Cancel
-                                </button>
+                                </Button>
                             </div>
                         </form>
                     )}
@@ -299,7 +289,7 @@ function ProfilePage() {
                     {/* Form requiring code input to disable 2FA */}
                     {setupStep === 'disable' && (
                         <form onSubmit={handleDisable2fa} className="flex flex-col gap-3 mt-2 pt-4 border-t border-border">
-                            <p className="text-sm text-text-muted">Enter the 6-digit code from your authenticator app to disable 2FA:</p>
+                            <p className="text-small text-text-muted">Enter the 6-digit code from your authenticator app to disable 2FA:</p>
                             <div className="flex gap-2">
                                 <input
                                     type="text"
@@ -307,29 +297,24 @@ function ProfilePage() {
                                     placeholder="123456"
                                     value={disableCode}
                                     onChange={(e) => setDisableCode(e.target.value)}
-                                    className="py-2 px-3 border border-border rounded-md text-base tracking-widest font-mono bg-surface text-text"
+                                    className="py-2 px-3 border border-border rounded-md text-control tracking-widest font-mono bg-surface text-text"
                                     required
                                 />
-                                <button
-                                    type="submit"
-                                    className="py-2 px-4 rounded-md bg-danger hover:bg-danger/90 text-white text-sm font-bold cursor-pointer transition-colors">
+                                <Button type="submit" variant="danger">
                                     Confirm & Disable
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setSetupStep('idle')}
-                                    className="py-2 px-4 rounded-md border border-border hover:bg-surface text-text text-sm cursor-pointer">
+                                </Button>
+                                <Button variant="secondary" onClick={() => setSetupStep('idle')}>
                                     Cancel
-                                </button>
+                                </Button>
                             </div>
                         </form>
                     )}
                 </div>
 
                 {/* Logout button */}
-                <button className="self-end py-2 px-4 rounded-md bg-danger hover:bg-danger/90 text-white text-base font-bold cursor-pointer transition-colors" onClick={handleLogout}>
+                <Button variant="danger" className="self-end" onClick={handleLogout}>
                     Logout
-                </button>
+                </Button>
             </div>
         </main>
     )
