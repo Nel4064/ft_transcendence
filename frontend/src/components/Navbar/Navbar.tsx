@@ -5,13 +5,25 @@ import { useAuth } from '../../context/AuthContext';
 import Avatar from '../Avatar/Avatar';
 import { buttonClass } from '../button/Button';
 import { getPendingRequests } from '../../api/friends';
+import { useActivityFeed } from '../../pages/activity/activity.ts';
 
-const linkClass = "text-nav font-bold text-text-muted hover:text-text [&.active]:text-text transition-colors duration-300";
 const linkClassAdmin = "text-nav font-bold text-text-admin-muted hover:text-admin [&.active]:text-admin transition-colors duration-300";
 
 function Navbar() {
     const { user, apiFetch } = useAuth();
     const [pendingCount, setPendingCount] = useState(0);
+
+    const notifications = useActivityFeed();
+
+    // 💡 核心修改：过滤掉由当前登录用户自己发起的通知，只统计别人产生的新动态
+    const unreadNotifications = notifications.filter(n => {
+        // 假设通知对象里包含发起者的标识，例如 n.userId、n.actorId 或 n.username
+        // 请根据你们后端返回的 notification 结构调整此处的字段（比如 n.userId !== user?.id 或 n.username !== user?.username）
+        return n.payload?.userId !== user?.id; 
+    });
+    const count = unreadNotifications.length;
+
+    const linkClass = "text-foreground hover:text-primary transition-colors";
 
     useEffect(() => {
         if (!user) return;
@@ -53,7 +65,7 @@ function Navbar() {
                     <NavLink to="/reminders" className={linkClass}>
                         Reminders
                     </NavLink>
-                    
+
                     <NavLink to="/friends" className={`${linkClass} relative`}>
                         Friends
                         {pendingCount > 0 && (
@@ -63,8 +75,13 @@ function Navbar() {
                         )}
                     </NavLink>
 
-                    <NavLink to="/activity" className={linkClass}>
+                    <NavLink to="/activity" className={`${linkClass} relative flex items-center`}>
                         Activities
+                        {count > 0 && (
+                            <span className="ml-1.5 px-2 py-0.5 text-xs font-bold text-white bg-red-500 rounded-full">
+                                {count}
+                            </span>
+                        )}
                     </NavLink>
                 </div>
             )}
