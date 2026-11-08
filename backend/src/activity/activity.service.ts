@@ -9,7 +9,7 @@ export class ActivityService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly gateway: ActivityGateway,
-  ) {}
+  ) { }
 
   // Saves one notification per user except the actor, then pushes it live to connected browsers
   async notifyAllUsers(type: NotificationKind, payload: Record<string, string>, actorId: string) {
@@ -20,7 +20,9 @@ export class ActivityService {
     await this.prisma.notification.createMany({
       data: users.map((u) => ({ userId: u.id, type, payload, actorId })),
     });
-    this.gateway.sendNotification({ type, payload, createdAt: new Date().toISOString() });
+
+    // 💡 把 actorId 传给网关，广播出去！
+    this.gateway.sendNotification({ type, payload, createdAt: new Date().toISOString(), actorId });
   }
 
   // Latest notifications received by one user, with who caused each one

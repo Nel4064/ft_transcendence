@@ -15,12 +15,26 @@ function Navbar() {
 
     const notifications = useActivityFeed();
 
-    // 💡 核心修改：过滤掉由当前登录用户自己发起的通知，只统计别人产生的新动态
+    // 💡 核心：用正确的 n.actor?.id 和当前登录用户的 id 做比对
     const unreadNotifications = notifications.filter(n => {
-        // 假设通知对象里包含发起者的标识，例如 n.userId、n.actorId 或 n.username
-        // 请根据你们后端返回的 notification 结构调整此处的字段（比如 n.userId !== user?.id 或 n.username !== user?.username）
-        return n.payload?.userId !== user?.id; 
+        if (!user) return false;
+
+        // 获取通知的发起者 ID（对应后端 include 的 actor.id）
+        const senderId = n.actorId || (n as any).actorId;
+
+        // 如果是自己触发的，直接拦截，绝不显示红点
+        if (senderId && String(senderId) === String(user.id)) {
+            return false;
+        }
+
+        // 拦截已读的
+        if (n.readAt) {
+            return false;
+        }
+
+        return true;
     });
+
     const count = unreadNotifications.length;
 
     const linkClass = "text-foreground hover:text-primary transition-colors";

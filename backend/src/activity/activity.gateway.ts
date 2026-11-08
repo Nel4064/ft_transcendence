@@ -10,7 +10,8 @@ export class ActivityGateway {
     this.wss.emit('activityToClient', { type: 'Activity', message: msg });
   }
 
-  sendNotification(notification: { type: string; payload: Record<string, string>; createdAt: string }) {
+  // 💡 加上 actorId 参数并放进广播里
+  sendNotification(notification: { type: string; payload: Record<string, string>; createdAt: string; actorId?: string }) {
     this.wss.emit('notification', notification);
   }
 }

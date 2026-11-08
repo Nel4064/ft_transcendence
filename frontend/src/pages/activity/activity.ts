@@ -14,6 +14,11 @@ export interface AppNotification {
     };
     readAt?: string | null;
     createdAt?: string;
+    actor?: {
+        id: string;
+        displayName: string;
+        avatarUrl?: string;
+    };
 }
 
 let refetchListeners: (() => void)[] = [];
@@ -23,7 +28,7 @@ export function triggerActivityRefetch() {
 
 export function useActivityFeed() {
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
-    const { apiFetch } = useAuth();
+    const { apiFetch, user } = useAuth();
 
     const fetchHistory = async () => {
         try {
@@ -37,10 +42,20 @@ export function useActivityFeed() {
                 list = data.data;
             }
             
-            // 💡 核心：只把未读的（readAt 为空）拿来展示。
-            // 只要在页面里调用了 read-all，它们的 readAt 就会有值，
-            // 这样无论你怎么离开、怎么刷新，只要再次拉取，它们就永远不会再出现了！
-            const unreadOnly = list.filter((n: AppNotification) => !n.readAt);
+            // 💡 核心过滤：
+            // 1. 排除自己发出的 (actor.id === user.id)
+            // 2. 只有当 readAt 为空（未读）时，才展示在列表和红点里！
+            const unreadOnly = list.filter((n: AppNotification) => {
+                const senderId = n.actor?.id || n.actorId;
+                if (user && senderId && String(senderId) === String(user.id)) {
+                    return false; // 排除自己
+                }
+                if (n.readAt) {
+                    return false; // 排除已读的（看过后就不要再显示了）
+                }
+                return true;
+            });
+
             setNotifications(unreadOnly);
         } catch (err) {
             console.error("Failed to fetch activity history:", err);
@@ -54,18 +69,22 @@ export function useActivityFeed() {
         return () => {
             refetchListeners = refetchListeners.filter(l => l !== fetchHistory);
         };
-    }, [apiFetch]);
+    }, [apiFetch, user]);
 
     useEffect(() => {
         const socket = io('/activity');
         socket.on('notification', (n: AppNotification) => {
+            const senderId = n.actor?.id || n.actorId;
+            if (user && senderId && String(senderId) === String(user.id)) {
+                return; // 自己发的不弹实时推送
+            }
             setNotifications(prev => [n, ...prev]);
         });
 
         return () => {
             socket.disconnect();
         };
-    }, []);
+    }, [user]);
 
     return notifications;
 }
