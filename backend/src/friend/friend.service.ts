@@ -8,35 +8,63 @@ export class FriendService {
   // 1. Send friend request
   async sendRequest(senderId: string, receiverId: string) {
     if (senderId === receiverId) {
-      throw new BadRequestException('Cannot add yourself as a friend');
+      throw new BadRequestException('You cannot send a friend request to yourself');
     }
 
-    const existingFriend = await this.prisma.friendship.findFirst({
+    // 1. Check if a friend request already exists in either direction (including PENDING or REJECTED)
+    const existingRequest = await this.prisma.friendRequest.findFirst({
       where: {
         OR: [
-          { userId: senderId, friendId: receiverId },
-          { userId: receiverId, friendId: senderId },
+          { senderId, receiverId },
+          { senderId: receiverId, receiverId: senderId },
         ],
       },
     });
-    if (existingFriend) {
-      throw new BadRequestException('You are already friends');
-    }
 
-    const existingRequest = await this.prisma.friendRequest.findFirst({
-      where: { senderId, receiverId, status: 'PENDING' },
-    });
     if (existingRequest) {
-      throw new BadRequestException('Friend request already sent, please wait for the other party to respond');
+      // If the previous request was rejected, allow re-initiating and update it to PENDING
+      if (existingRequest.status === 'REJECTED') {
+        return this.prisma.friendRequest.update({
+          where: { id: existingRequest.id },
+          data: {
+            senderId, // Ensure the current initiator is set as the sender
+            receiverId,
+            status: 'PENDING',
+          },
+        });
+      }
+
+      // If the request is already in PENDING status
+      if (existingRequest.status === 'PENDING') {
+        throw new BadRequestException('Friend request already sent, please wait for the other party to respond');
+      }
+
+      // If they are already friends (ACCEPTED)
+      if (existingRequest.status === 'ACCEPTED') {
+        throw new BadRequestException('You are already friends');
+      }
     }
 
-    return this.prisma.friendRequest.create({
-      data: {
-        senderId,
-        receiverId,
-        status: 'PENDING',
-      },
-    });
+    try {
+      // 2. If there is no history record, create a new request directly
+      return await this.prisma.friendRequest.create({
+        data: {
+          senderId,
+          receiverId,
+          status: 'PENDING',
+        },
+      });
+    } catch (error) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        error.code === 'P2002'
+      ) {
+        throw new BadRequestException('Friend request already exists');
+      }
+      throw error;
+    }
   }
 
   // 2. Accept friend request
@@ -140,7 +168,17 @@ export class FriendService {
         ],
       },
     });
-    return { message: 'Friend removed successfully' };
+
+    await this.prisma.friendRequest.deleteMany({
+      where: {
+        OR: [
+          { senderId: userId, receiverId: friendId },
+          { senderId: friendId, receiverId: userId },
+        ],
+      },
+    });
+
+    return { message: 'Friend removed successfully and requests cleared' };
   }
 }
 
