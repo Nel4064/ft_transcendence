@@ -31,6 +31,12 @@ export function useActivityFeed() {
     const { apiFetch, user } = useAuth();
 
     const fetchHistory = async () => {
+        // 💡 如果用户没登录，直接清空列表返回，避免请求报错
+        if (!user) {
+            setNotifications([]);
+            return;
+        }
+
         try {
             const data = await apiFetch('/api/activity');
             let list = [];
@@ -42,16 +48,14 @@ export function useActivityFeed() {
                 list = data.data;
             }
             
-            // 💡 核心过滤：
-            // 1. 排除自己发出的 (actor.id === user.id)
-            // 2. 只有当 readAt 为空（未读）时，才展示在列表和红点里！
+            // 过滤掉自己发出的和已读的
             const unreadOnly = list.filter((n: AppNotification) => {
                 const senderId = n.actor?.id || n.actorId;
                 if (user && senderId && String(senderId) === String(user.id)) {
-                    return false; // 排除自己
+                    return false; 
                 }
                 if (n.readAt) {
-                    return false; // 排除已读的（看过后就不要再显示了）
+                    return false; 
                 }
                 return true;
             });
@@ -62,6 +66,9 @@ export function useActivityFeed() {
         }
     };
 
+    // 💡 关键：把 user 放在依赖项里！
+    // 这样当用户一登录（user 从 null 变成有具体对象），或者切换账号时，
+    // 它会【立刻、自动】去后端重新拉取最新的未读通知，Navbar 的红点瞬间就会亮起！
     useEffect(() => {
         fetchHistory();
 
@@ -69,14 +76,16 @@ export function useActivityFeed() {
         return () => {
             refetchListeners = refetchListeners.filter(l => l !== fetchHistory);
         };
-    }, [apiFetch, user]);
+    }, [apiFetch, user?.id]); // 依赖 user.id，确保登录状态一变就重新拉取
 
     useEffect(() => {
+        if (!user) return;
+
         const socket = io('/activity');
         socket.on('notification', (n: AppNotification) => {
             const senderId = n.actor?.id || n.actorId;
             if (user && senderId && String(senderId) === String(user.id)) {
-                return; // 自己发的不弹实时推送
+                return;
             }
             setNotifications(prev => [n, ...prev]);
         });
