@@ -103,6 +103,7 @@ export default function FriendsManager() {
             showNotification(action === 'accept' ? 'Friend request accepted' : 'Friend request rejected', 'success');
             fetchPendingRequests();
             fetchFriends();
+            window.dispatchEvent(new CustomEvent('update_friend_requests'));
         } catch (err: any) {
             showNotification(err.message || 'Operation failed', 'error');
         }

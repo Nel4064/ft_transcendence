@@ -1,9 +1,14 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { ActivityGateway } from '../activity/activity.gateway'; 
 
 @Injectable()
 export class FriendService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private prisma: PrismaService,
+    // 注入 Gateway
+    private activityGateway: ActivityGateway 
+  ) { }
 
   // 1. Send friend request
   async sendRequest(senderId: string, receiverId: string) {
@@ -11,7 +16,6 @@ export class FriendService {
       throw new BadRequestException('You cannot send a friend request to yourself');
     }
 
-    // 1. Check if a friend request already exists in either direction (including PENDING or REJECTED)
     const existingRequest = await this.prisma.friendRequest.findFirst({
       where: {
         OR: [
@@ -22,38 +26,52 @@ export class FriendService {
     });
 
     if (existingRequest) {
-      // If the previous request was rejected, allow re-initiating and update it to PENDING
       if (existingRequest.status === 'REJECTED') {
-        return this.prisma.friendRequest.update({
+        const updatedRequest = await this.prisma.friendRequest.update({
           where: { id: existingRequest.id },
           data: {
-            senderId, // Ensure the current initiator is set as the sender
+            senderId, 
             receiverId,
             status: 'PENDING',
           },
         });
+
+        // ✨ 触发 WebSocket 广播，带上 receiverId
+        this.activityGateway.sendNotification({
+          type: 'FRIEND_REQUEST',
+          payload: { receiverId }, // 关键点：让前端知道是发给谁的
+          createdAt: new Date().toISOString()
+        });
+
+        return updatedRequest;
       }
 
-      // If the request is already in PENDING status
       if (existingRequest.status === 'PENDING') {
         throw new BadRequestException('Friend request already sent, please wait for the other party to respond');
       }
 
-      // If they are already friends (ACCEPTED)
       if (existingRequest.status === 'ACCEPTED') {
         throw new BadRequestException('You are already friends');
       }
     }
 
     try {
-      // 2. If there is no history record, create a new request directly
-      return await this.prisma.friendRequest.create({
+      const newRequest = await this.prisma.friendRequest.create({
         data: {
           senderId,
           receiverId,
           status: 'PENDING',
         },
       });
+
+      // ✨ 触发 WebSocket 广播，带上 receiverId
+      this.activityGateway.sendNotification({
+        type: 'FRIEND_REQUEST',
+        payload: { receiverId },
+        createdAt: new Date().toISOString()
+      });
+
+      return newRequest;
     } catch (error) {
       if (
         typeof error === 'object' &&
@@ -66,7 +84,6 @@ export class FriendService {
       throw error;
     }
   }
-
   // 2. Accept friend request
   async acceptRequest(requestId: string, currentUserId: string) {
     const request = await this.prisma.friendRequest.findUnique({
