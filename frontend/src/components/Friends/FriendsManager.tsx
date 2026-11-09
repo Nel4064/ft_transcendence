@@ -82,7 +82,7 @@ export default function FriendsManager() {
     useEffect(() => {
         if (!user) return; 
 
-        const socket = io('/activity');
+        const socket = io('/notifications', { transports: ['websocket'] });
 
         socket.on('notification', (n: { type: string; payload: Record<string, string>; createdAt: string }) => {
             

@@ -1,13 +1,13 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ActivityGateway } from '../activity/activity.gateway';
+import { NotificationsGateway } from 'src/notifications/notifications.gateway';
 
 @Injectable()
 export class FriendService {
   constructor(
     private prisma: PrismaService,
     // 注入 Gateway
-    private activityGateway: ActivityGateway
+    private notificationGateway: NotificationsGateway
   ) { }
 
   // 1. Send friend request
@@ -37,7 +37,7 @@ export class FriendService {
         });
 
         // ✨ 触发 WebSocket 广播，带上 receiverId
-        this.activityGateway.sendNotification({
+        this.notificationGateway.sendNotification({
           type: 'FRIEND_REQUEST',
           payload: { receiverId }, // 关键点：让前端知道是发给谁的
           createdAt: new Date().toISOString()
@@ -65,7 +65,7 @@ export class FriendService {
       });
 
       // ✨ 触发 WebSocket 广播，带上 receiverId
-      this.activityGateway.sendNotification({
+      this.notificationGateway.sendNotification({
         type: 'FRIEND_REQUEST',
         payload: { receiverId },
         createdAt: new Date().toISOString()
@@ -108,7 +108,7 @@ export class FriendService {
         skipDuplicates: true,
       });
 
-      this.activityGateway.sendNotification({
+      this.notificationGateway.sendNotification({
         type: 'FRIEND_ACCEPTED', // 前端监听的正是这个事件类型
         payload: { receiverId: request.senderId }, // 重点：通知接收方是原本的 senderId
         createdAt: new Date().toISOString()
@@ -135,7 +135,7 @@ export class FriendService {
     });
 
     // ✨✨✨ 2. 新增：向【发送请求的人】推送拒绝通知 ✨✨✨
-    this.activityGateway.sendNotification({
+    this.notificationGateway.sendNotification({
       type: 'FRIEND_REJECTED',
       payload: { receiverId: request.senderId }, // 通知接收方是原本的发件人
       createdAt: new Date().toISOString()

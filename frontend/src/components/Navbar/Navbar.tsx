@@ -48,7 +48,7 @@ function Navbar() {
         if (!user?.id) return;
 
         console.log('🔌 Navbar 正在连接 WebSocket...');
-        const socket = io('/activity');
+        const socket = io('/notifications', { transports: ['websocket'] });
 
         socket.on('connect', () => {
             console.log('✅ Navbar WebSocket 连接成功! ID:', socket.id);
@@ -94,8 +94,9 @@ function Navbar() {
                             </span>
                         )}
                     </NavLink>
-
-                    <NavLink to="/activity" className={linkClass}>Activities</NavLink>
+                    <NavLink to="/notifications" className={linkClass}>
+                        Notifications
+                    </NavLink>
                 </div>
             )}
 

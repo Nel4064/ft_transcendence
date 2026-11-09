@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 import Navbar from './components/Navbar/Navbar'
 import HomePage from './pages/home/HomePage'
-import ActivityPage from './pages/activity/ActivityPage'
+import NotificationsPage from './pages/notifications/NotificationsPage'
 import SignInPage from './pages/sign-in/SignInPage'
 import SignUpPage from './pages/sign-up/SignUpPage'
 import SelectMoviesPage from './pages/select-movies/SelectMoviesPage'
@@ -39,7 +39,7 @@ function App() {
 				{/* Pages réservées aux utilisateurs connectés */}
 				<Route element={<ProtectedRoute />}>
 					<Route path="/profile" element={<ProfilePage />} />
-					<Route path="/activity" element={<ActivityPage />} />
+					<Route path="/notifications" element={<NotificationsPage />} />
 					<Route path="/screenings" element={<ScreeningsPage />} />
 					<Route path="/reminders" element={<RemindersPage />} />
 					

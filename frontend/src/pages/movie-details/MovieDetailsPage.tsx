@@ -15,7 +15,17 @@ type Screening = {
 	cinenom: string
 	cineville: string
 	filmposter?: string
+	filmstoryline?: string
+	filmtrailer?: string
+
 }
+
+const posterClass = "w-64 shrink-0 self-start rounded-md shadow-card"
+const titleClass = "mb-4 font-serif font-bold text-title text-text"
+const synopsisClass = "text-body text-text-muted"
+const sectionTitleClass = "mb-4 font-serif font-bold text-section text-text"
+const rowClass = "flex items-center justify-between gap-4 p-4 bg-surface border border-border rounded-lg shadow-card"
+const boxClass = "p-4 bg-surface border border-border rounded-lg shadow-card"
 
 function MovieDetailsPage() {
 	const { title = '' } = useParams()
@@ -74,18 +84,35 @@ function MovieDetailsPage() {
 
 	const first = screenings[0]
 	const poster = first.filmposter?.startsWith('https://') ? first.filmposter : defaultMovie
+	const synopsis = first.filmstoryline && first.filmstoryline !== 'null' ? first.filmstoryline : null
+	const trailer = first.filmtrailer?.startsWith('https://') ? first.filmtrailer : null
 
 	return (
 		<main className="max-w-[1000px] mx-auto py-12 px-10">
-			<img src={poster} alt={first.filmtitle} className="w-64 rounded-md mb-6" />
-			<h1 className="font-serif font-bold text-title text-text mb-6">{first.filmtitle}</h1>
+			<section className="flex flex-col md:flex-row gap-8 mb-12">
+				<img src={poster} alt={first.filmtitle} className={posterClass} />
+				<div>
+					<h1 className={titleClass}>{first.filmtitle}</h1>
+					<p className={synopsisClass}>{synopsis ?? 'No synopsis available.'}</p>
+					{trailer && (
+						<section className="mt-6">
+							<h2 className={sectionTitleClass}>Trailer</h2>
+							<div className={boxClass}>
+								<video src={trailer} controls className="w-full rounded-md" />
+							</div>
+						</section>)}
+				</div>
+			</section>
 
+			<h2 className={sectionTitleClass}>Upcoming screenings</h2>
 			<ul className="flex flex-col gap-4">
 				{screenings.map((s) => (
-					<li key={`${s.cineid}-${s.showid}`} className="flex items-center justify-between p-4 bg-surface border border-border rounded-lg text-body text-text-muted">
+					<li key={`${s.cineid}-${s.showid}`} className={rowClass}>
 						<div>
-							<p>📅 {new Date(s.showstart).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</p>
-							<p>📍 {s.cineville} · {s.cinenom}</p>
+							<p className="text-body text-text">
+								{new Date(s.showstart).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+							</p>
+							<p className="text-small text-text-muted">{s.cineville} · {s.cinenom}</p>
 						</div>
 						<Button variant="admin" size="lg" onClick={() => toggleEvent(s)}>
 							{created.has(`${s.cineid}-${s.showid}`) ? 'Remove Event' : 'Create Event'}
