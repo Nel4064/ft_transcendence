@@ -36,14 +36,9 @@ export default function FriendsManager() {
     const [friends, setFriends] = useState<User[]>([]);
     const [pendingRequests, setPendingRequests] = useState<FriendRequest[]>([]);
 
-    const [searchKeyword, setSearchKeyword] = useState(() => {
-        return sessionStorage.getItem('friends_searchKeyword') || '';
-    });
-
-    const [searchResults, setSearchResults] = useState<User[]>(() => {
-        const cached = sessionStorage.getItem('friends_searchResults');
-        return cached ? JSON.parse(cached) : [];
-    });
+    // 修改点 1：直接初始化为空字符串和空数组，不再读取 sessionStorage
+    const [searchKeyword, setSearchKeyword] = useState('');
+    const [searchResults, setSearchResults] = useState<User[]>([]);
 
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
@@ -53,13 +48,7 @@ export default function FriendsManager() {
         sessionStorage.setItem('friends_activeTab', activeTab);
     }, [activeTab]);
 
-    useEffect(() => {
-        sessionStorage.setItem('friends_searchKeyword', searchKeyword);
-    }, [searchKeyword]);
-
-    useEffect(() => {
-        sessionStorage.setItem('friends_searchResults', JSON.stringify(searchResults));
-    }, [searchResults]);
+    // 修改点 2：删除了监听 searchKeyword 和 searchResults 写入 sessionStorage 的 useEffect
 
     const fetchFriends = async () => {
         try {
@@ -161,8 +150,7 @@ export default function FriendsManager() {
                 <button
                     onClick={() => {
                         sessionStorage.removeItem('friends_activeTab');
-                        sessionStorage.removeItem('friends_searchKeyword');
-                        sessionStorage.removeItem('friends_searchResults');
+                        // 修改点 3：不再需要清理搜索相关的 sessionStorage
                         navigate('/');
                     }}
                     className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
@@ -228,7 +216,6 @@ export default function FriendsManager() {
                                     </div>
                                 </div>
 
-                                {/* 同时保留 Chat 按钮和 Remove 按钮 */}
                                 <div className="flex items-center space-x-2">
                                     <button
                                         onClick={() => alert(`Redirecting to chat with ${friend.username}`)}
