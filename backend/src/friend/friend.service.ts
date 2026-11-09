@@ -1,13 +1,13 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ActivityGateway } from '../activity/activity.gateway'; 
+import { ActivityGateway } from '../activity/activity.gateway';
 
 @Injectable()
 export class FriendService {
   constructor(
     private prisma: PrismaService,
     // 注入 Gateway
-    private activityGateway: ActivityGateway 
+    private activityGateway: ActivityGateway
   ) { }
 
   // 1. Send friend request
@@ -30,7 +30,7 @@ export class FriendService {
         const updatedRequest = await this.prisma.friendRequest.update({
           where: { id: existingRequest.id },
           data: {
-            senderId, 
+            senderId,
             receiverId,
             status: 'PENDING',
           },
@@ -108,6 +108,12 @@ export class FriendService {
         skipDuplicates: true,
       });
 
+      this.activityGateway.sendNotification({
+        type: 'FRIEND_ACCEPTED', // 前端监听的正是这个事件类型
+        payload: { receiverId: request.senderId }, // 重点：通知接收方是原本的 senderId
+        createdAt: new Date().toISOString()
+      });
+
       return { message: 'Friend added successfully' };
     });
   }
@@ -122,10 +128,20 @@ export class FriendService {
       throw new BadRequestException('The request does not exist or you do not have permission');
     }
 
-    return this.prisma.friendRequest.update({
+    // 1. 更新数据库状态为拒绝
+    const updatedRequest = await this.prisma.friendRequest.update({
       where: { id: requestId },
       data: { status: 'REJECTED' },
     });
+
+    // ✨✨✨ 2. 新增：向【发送请求的人】推送拒绝通知 ✨✨✨
+    this.activityGateway.sendNotification({
+      type: 'FRIEND_REJECTED',
+      payload: { receiverId: request.senderId }, // 通知接收方是原本的发件人
+      createdAt: new Date().toISOString()
+    });
+
+    return updatedRequest;
   }
 
   // 4. Get pending received friend requests list

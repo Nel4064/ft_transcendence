@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { io } from 'socket.io-client'; // ✨ 引入 socket.io-client
 import {
     getFriends,
     getPendingRequests,
@@ -27,7 +28,8 @@ interface FriendRequest {
 }
 
 export default function FriendsManager() {
-    const { apiFetch } = useAuth();
+    // ✨ 从 useAuth 提取 user
+    const { apiFetch, user } = useAuth(); 
 
     const [activeTab, setActiveTab] = useState<'friends' | 'requests' | 'search'>(() => {
         return (sessionStorage.getItem('friends_activeTab') as any) || 'friends';
@@ -36,7 +38,6 @@ export default function FriendsManager() {
     const [friends, setFriends] = useState<User[]>([]);
     const [pendingRequests, setPendingRequests] = useState<FriendRequest[]>([]);
 
-    // 修改点 1：直接初始化为空字符串和空数组，不再读取 sessionStorage
     const [searchKeyword, setSearchKeyword] = useState('');
     const [searchResults, setSearchResults] = useState<User[]>([]);
 
@@ -47,8 +48,6 @@ export default function FriendsManager() {
     useEffect(() => {
         sessionStorage.setItem('friends_activeTab', activeTab);
     }, [activeTab]);
-
-    // 修改点 2：删除了监听 searchKeyword 和 searchResults 写入 sessionStorage 的 useEffect
 
     const fetchFriends = async () => {
         try {
@@ -68,10 +67,43 @@ export default function FriendsManager() {
         }
     };
 
+    // 初始拉取数据
     useEffect(() => {
         fetchFriends();
         fetchPendingRequests();
     }, [apiFetch]);
+
+    const showNotification = (text: string, type: 'success' | 'error') => {
+        setMessage({ text, type });
+        setTimeout(() => setMessage(null), 3000);
+    };
+
+    // ✨✨✨ WebSocket 监听：实时同步收到的请求和被接受的请求 ✨✨✨
+    useEffect(() => {
+        if (!user) return; 
+
+        const socket = io('/activity');
+
+        socket.on('notification', (n: { type: string; payload: Record<string, string>; createdAt: string }) => {
+            
+            // 场景 1: 别人发给我好友请求 -> 刷新待处理列表
+            if (n.type === 'FRIEND_REQUEST' && n.payload.receiverId === user.id) {
+                console.log('收到新的好友请求，刷新列表...');
+                fetchPendingRequests(); 
+            }
+
+            // 场景 2: 我发出的请求被别人接受了 -> 刷新我的好友列表 (人数自动 +1)
+            if (n.type === 'FRIEND_ACCEPTED' && n.payload.receiverId === user.id) {
+                console.log('对方通过了你的好友请求！刷新好友列表...');
+                fetchFriends(); 
+                showNotification('Someone accepted your friend request!', 'success'); 
+            }
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, [user]);
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -101,17 +133,16 @@ export default function FriendsManager() {
                 await rejectRequest(apiFetch, requestId);
             }
             showNotification(action === 'accept' ? 'Friend request accepted' : 'Friend request rejected', 'success');
+            
             fetchPendingRequests();
             fetchFriends();
+            
+            // ✨ 通知 Navbar 刷新红点
             window.dispatchEvent(new CustomEvent('update_friend_requests'));
+            
         } catch (err: any) {
             showNotification(err.message || 'Operation failed', 'error');
         }
-    };
-
-    const showNotification = (text: string, type: 'success' | 'error') => {
-        setMessage({ text, type });
-        setTimeout(() => setMessage(null), 3000);
     };
 
     const getInitials = (user: { displayName?: string; username: string }) => {
@@ -151,7 +182,6 @@ export default function FriendsManager() {
                 <button
                     onClick={() => {
                         sessionStorage.removeItem('friends_activeTab');
-                        // 修改点 3：不再需要清理搜索相关的 sessionStorage
                         navigate('/');
                     }}
                     className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
