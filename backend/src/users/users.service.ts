@@ -144,4 +144,27 @@ export class UsersService {
 
     return { message: 'Password changed successfully' };
   }
+
+  // 💡 新增：获取用户已 RSVP 的所有放映场次
+  async getUserScreenings(userId: string) {
+    const rsvps = await this.prisma.rsvp.findMany({
+      where: { userId },
+      include: {
+        screening: true, // 联表查询，把对应的 Screening 详情一起拉出来
+      },
+      orderBy: {
+        screening: {
+          startsAt: 'asc', // 按电影放映时间升序排列，方便前端展示日程
+        },
+      },
+    });
+
+    // 为了让前端用起来更爽，我们可以把数据稍微展平 (Flatten) 一下
+    // 直接返回 screening 的信息，同时保留 rsvp 的关联 id
+    return rsvps.map(rsvp => ({
+      rsvpId: rsvp.id,
+      rsvpCreatedAt: rsvp.createdAt,
+      ...rsvp.screening,
+    }));
+  }
 }

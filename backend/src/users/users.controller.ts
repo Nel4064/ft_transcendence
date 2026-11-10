@@ -1,12 +1,24 @@
-import { Controller, UseFilters, Get, Post, Patch, Param, Body, Req, UseGuards, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { ChangePasswordDto, UpdateProfileDto } from '../auth/dto/auth.dto';
+import { 
+  Body, 
+  Controller, 
+  Get, 
+  Param, 
+  Patch, 
+  Post, 
+  Req, 
+  UseGuards, 
+  UseFilters, 
+  UseInterceptors, 
+  UploadedFile, 
+  BadRequestException 
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import type { Request } from 'express';
-import { MulterErrorFilter } from './multer-error.filter';
+import { UsersService } from './users.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { UpdateProfileDto, ChangePasswordDto } from '../auth/dto/auth.dto';
+import { MulterErrorFilter } from './multer-error.filter'; // 假设你有这个路径
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -32,6 +44,13 @@ export class UsersController {
       message: 'Successfully retrieved full profile',
       user,
     };
+  }
+
+  // 💡 新增：获取当前用户所有想去的 Screenings
+  @UseGuards(JwtAuthGuard)
+  @Get('me/screenings')
+  async getMyScreenings(@Req() req: AuthenticatedRequest) {
+    return this.usersService.getUserScreenings(req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -78,11 +97,6 @@ export class UsersController {
     return this.usersService.updateAvatar(req.user.userId, avatarUrl);
   }
 
-  @Get(':id')
-  async getUserPublicProfile(@Param('id') id: string) {
-    return this.usersService.getUserPublicProfile(id);
-  }
-
   @UseGuards(JwtAuthGuard)
   @Patch('me/password')
   async changePassword(
@@ -90,5 +104,11 @@ export class UsersController {
     @Body() dto: ChangePasswordDto
   ) {
     return this.usersService.changePassword(req.user.userId, dto);
+  }
+
+  // ⚠️ 动态参数路由最好放在最后，避免匹配冲突
+  @Get(':id')
+  async getUserPublicProfile(@Param('id') id: string) {
+    return this.usersService.getUserPublicProfile(id);
   }
 }
