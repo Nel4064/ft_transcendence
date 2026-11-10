@@ -1,24 +1,18 @@
 import { Link } from 'react-router-dom'
+import Card from '../Card/Card';
 
-
-type MoviesCardProps = {
-	movie: string
-	image: string
-}
-
-const cardClass = "w-full max-w-[700px] p-6 bg-surface border border-border rounded-lg shadow-card transition-transform hover:-translate-y-1"
-const imageClass = "w-full h-48 mb-4 object-cover rounded-md"
-const titleClass = "font-serif font-bold text-card text-text hover:underline"
+type MoviesCardProps = { movie: string; image: string }
 
 function MoviesCard({ movie, image }: MoviesCardProps) {
-	return (
-		<div className={cardClass}>
-			<Link to={`/movies/${encodeURIComponent(movie)}`}>
-				<img src={image} alt={movie} className={imageClass} />
-				<h3 className={titleClass}>{movie}</h3>
-			</Link>
-		</div>
-	)
+    return (
+        <Card
+            padding="lg"
+            hoverable
+            image={image}
+            title={movie}
+            to={`/movies/${encodeURIComponent(movie)}`}
+            className="w-full max-w-[700px]"
+        />
+    )
 }
-
 export default MoviesCard
