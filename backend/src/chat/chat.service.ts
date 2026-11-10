@@ -2,12 +2,12 @@ import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/com
 import { PrismaService } from '../prisma/prisma.service';
 import { ChatType } from '../generated/prisma/client.js';
 import { SendMessageDto } from './dto/chat.dto';
+import { ChatService } from './chat.service';
 
 @Injectable()
 export class ChatService 
 {
 	constructor(private readonly prisma: PrismaService) {}
-
 	private async checkFriendship(senderId: string, receiverId: string): Promise<boolean>
 	{
 		const friendship = await this.prisma.friendship.findUnique
@@ -34,8 +34,7 @@ export class ChatService
 		
 		const isFriend = await this.checkFriendship(senderId, receiverId);
 		if (!isFriend)
-			throw new Forbid
-至此denException('You are not friends yet');
+			throw new ForbiddenException('You are not friends yet');
 		
 		return this.prisma.message.create
 		({
@@ -64,6 +63,9 @@ export class ChatService
 
 	async getDirectHistory(userId: string, friendId: string, limit: number = 50,)
 	{
+		const isFriend = await this.checkFriendship(userId, friendId);
+		if (!isFriend)
+			throw new ForbiddenException('You are not friends yet');
 		const messages = await this.prisma.message.findMany
 		({
 			where:

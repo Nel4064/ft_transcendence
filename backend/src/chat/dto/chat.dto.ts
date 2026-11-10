@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, MaxLength, IsUUID, } from 'class-validator';
+import { IsString, IsNotEmpty, MaxLength, MinLength, IsUUID, } from 'class-validator';
 
 export class SendMessageDto
 {
@@ -9,5 +9,6 @@ export class SendMessageDto
 	@IsString()
 	@IsNotEmpty()
 	@MaxLength(500)
+	@MinLength(1)
 	content: string;
 }

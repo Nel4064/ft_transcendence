@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, Body, UseGuards, Request, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, UseGuards, Request, ParseUUIDPipe, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { SendMessageDto } from './dto/chat.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -10,7 +10,7 @@ export class ChatController
 	constructor(private readonly chatService: ChatService) {}
 
 	@Post('send')
-	@UsePipes(new ValidationPipe()) // check send message data
+	@UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
 	async sendMessage(@Request() req: any, @Body() dto: SendMessageDto) 
 	{
     	return this.chatService.sendMessage(req.user.userId, dto);
@@ -19,7 +19,7 @@ export class ChatController
 	async getDirectHistory
 	(
 		@Request() req: any,
-		@Param('friendId') friendId: string,
+		@Param('friendId', ParseUUIDPipe) friendId: string,
 	) 
 	{
 		return this.chatService.getDirectHistory(req.user.userId, friendId);
