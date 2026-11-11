@@ -39,7 +39,7 @@ export default function PersonalizedScreeningsList() {
 
     return (
         <div className="w-3/4 max-w-[800px] mx-auto py-6 px-4 md:px-0">
-            {/* 顶部的标题区域直接加在这里 */}
+            {/* Header section */}
             <div className="mb-6 text-left">
                 <h1 className="font-serif text-[28px] md:text-[32px] font-bold text-gray-900 tracking-tight mb-1">
                     Upcoming — Club Picks
@@ -49,7 +49,7 @@ export default function PersonalizedScreeningsList() {
                 </p>
             </div>
 
-            {/* 下方的列表区域 */}
+            {/* List section */}
             <div className="flex flex-col gap-3">
                 {screenings.map((s) => {
                     let formattedDate = 'Date TBD';

@@ -12,9 +12,6 @@ export class ScreeningsController {
 
   @Get() findAll() { return this.screenings.findAll(); }
 
-  // ----------------------------------------------------
-  // 💡 新增：登录用户专属列表 (带有是否 Going 和朋友去向)
-  // ----------------------------------------------------
   @UseGuards(JwtAuthGuard)
   @Get('myRsvps')
   findAllWithRsvpInfo(@Req() req: AuthenticatedRequest) {
@@ -24,7 +21,6 @@ export class ScreeningsController {
   @UseGuards(JwtAuthGuard)
   @Post(':id/rsvp')
   toggleRsvp(@Param('id') screeningId: string, @Req() req: AuthenticatedRequest) {
-    // 注意这里使用的是 req.user.userId，与你上面的逻辑保持一致
     return this.screenings.toggleRsvp(req.user.userId, screeningId);
   }
 

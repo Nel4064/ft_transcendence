@@ -20,22 +20,17 @@ export class ScreeningsService {
     return this.prisma.screening.findMany({ orderBy: { startsAt: 'asc' } });
   }
 
-  // ----------------------------------------------------
-  // 💡 新增：带有用户 RSVP 和 好友状态的加强版查询
-  // ----------------------------------------------------
   async findAllWithRsvpInfo(userId: string) {
-    // 1. 获取好友 ID
     const friendships = await this.prisma.friendship.findMany({
       where: { userId },
       select: { friendId: true },
     });
     const friendIds = friendships.map(f => f.friendId);
 
-    // 2. 查出所有的排片，同时把属于"我"和"好友"的 rsvp 挂载在结果上
     const screenings = await this.prisma.screening.findMany({
       include: {
         _count: {
-          select: { rsvps: true }, // 总报名人数
+          select: { rsvps: true },
         },
         rsvps: {
           where: {
@@ -43,7 +38,7 @@ export class ScreeningsService {
           },
           include: {
             user: {
-              select: { id: true, username: true, avatarUrl: true },
+              select: { id: true, username: true, displayName: true, avatarUrl: true },
             },
           },
         },
@@ -53,7 +48,6 @@ export class ScreeningsService {
       },
     });
 
-    // 3. 处理数据并返回
     return screenings.map(screening => {
       const { _count, rsvps, ...rest } = screening;
 
@@ -62,10 +56,10 @@ export class ScreeningsService {
 
       return {
         ...rest,
-        totalGoingCount: _count.rsvps,               // 所有的 going
-        isGoing: !!myRsvp,                           // 我是否 going
-        friendsGoingCount: friendsRsvps.length,      // 几个好朋友 going
-        friendsGoing: friendsRsvps.map(r => r.user), // 具体朋友的数据
+        totalGoingCount: _count.rsvps,              
+        isGoing: !!myRsvp,                           
+        friendsGoingCount: friendsRsvps.length,      
+        friendsGoing: friendsRsvps.map(r => r.user), 
       };
     });
   }
