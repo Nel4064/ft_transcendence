@@ -2,7 +2,6 @@ import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/com
 import { PrismaService } from '../prisma/prisma.service';
 import { ChatType } from '../generated/prisma/client.js';
 import { SendMessageDto } from './dto/chat.dto';
-import { ChatService } from './chat.service';
 
 @Injectable()
 export class ChatService 

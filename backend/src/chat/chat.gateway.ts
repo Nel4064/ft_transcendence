@@ -51,8 +51,19 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.logger.log(`User ${userId} disconnected`);
   }
 
-  @SubscribeMessage('chatToServer')
-  handleMessage(client: Socket, message: { sender: string, message: string }) {
-    this.wss.emit('chatToClient', message);
+  @SubscribeMessage('sendMessage')
+  
+  async handleNewMessage(client: Socket, payload: { receiverId: string, content: string })
+  {
+    const { receiverId, content } = payload;
+    const senderId = client.data.userId;
+    try{
+      const message = await this.chatService.sendMessage(senderId, { receiverId, content });
+      this.wss.to(receiverId).emit('newMessage', message);
+      this.wss.to(senderId).emit('newMessage', message);
+    }
+    catch(error){
+      client.emit('chatError', { message: error.message?? 'Failed to send message' });
+    }
   }
 }
