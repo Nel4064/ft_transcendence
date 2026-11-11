@@ -12,7 +12,6 @@ import TermsOfServicePage from './pages/terms-of-service/TermsOfServicePage'
 import RemindersPage from './pages/reminders/RemindersPage'
 import FriendsPage from './pages/friends/FriendsPage'
 import ManageMembersPage from './pages/manage-members/ManageMembersPage'
-import ScreeningsPage from './pages/screenings/ScreeningsPage'
 import { AuthProvider } from './context/AuthContext'
 import ProfilePage from './pages/profile/ProfilePage'
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
@@ -20,6 +19,7 @@ import MovieDetailsPage from './pages/movie-details/MovieDetailsPage'
 import ScreenDetailsPage from './pages/screenings-details/ScreenDetailsPage'
 import UserProfilePage from './pages/profile/UserProfilePage'
 import PersonalizedScreeningsList from './pages/screenings/PersonalizedScreeningsList'
+import CalendarPage from './pages/calendar/CalendarPage'
 
 
 function App() {
@@ -48,6 +48,7 @@ function App() {
 					<Route path="/screenings/:id" element={<ScreenDetailsPage />} />
 					<Route path="/friends" element={<FriendsPage />} />
 					<Route path="/users/:id" element={<UserProfilePage />} />
+					<Route path="/calendar" element={<CalendarPage />} />
 				</Route>
 
 				<Route element={<ProtectedRoute adminOnly />}>

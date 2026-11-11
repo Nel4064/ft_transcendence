@@ -84,8 +84,8 @@ function Navbar() {
                         <NavLink to="/manage-members" className={linkClassAdmin}>Manage Members</NavLink>
                     )}
                     <NavLink to="/screenings" className={linkClass}>Screenings</NavLink>
-                    <NavLink to="/reminders" className={linkClass}>Reminders</NavLink>
-                    
+                    <NavLink to="/calendar" className={linkClass}>Calendar</NavLink>
+
                     <NavLink to="/friends" className={`${linkClass} relative`}>
                         Friends
                         {pendingCount > 0 && (
