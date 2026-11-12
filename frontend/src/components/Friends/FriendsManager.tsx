@@ -3,7 +3,7 @@ import Avatar from '../Avatar/Avatar';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { io } from 'socket.io-client'; // ✨ 引入 socket.io-client
+import { io } from 'socket.io-client';
 import {
     getFriends,
     getPendingRequests,
@@ -30,8 +30,7 @@ interface FriendRequest {
 }
 
 export default function FriendsManager() {
-    // ✨ 从 useAuth 提取 user
-    const { apiFetch, user } = useAuth(); 
+    const { apiFetch, user } = useAuth();
 
     const [activeTab, setActiveTab] = useState<'friends' | 'requests' | 'search'>(() => {
         return (sessionStorage.getItem('friends_activeTab') as any) || 'friends';
@@ -42,6 +41,7 @@ export default function FriendsManager() {
 
     const [searchKeyword, setSearchKeyword] = useState('');
     const [searchResults, setSearchResults] = useState<User[]>([]);
+    const [sentRequestIds, setSentRequestIds] = useState<string[]>([]); // ✨ 新增：记录当前会话已发送过请求的用户 ID
 
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
@@ -69,7 +69,6 @@ export default function FriendsManager() {
         }
     };
 
-    // 初始拉取数据
     useEffect(() => {
         fetchFriends();
         fetchPendingRequests();
@@ -80,28 +79,29 @@ export default function FriendsManager() {
         setTimeout(() => setMessage(null), 3000);
     };
 
-    // ✨✨✨ WebSocket 监听：实时同步收到的请求和被接受的请求 ✨✨✨
+    // WebSocket （/friends Gateway）
     useEffect(() => {
-        if (!user) return; 
+        if (!user) return;
 
-        const socket = io('/notifications', { transports: ['websocket'] });
-
-        socket.on('notification', (n: { type: string; payload: Record<string, string>; createdAt: string }) => {
-            
-            // 场景 1: 别人发给我好友请求 -> 刷新待处理列表
-            if (n.type === 'FRIEND_REQUEST' && n.payload.receiverId === user.id) {
-                console.log('收到新的好友请求，刷新列表...');
-                fetchPendingRequests(); 
-            }
-
-            // 场景 2: 我发出的请求被别人接受了 -> 刷新我的好友列表 (人数自动 +1)
-            if (n.type === 'FRIEND_ACCEPTED' && n.payload.receiverId === user.id) {
-                console.log('对方通过了你的好友请求！刷新好友列表...');
-                fetchFriends(); 
-                showNotification('Someone accepted your friend request!', 'success'); 
-            }
+        const socket = io('/friends', {
+            query: { userId: user.id },
+            transports: ['websocket'],
         });
 
+        // Listen for the friendRequest event from the backend
+        socket.on('friendRequest', (notification: { type: string; payload: Record<string, any>; createdAt: string }) => {
+            console.log('收到好友相关的实时通知:', notification);
+
+            // 1. Receive a friend request -> Refresh pending requests list
+            if (notification.type === 'FRIEND_REQUEST') {
+                fetchPendingRequests();
+            }
+            // 2. My sent request was accepted by someone -> Refresh my friends list
+            if (notification.type === 'FRIEND_ACCEPTED') {
+                fetchFriends();
+                showNotification('Your friend request was accepted!', 'success');
+            }
+        });
         return () => {
             socket.disconnect();
         };
@@ -113,6 +113,7 @@ export default function FriendsManager() {
         try {
             const data = await apiSearchUsers(apiFetch, searchKeyword);
             setSearchResults(data);
+            setSentRequestIds([]); // ✨ 每次重新搜索时清空已发送状态
         } catch (err) {
             console.error('Failed to search users', err);
         }
@@ -122,6 +123,7 @@ export default function FriendsManager() {
         try {
             await apiSendRequest(apiFetch, receiverId);
             showNotification('Friend request sent successfully!', 'success');
+            setSentRequestIds((prev) => [...prev, receiverId]);
         } catch (err: any) {
             showNotification(err.message || 'Failed to send request', 'error');
         }
@@ -135,13 +137,12 @@ export default function FriendsManager() {
                 await rejectRequest(apiFetch, requestId);
             }
             showNotification(action === 'accept' ? 'Friend request accepted' : 'Friend request rejected', 'success');
-            
+
             fetchPendingRequests();
             fetchFriends();
-            
-            // ✨ 通知 Navbar 刷新红点
+
             window.dispatchEvent(new CustomEvent('update_friend_requests'));
-            
+
         } catch (err: any) {
             showNotification(err.message || 'Operation failed', 'error');
         }
@@ -225,7 +226,7 @@ export default function FriendsManager() {
                                         className="cursor-pointer hover:opacity-80 transition-opacity"
                                         title="Click to view profile"
                                     >
-										<Avatar src={friend.avatarUrl} name={friend.displayName || friend.username} size={40} />
+                                        <Avatar src={friend.avatarUrl} name={friend.displayName || friend.username} size={40} />
                                     </div>
                                     <div>
                                         <div className="font-semibold">{friend.displayName || friend.username}</div>
@@ -238,9 +239,9 @@ export default function FriendsManager() {
                                         Chat
                                     </Button>
                                     <Button
-										variant="danger"
+                                        variant="danger"
                                         onClick={() => handleRemoveFriend(friend.id, friend.displayName || friend.username)}
-									>
+                                    >
                                         Remove
                                     </Button>
                                 </div>
@@ -264,7 +265,7 @@ export default function FriendsManager() {
                                         className="cursor-pointer hover:opacity-80 transition-opacity"
                                         title="Click to view profile"
                                     >
-										<Avatar src={req.sender.avatarUrl} name={req.sender.displayName || req.sender.username} size={40} />
+                                        <Avatar src={req.sender.avatarUrl} name={req.sender.displayName || req.sender.username} size={40} />
                                     </div>
                                     <div>
                                         <div className="font-semibold">{req.sender.displayName || req.sender.username}</div>
@@ -276,7 +277,7 @@ export default function FriendsManager() {
                                         onClick={() => handleRequestAction(req.id, 'accept')}>Accept
                                     </Button>
                                     <Button
-										variant="secondary"
+                                        variant="secondary"
                                         onClick={() => handleRequestAction(req.id, 'reject')}>
                                         Reject
                                     </Button>
@@ -313,25 +314,31 @@ export default function FriendsManager() {
                                 {searchKeyword.trim() ? 'No matching users found' : 'Enter keywords to start searching'}
                             </p>
                         ) : (
-                            searchResults.map((user) => (
-                                <div key={user.id} className="flex items-center justify-between p-3 bg-bg border border-border rounded-md">
+                            searchResults.map((userItem) => (
+                                <div key={userItem.id} className="flex items-center justify-between p-3 bg-bg border border-border rounded-md">
                                     <div className="flex items-center space-x-3">
                                         <div
-                                            onClick={() => navigate(`/users/${user.id}`)}
+                                            onClick={() => navigate(`/users/${userItem.id}`)}
                                             className="cursor-pointer hover:opacity-80 transition-opacity"
                                             title="Click to view profile"
                                         >
-											<Avatar src={user.avatarUrl} name={user.displayName || user.username} size={40} />
+                                            <Avatar src={userItem.avatarUrl} name={userItem.displayName || userItem.username} size={40} />
                                         </div>
                                         <div>
-                                            <div className="font-semibold">{user.displayName || user.username}</div>
-                                            <div className="text-xs text-text-muted">@{user.username}</div>
+                                            <div className="font-semibold">{userItem.displayName || userItem.username}</div>
+                                            <div className="text-xs text-text-muted">@{userItem.username}</div>
                                         </div>
                                     </div>
                                     <div className="flex items-center space-x-2">
-                                        <Button onClick={() => sendRequest(user.id)}>Add Friend</Button>
+                                        {sentRequestIds.includes(userItem.id) ? (
+                                            <span className="text-xs text-text-muted px-3 py-1.5 bg-surface border border-border rounded-md">
+                                                Request Sent
+                                            </span>
+                                        ) : (
+                                            <Button onClick={() => sendRequest(userItem.id)}>Add Friend</Button>
+                                        )}
                                         <button
-                                            onClick={() => setSearchResults(searchResults.filter((u) => u.id !== user.id))}
+                                            onClick={() => setSearchResults(searchResults.filter((u) => u.id !== userItem.id))}
                                             className="w-8 h-8 flex items-center justify-center text-text-muted hover:text-text hover:bg-bg rounded-lg transition-colors"
                                             title="Close"
                                         >

@@ -161,7 +161,11 @@ export class UsersService {
 
     // 为了让前端用起来更爽，我们可以把数据稍微展平 (Flatten) 一下
     // 直接返回 screening 的信息，同时保留 rsvp 的关联 id
-    return rsvps.map(rsvp => ({
+    return rsvps.map((rsvp: {
+      id: string;
+      createdAt: Date;
+      screening: any;
+    }) => ({
       rsvpId: rsvp.id,
       rsvpCreatedAt: rsvp.createdAt,
       ...rsvp.screening,

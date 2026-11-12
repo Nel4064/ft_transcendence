@@ -1,13 +1,13 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { NotificationsGateway } from 'src/notifications/notifications.gateway';
+import { FriendGateway } from 'src/friend/friend.gateway';
 
 @Injectable()
 export class FriendService {
   constructor(
     private prisma: PrismaService,
     // 注入 Gateway
-    private notificationGateway: NotificationsGateway
+    private friendGateway: FriendGateway
   ) { }
 
   // 1. Send friend request
@@ -37,7 +37,7 @@ export class FriendService {
         });
 
         // ✨ 触发 WebSocket 广播，带上 receiverId
-        this.notificationGateway.sendNotification({
+        this.friendGateway.sendNotificationToUser(receiverId, {
           type: 'FRIEND_REQUEST',
           payload: { receiverId }, // 关键点：让前端知道是发给谁的
           createdAt: new Date().toISOString()
@@ -65,7 +65,7 @@ export class FriendService {
       });
 
       // ✨ 触发 WebSocket 广播，带上 receiverId
-      this.notificationGateway.sendNotification({
+      this.friendGateway.sendNotificationToUser(receiverId, {
         type: 'FRIEND_REQUEST',
         payload: { receiverId },
         createdAt: new Date().toISOString()
@@ -108,9 +108,9 @@ export class FriendService {
         skipDuplicates: true,
       });
 
-      this.notificationGateway.sendNotification({
-        type: 'FRIEND_ACCEPTED', // 前端监听的正是这个事件类型
-        payload: { receiverId: request.senderId }, // 重点：通知接收方是原本的 senderId
+      this.friendGateway.sendNotificationToUser(request.senderId, {
+        type: 'FRIEND_ACCEPTED', // the front-end listens for this event type
+        payload: { receiverId: request.senderId }, // important for front-end to know who accepted the request
         createdAt: new Date().toISOString()
       });
 
@@ -128,16 +128,16 @@ export class FriendService {
       throw new BadRequestException('The request does not exist or you do not have permission');
     }
 
-    // 1. 更新数据库状态为拒绝
+    // 1. update the database status to REJECTED
     const updatedRequest = await this.prisma.friendRequest.update({
       where: { id: requestId },
       data: { status: 'REJECTED' },
     });
 
-    // ✨✨✨ 2. 新增：向【发送请求的人】推送拒绝通知 ✨✨✨
-    this.notificationGateway.sendNotification({
+    // 2. new notification of refuse to the sender of the request
+    this.friendGateway.sendNotificationToUser(request.senderId, {
       type: 'FRIEND_REJECTED',
-      payload: { receiverId: request.senderId }, // 通知接收方是原本的发件人
+      payload: { receiverId: request.senderId }, // receiverId is the original sender
       createdAt: new Date().toISOString()
     });
 

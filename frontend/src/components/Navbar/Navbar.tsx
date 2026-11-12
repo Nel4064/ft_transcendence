@@ -14,7 +14,7 @@ function Navbar() {
     const { user, apiFetch } = useAuth();
     const [pendingCount, setPendingCount] = useState(0);
 
-    // ✨ 拆分 1：负责拉取数据的普通函数（不再用 useCallback 绕来绕去）
+    // 负责拉取数据的普通函数
     const fetchCount = async () => {
         if (!user?.id) return;
         try {
@@ -27,7 +27,7 @@ function Navbar() {
         }
     };
 
-    // ✨ 拆分 2：只负责【初始加载】和【本地接受/拒绝点击】的更新
+    // 只负责【初始加载】和【本地接受/拒绝点击】的更新
     useEffect(() => {
         if (!user?.id) return;
         
@@ -41,34 +41,38 @@ function Navbar() {
         window.addEventListener('update_friend_requests', handleLocalUpdate);
         return () => window.removeEventListener('update_friend_requests', handleLocalUpdate);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.id]); // ⚠️ 故意不写 fetchCount 和 apiFetch，防止死循环
+    }, [user?.id]);
 
-    // ✨ 拆分 3：只负责【WebSocket】监听
+    // ✨✨✨ 改动点：连接到专属的 /friends WebSocket 命名空间，并传入 userId ✨✨✨
     useEffect(() => {
         if (!user?.id) return;
 
-        console.log('🔌 Navbar 正在连接 WebSocket...');
-        const socket = io('/notifications', { transports: ['websocket'] });
-
-        socket.on('connect', () => {
-            console.log('✅ Navbar WebSocket 连接成功! ID:', socket.id);
+        console.log('🔌 Navbar 正在连接 /friends WebSocket...');
+        const socket = io('/friends', {
+            query: { userId: user.id }, // 传递 userId，让后端将其加入专属房间
+            transports: ['websocket'],
         });
 
-        socket.on('notification', (n: { type: string; payload: Record<string, string> }) => {
-            console.log('📩 Navbar 收到 WebSocket 广播:', n);
+        socket.on('connect', () => {
+            console.log('✅ Navbar /friends WebSocket 连接成功! ID:', socket.id);
+        });
+
+        // 监听后端 FriendGateway 推送的 friendRequest 事件
+        socket.on('friendRequest', (notification: { type: string; payload: Record<string, any> }) => {
+            console.log('📩 Navbar 收到好友实时通知:', notification);
             
-            if (n.type === 'FRIEND_REQUEST' && n.payload.receiverId === user.id) {
-                console.log('🔔 确认是发给我的好友邀请，正在刷新 Navbar 红点!');
+            if (notification.type === 'FRIEND_REQUEST') {
+                console.log('🔔 收到新的好友邀请，正在刷新 Navbar 红点!');
                 fetchCount();
             }
         });
 
         return () => {
-            console.log('❌ Navbar WebSocket 断开连接');
+            console.log('❌ Navbar /friends WebSocket 断开连接');
             socket.disconnect();
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.id]); // ⚠️ 绝对不能把 apiFetch 放进这里，否则会无限断开重连！
+    }, [user?.id]);
 
     return (
         <nav className="flex items-center py-[18px] px-10 bg-surface border-b border-border shadow-card">
