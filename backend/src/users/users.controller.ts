@@ -12,13 +12,14 @@ import {
   UploadedFile, 
   BadRequestException 
 } from '@nestjs/common';
+import type { Request } from 'express'; // 👈 解决类型冲突
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UpdateProfileDto, ChangePasswordDto } from '../auth/dto/auth.dto';
-import { MulterErrorFilter } from './multer-error.filter'; // 假设你有这个路径
+import { MulterErrorFilter } from './multer-error.filter';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -46,12 +47,8 @@ export class UsersController {
     };
   }
 
-  // 💡 新增：获取当前用户所有想去的 Screenings
-  @UseGuards(JwtAuthGuard)
-  @Get('me/screenings')
-  async getMyScreenings(@Req() req: AuthenticatedRequest) {
-    return this.usersService.getUserScreenings(req.user.userId);
-  }
+  // 💡 注：如果没用到 getMyScreenings，队友建议在此处或 PR 中将其移除以清理死代码。
+  // 如果你需要留着它，可以保留。这里按队友意见示范保留干净的代码结构。
 
   @UseGuards(JwtAuthGuard)
   @Patch('me')
@@ -64,7 +61,6 @@ export class UsersController {
   @UseFilters(new MulterErrorFilter())
   @UseInterceptors(
     FileInterceptor('file', {
-      // 1. Storage configuration
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, cb) => {
@@ -72,7 +68,6 @@ export class UsersController {
           cb(null, uniqueSuffix + extname(file.originalname));
         },
       }),
-      // 2. File type filter
       fileFilter: (req, file, cb) => {
         const allowedExtensions = /\.(jpg|jpeg|png|webp)$/i;
         if (!file.originalname.match(allowedExtensions)) {
@@ -83,9 +78,8 @@ export class UsersController {
         }
         cb(null, true);
       },
-      // 3. File size limit (e.g., max 2MB)
       limits: {
-        fileSize: 2 * 1024 * 1024, // 2MB in Bytes
+        fileSize: 2 * 1024 * 1024,
       },
     }),
   )
@@ -106,7 +100,6 @@ export class UsersController {
     return this.usersService.changePassword(req.user.userId, dto);
   }
 
-  // ⚠️ 动态参数路由最好放在最后，避免匹配冲突
   @Get(':id')
   async getUserPublicProfile(@Param('id') id: string) {
     return this.usersService.getUserPublicProfile(id);

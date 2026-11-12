@@ -147,7 +147,7 @@ model Screening {
   cinemaLongitude  Float?                                      // _coords.lon (V3)
 
   // // Club side
-  isCancelled      Boolean           @default(false)
+  //isCancelled      Boolean           @default(false)
   rsvps            Rsvp[]
 
   createdAt        DateTime          @default(now())
