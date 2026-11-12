@@ -5,10 +5,11 @@ type ApiFetch = (path: string, options?: RequestInit) => Promise<any>
 export type NotificationType =
     | 'FRIEND_REQUEST'
     | 'FRIEND_ACCEPTED'
-    | 'EVENT_CANCELLED'
     | 'CLUB_PICK'
     | 'CLUB_PICK_REMOVED'
     | 'FRIEND_RSVP'
+    | 'ROLE_CHANGED'
+//    | 'EVENT_CANCELLED' // if event is cancelled (outside CineClub user's scope)
 
 // One row from GET /notifications (dates arrive as ISO strings in JSON)
 export type NotificationItem = {
