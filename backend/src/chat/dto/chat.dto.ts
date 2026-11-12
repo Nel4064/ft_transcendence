@@ -1,4 +1,5 @@
-import { IsString, IsNotEmpty, MaxLength, MinLength, IsUUID, } from 'class-validator';
+import { IsString, IsNotEmpty, MaxLength, IsUUID, } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class SendMessageDto
 {
@@ -6,9 +7,10 @@ export class SendMessageDto
 	@IsNotEmpty()
 	receiverId: string;
 
+	@Transform(({ value }) => typeof value === 'string' ? value.trim() : value)
 	@IsString()
 	@IsNotEmpty()
 	@MaxLength(500)
-	@MinLength(1)
 	content: string;
+
 }

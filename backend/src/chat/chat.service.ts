@@ -7,14 +7,10 @@ import { SendMessageDto } from './dto/chat.dto';
 export class ChatService 
 {
 	constructor(private readonly prisma: PrismaService) {}
-	private async checkFriendship(senderId: string, receiverId: string): Promise<boolean>
-	{
-		const friendship = await this.prisma.friendship.findUnique
-		({
-			where: 
-			{
-				userId_friendId:
-				{
+	private async checkFriendship(senderId: string, receiverId: string): Promise<boolean>{
+		const friendship = await this.prisma.friendship.findUnique({
+			where: {
+				userId_friendId:{
 					userId: senderId,
 					friendId: receiverId,
 				},
@@ -23,8 +19,13 @@ export class ChatService
 		return (!!friendship);
 	}
 
-	async sendMessage (senderId: string, dto: SendMessageDto)
-	{
+	private readonly senderSelect = {
+		sender:{
+			select: { id: true, username: true, displayName: true, avatarUrl: true },
+		},
+	};
+
+	async sendMessage (senderId: string, dto: SendMessageDto){
 		const { receiverId, content } = dto;
 		const cleanContent = content.trim();
 
@@ -35,44 +36,27 @@ export class ChatService
 		if (!isFriend)
 			throw new ForbiddenException('You are not friends yet');
 		
-		return this.prisma.message.create
-		({
-			data:
-			{
+		return this.prisma.message.create({
+			data:{
 				content: cleanContent,
 				type: ChatType.DIRECT,
 				senderId: senderId,
 				receiverId: receiverId,
 			},
-			include: 
-			{
-				sender: 
-				{
-					select:
-					{
-						id: true,
-						username: true,
-						displayName: true,
-						avatarUrl: true,
-					},
-				},
-			},
+			include: this.senderSelect,
 		});
 	}
 
-	async getDirectHistory(userId: string, friendId: string, limit: number = 50,)
-	{
+	async getDirectHistory(userId: string, friendId: string, limit: number = 50,){
 		const isFriend = await this.checkFriendship(userId, friendId);
 		if (!isFriend)
 			throw new ForbiddenException('You are not friends yet');
-		const messages = await this.prisma.message.findMany
-		({
-			where:
-			{
+		const validLimit = Number.isFinite(limit) ? Math.trunc(limit) : 50;
+		const safeLimit = Math.min(Math.max(validLimit, 1), 100);
+		const messages = await this.prisma.message.findMany({
+			where:{
 				type: ChatType.DIRECT,
-				OR:
-				[
-					{
+				OR:[{
 						senderId: userId,
 						receiverId: friendId,
 					},
@@ -82,24 +66,11 @@ export class ChatService
 					},
 				],
 			},
-			orderBy:
-			{
+			orderBy:{
 				createdAt: 'desc',
 			},
-			take: limit,
-			include:
-			{
-				sender:
-				{
-					select: 
-					{
-						id: true,
-						username: true,
-						displayName: true,
-						avatarUrl: true,
-					},
-				},
-			},
+			take: safeLimit,
+			include: this.senderSelect,
 		});
 		return messages.reverse(); 
 	}
