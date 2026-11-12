@@ -12,12 +12,7 @@ type IconProps = {
 }
 
 function Icon({ name, size = 20 }: IconProps) {
-    const icon = icons[name]
-
-    // C'est une image (png) : on affiche une <img>
-    if (typeof icon === 'string')
-        return <img src={icon} width={size} height={size} alt="" aria-hidden />
-
+    return <img src={icons[name]} width={size} height={size} alt="" aria-hidden />
 }
 
 export default Icon

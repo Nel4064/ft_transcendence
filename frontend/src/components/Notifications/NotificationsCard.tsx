@@ -1,5 +1,4 @@
 import Avatar from '../Avatar/Avatar'
-import ticket from '../../assets/ticket.svg'
 
 type NotificationsCardProps = {
     message: string

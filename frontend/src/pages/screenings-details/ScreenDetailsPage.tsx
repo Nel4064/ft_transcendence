@@ -81,7 +81,7 @@ function ScreenDetailsPage() {
 						<p className="flex gap-2 text-body text-text">
 							<Icon name="calendar-event" />
 							{date} at {time}{screening.version && ` · ${screening.version}`}</p>
-						<p className="flex gap-2 text-body text-text text-text-muted">
+						<p className="flex gap-2 text-body text-text-muted">
 							<Icon name="map-pin" />
 							{screening.cinemaName} - {screening.cinemaAddress} - {screening.cinemaCity}</p>
 					</div>

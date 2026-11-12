@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import Card from '../Card/Card';
 
 type MoviesCardProps = { movie: string; image: string }
