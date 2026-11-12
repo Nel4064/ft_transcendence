@@ -16,21 +16,44 @@ export class UsersService {
         username: true,
         displayName: true,
         avatarUrl: true,
+        email: true,
       },
     });
   }
 
-  async getUserPublicProfile(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
+  async getUserPublicProfile(currentUserId: string, targetUserId: string) {
+    // 1. 查询目标用户信息
+    const targetUser = await this.prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: {
+        id: true,
+        username: true,
+        displayName: true,
+        avatarUrl: true,
+        bio: true,
+        email: true, // 可以先查出来
+      },
     });
 
-    if (!user) {
-      throw new NotFoundException('User not found');
+    if (!targetUser) throw new NotFoundException('User not found');
+
+    // 2. 检查当前用户和 targetUser 是否是好友
+    const friendship = await this.prisma.friendship.findFirst({
+      where: {
+        OR: [
+          { userId: currentUserId, friendId: targetUserId },
+          { userId: targetUserId, friendId: currentUserId },
+        ],
+      },
+    });
+
+    // 3. 如果不是好友（且不是自己），则剔除 email 字段
+    if (currentUserId !== targetUserId && !friendship) {
+      // 用 as any 强制转换
+      delete (targetUser as any).email;
     }
 
-    const { passwordHash, twoFactorSecret, email, ...publicProfile } = user;
-    return publicProfile;
+    return targetUser;
   }
 
   async getProfile(userId: string) {

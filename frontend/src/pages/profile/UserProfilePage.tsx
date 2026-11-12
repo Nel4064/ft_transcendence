@@ -6,6 +6,7 @@ interface UserProfile {
   id: string;
   username: string;
   displayName: string;
+  email?: string;     // 👈 新增：如果后端返回了 email（说明是好友）则显示
   avatarUrl?: string;
   bio?: string;
 }
@@ -14,7 +15,7 @@ export default function UserProfilePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { apiFetch } = useAuth();
-  
+
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -36,15 +37,12 @@ export default function UserProfilePage() {
     }
   }, [id, apiFetch]);
 
-  // Helper function: get the first letters of the first two words in the profile name and uppercase them
   const getInitials = (name?: string) => {
     if (!name) return 'U';
     const words = name.trim().split(/\s+/);
     if (words.length >= 2) {
-      // Take the first letters of the first two words
       return (words[0][0] + words[1][0]).toUpperCase();
     } else {
-      // If there is only one word, take the first two letters capitalized
       return name.slice(0, 2).toUpperCase();
     }
   };
@@ -80,22 +78,29 @@ export default function UserProfilePage() {
 
         {/* User profile display card */}
         <div className="flex flex-col items-center gap-4 p-8 bg-surface border border-border rounded-md shadow-card text-center">
-          {/* Custom avatar rendering: display image if avatarUrl exists, otherwise display profile initials */}
+          {/* Avatar rendering */}
           <div className="w-[100px] h-[100px] bg-brand/20 text-brand rounded-full flex items-center justify-center text-2xl font-bold overflow-hidden shadow-inner">
             {profile.avatarUrl ? (
-              <img 
-                src={profile.avatarUrl} 
-                alt={profile.displayName || profile.username} 
-                className="w-full h-full object-cover" 
+              <img
+                src={profile.avatarUrl}
+                alt={profile.displayName || profile.username}
+                className="w-full h-full object-cover"
               />
             ) : (
               getInitials(profile.displayName)
             )}
           </div>
-          
+
           <div>
             <h1 className="font-serif text-2xl text-text font-bold">{profile.displayName || profile.username}</h1>
             <p className="text-text-muted text-sm">@{profile.username}</p>
+
+            {/* 👇 如果后端返回了 email（说明是好友），则在这里展示 */}
+            {profile.email && (
+              <p className="text-text-muted text-xs mt-1">
+                📧 {profile.email}
+              </p>
+            )}
           </div>
 
           {/* Bio section */}

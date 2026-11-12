@@ -7,6 +7,7 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import type { Request } from 'express';
 import { MulterErrorFilter } from './multer-error.filter';
+import { identifierToKeywordKind } from 'typescript';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -78,9 +79,10 @@ export class UsersController {
     return this.usersService.updateAvatar(req.user.userId, avatarUrl);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
-  async getUserPublicProfile(@Param('id') id: string) {
-    return this.usersService.getUserPublicProfile(id);
+  async getUserPublicProfile(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.usersService.getUserPublicProfile(req.user.userId, id);
   }
 
   @UseGuards(JwtAuthGuard)
