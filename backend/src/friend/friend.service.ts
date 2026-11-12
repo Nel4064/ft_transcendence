@@ -6,7 +6,7 @@ import { FriendGateway } from 'src/friend/friend.gateway';
 export class FriendService {
   constructor(
     private prisma: PrismaService,
-    // 注入 Gateway
+    // injection Gateway
     private friendGateway: FriendGateway
   ) { }
 
@@ -36,10 +36,10 @@ export class FriendService {
           },
         });
 
-        // ✨ 触发 WebSocket 广播，带上 receiverId
+        // start up websocket notification avec receiverId
         this.friendGateway.sendNotificationToUser(receiverId, {
           type: 'FRIEND_REQUEST',
-          payload: { receiverId }, // 关键点：让前端知道是发给谁的
+          payload: { receiverId }, // important for front-end to know who the request is for
           createdAt: new Date().toISOString()
         });
 
@@ -64,7 +64,7 @@ export class FriendService {
         },
       });
 
-      // ✨ 触发 WebSocket 广播，带上 receiverId
+      // ✨ start up websocket notification avec receiverId
       this.friendGateway.sendNotificationToUser(receiverId, {
         type: 'FRIEND_REQUEST',
         payload: { receiverId },
@@ -94,7 +94,8 @@ export class FriendService {
       throw new BadRequestException('The request does not exist or you do not have permission');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    // 1. only put database operations inside the transaction
+    await this.prisma.$transaction(async (tx) => {
       await tx.friendRequest.update({
         where: { id: requestId },
         data: { status: 'ACCEPTED' },
@@ -107,15 +108,16 @@ export class FriendService {
         ],
         skipDuplicates: true,
       });
-
-      this.friendGateway.sendNotificationToUser(request.senderId, {
-        type: 'FRIEND_ACCEPTED', // the front-end listens for this event type
-        payload: { receiverId: request.senderId }, // important for front-end to know who accepted the request
-        createdAt: new Date().toISOString()
-      });
-
-      return { message: 'Friend added successfully' };
     });
+
+    // 2. after the transaction is successfully committed, then send WebSocket notification
+    this.friendGateway.sendNotificationToUser(request.senderId, {
+      type: 'FRIEND_ACCEPTED', // the front-end listens for this event type
+      payload: { receiverId: request.senderId }, // important for front-end to know who accepted the request
+      createdAt: new Date().toISOString()
+    });
+
+    return { message: 'Friend added successfully' };
   }
 
   // 3. Reject friend request
