@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent} from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/button/Button'
+import Logo from '../../components/Logo/Logo'
 
 const inputClass =
   'py-2.5 px-3 border border-border rounded-md text-control'
@@ -131,7 +132,7 @@ function SignInPage() {
         onSubmit={requires2FA ? handleVerify2FA : handleSubmit}
       >
         <h1 className="text-center text-title font-serif font-bold">
-          {requires2FA ? 'Two-Factor Authentication' : 'Welcome Back !'}
+          {requires2FA ? 'Two-Factor Authentication' : <Logo />}
         </h1>
 
         <div className="relative p-5 bg-surface border border-border rounded-md shadow-card">
