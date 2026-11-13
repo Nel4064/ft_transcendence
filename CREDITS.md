@@ -35,17 +35,6 @@ and SIL OFL 1.1 for fonts.
 
 ## Images and icons
 
-### `frontend/src/assets/react.svg` (unused, delete?)
-- Author / Source: Vite template, React logo
-- Licence: MIT
-- Link: https://github.com/vitejs/vite/tree/main/packages/create-vite
-
-### `frontend/src/assets/vite.svg` (unused, delete?)
-- Author / Source: Vite template, Vite logo
-- Licence: MIT
-- Link: https://github.com/vitejs/vite/tree/main/packages/create-vite
-
-
 ### `frontend/src/assets/calendar-event.png`
 - Author / Source: Tabler Icons by Paweł Kuna (codecalm), icon "calendar-event"
 - Licence: MIT
@@ -56,7 +45,7 @@ and SIL OFL 1.1 for fonts.
 - Licence: MIT
 - Link: https://tabler.io/icons/icon/map-pin
 
-### `frontend/src/assets/chair-director.png`
+### `frontend/src/assets/chair-director.png` and `frontend/src/public/chair-director.svg'
 - Author / Source: Tabler Icons by Paweł Kuna (codecalm), icon "chair-director"
 - Licence: MIT
 - Link: https://tabler.io/icons/icon/chair-director
