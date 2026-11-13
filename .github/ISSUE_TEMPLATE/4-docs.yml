@@ -1,0 +1,25 @@
+name: 📝 docs
+description: Missing, outdated or unclear documentation
+title: "docs: "
+labels: ["docs", "needs-triage"]
+body:
+  - type: input
+    id: where
+    attributes:
+      label: File or page
+      placeholder: "README.md, CREDITS.md, API docs, code comment in ..."
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [frontend, backend, infra/CI, db]
+      multiple: true
+  - type: textarea
+    id: change
+    attributes:
+      label: What to change
+      description: What is missing, wrong or unclear, and what it should say instead.
+    validations:
+      required: true
