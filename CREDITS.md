@@ -1,12 +1,3 @@
-<!--
-  À COMPLÉTER :
-  - Remplacer chaque "TODO" par l'auteur, la licence et le lien EXACT de la page de téléchargement.
-  - Licences acceptées : MIT, CC0, CC BY (avec attribution), SIL OFL (polices).
-  - Fichier sans source retrouvable ou sous licence non compatible → le remplacer.
-  - Fichier non utilisé → le supprimer du repo et retirer son bloc.
-  - Chaque nouveau média ajouté = un bloc ici, dans la même PR.
--->
-
 # Credits
 
 Third-party media used in this project.
@@ -54,8 +45,3 @@ and SIL OFL 1.1 for fonts.
 - Author / Source: StockSnap.io, photo "camera vintage"
 - Licence: CC0
 - Link: https://stocksnap.io/photo/camera-vintage-EKLKJP8RVN
-
-### `frontend/public/favicon.svg`
-- Author / Source: Vite template, Vite logo
-- Licence: MIT
-- Link: https://github.com/vitejs/vite/tree/main/packages/create-vite
