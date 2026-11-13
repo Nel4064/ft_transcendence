@@ -6,6 +6,8 @@ import Avatar from '../Avatar/Avatar';
 import { buttonClass } from '../button/Button';
 import { getPendingRequests } from '../../api/friends';
 import { io } from 'socket.io-client';
+import Alert from '../Alert/Alert';
+import { getNotifications } from '../../api/notifications';
 
 const linkClass = "text-nav font-bold text-text-muted hover:text-text [&.active]:text-text transition-colors duration-300";
 const linkClassAdmin = "text-nav font-bold text-text-admin-muted hover:text-admin [&.active]:text-admin transition-colors duration-300";
@@ -13,17 +15,20 @@ const linkClassAdmin = "text-nav font-bold text-text-admin-muted hover:text-admi
 function Navbar() {
     const { user, apiFetch } = useAuth();
     const [pendingCount, setPendingCount] = useState(0);
+    const [unreadCount, setUnreadCount] = useState(0);
 
     // ✨ 拆分 1：负责拉取数据的普通函数（不再用 useCallback 绕来绕去）
-    const fetchCount = async () => {
+    const fetchCounts = async () => {
         if (!user?.id) return;
         try {
-            const data = await getPendingRequests(apiFetch);
-            if (Array.isArray(data)) {
-                setPendingCount(data.length);
-            }
+            const [requests, notifications] = await Promise.all([
+                getPendingRequests(apiFetch),
+                getNotifications(apiFetch),
+            ]);
+            if (Array.isArray(requests)) setPendingCount(requests.length);
+            setUnreadCount(notifications.filter((n) => n.readAt === null).length);
         } catch (err) {
-            console.error('Failed to fetch friend requests count', err);
+            console.error('Failed to fetch navbar counts', err);
         }
     };
 
@@ -31,15 +36,15 @@ function Navbar() {
     useEffect(() => {
         if (!user?.id) return;
         
-        fetchCount(); // 初始加载
+        fetchCounts(); // 初始加载
 
         const handleLocalUpdate = () => {
             console.log('🔄 Navbar 监听到本地数据变化，正在刷新红点...');
-            fetchCount();
+            fetchCounts();
         };
         
-        window.addEventListener('update_friend_requests', handleLocalUpdate);
-        return () => window.removeEventListener('update_friend_requests', handleLocalUpdate);
+        window.addEventListener('update_navbar', handleLocalUpdate);
+        return () => window.removeEventListener('update_navbar', handleLocalUpdate);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.id]); // ⚠️ 故意不写 fetchCount 和 apiFetch，防止死循环
 
@@ -54,14 +59,10 @@ function Navbar() {
             console.log('✅ Navbar WebSocket 连接成功! ID:', socket.id);
         });
 
-        socket.on('notification', (n: { type: string; payload: Record<string, string> }) => {
-            console.log('📩 Navbar 收到 WebSocket 广播:', n);
-            
-            if (n.type === 'FRIEND_REQUEST' && n.payload.receiverId === user.id) {
-                console.log('🔔 确认是发给我的好友邀请，正在刷新 Navbar 红点!');
-                fetchCount();
-            }
+        socket.on('notification', () => {
+            fetchCounts();
         });
+
 
         return () => {
             console.log('❌ Navbar WebSocket 断开连接');
@@ -88,14 +89,11 @@ function Navbar() {
                     
                     <NavLink to="/friends" className={`${linkClass} relative`}>
                         Friends
-                        {pendingCount > 0 && (
-                            <span className="absolute -top-2 -right-3 bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
-                                {pendingCount}
-                            </span>
-                        )}
+                        <Alert show={pendingCount > 0} />
                     </NavLink>
-                    <NavLink to="/notifications" className={linkClass}>
+                    <NavLink to="/notifications" className={`${linkClass} relative`}>
                         Notifications
+                        <Alert show={unreadCount > 0} />
                     </NavLink>
                 </div>
             )}

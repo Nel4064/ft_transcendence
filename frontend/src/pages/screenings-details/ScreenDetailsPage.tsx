@@ -4,7 +4,7 @@ import defaultMovie from '../../assets/default-movie.jpg'
 import { apiFetch, useAuth } from '../../context/AuthContext'
 import Button from '../../components/button/Button'
 import Avatar from '../../components/Avatar/Avatar'
-
+import Icon from '../../components/Icon/Icon'
 
 type Screening = {
     id: string
@@ -78,8 +78,12 @@ function ScreenDetailsPage() {
 			<ul className = "flex flex-col gap-4 mt-6">
 				<li key={screening.id} className="flex items-center justify-between p-4 bg-surface border border-border rounded-lg text-body text-text-muted">
 					<div>
-						<p className="text-body text-text">{date} at {time}{screening.version && ` · ${screening.version}`}</p>
-						<p className="text-body text-text">{screening.cinemaName} - {screening.cinemaAddress} - {screening.cinemaCity}</p>
+						<p className="flex gap-2 text-body text-text">
+							<Icon name="calendar-event" />
+							{date} at {time}{screening.version && ` · ${screening.version}`}</p>
+						<p className="flex gap-2 text-body text-text-muted">
+							<Icon name="map-pin" />
+							{screening.cinemaName} - {screening.cinemaAddress} - {screening.cinemaCity}</p>
 					</div>
 							<Button size="lg"> Go to the event </Button>
 				</li>
