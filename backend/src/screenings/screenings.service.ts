@@ -26,8 +26,12 @@ export class ScreeningsService {
       select: { friendId: true },
     });
     const friendIds = friendships.map(f => f.friendId);
-
     const screenings = await this.prisma.screening.findMany({
+      where: {
+        startsAt: {
+          gte: new Date(),
+        },
+      },
       include: {
         _count: {
           select: { rsvps: true },
@@ -56,10 +60,10 @@ export class ScreeningsService {
 
       return {
         ...rest,
-        totalGoingCount: _count.rsvps,              
-        isGoing: !!myRsvp,                           
-        friendsGoingCount: friendsRsvps.length,      
-        friendsGoing: friendsRsvps.map(r => r.user), 
+        totalGoingCount: _count.rsvps,
+        isGoing: !!myRsvp,
+        friendsGoingCount: friendsRsvps.length,
+        friendsGoing: friendsRsvps.map(r => r.user),
       };
     });
   }
@@ -125,11 +129,18 @@ export class ScreeningsService {
       await this.prisma.rsvp.delete({ where: { id: existing.id } });
       return { isGoing: false };
     } else {
+      // 在执行 create 之前，先查一下场次还在不在
+      const screening = await this.prisma.screening.findUnique({
+        where: { id: screeningId }
+      });
+      if (!screening) {
+        throw new NotFoundException("La séance n'est plus disponible.");
+      }
+      // 查得到，说明是安全的，执行插入
       await this.prisma.rsvp.create({
         data: { userId, screeningId }
       });
       return { isGoing: true };
     }
   }
-
 }

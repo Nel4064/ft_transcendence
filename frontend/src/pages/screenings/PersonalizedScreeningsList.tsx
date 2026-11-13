@@ -31,7 +31,28 @@ export default function PersonalizedScreeningsList() {
     }, [])
 
     const handleRsvp = async (screeningId: string) => {
-        await apiFetch(`/screenings/${screeningId}/rsvp`, { method: 'POST' });
+        try {
+            await apiFetch(`/screenings/${screeningId}/rsvp`, { method: 'POST' });
+        } catch (error: any) {
+            // 把 error 转换成字符串，方便我们大海捞针
+            const errText = String(error?.message || error);
+
+            // 匹配 HTTP 404，或者直接匹配你后端写死的那句法文
+            const isNotFound =
+                error?.status === 404 ||
+                errText.includes('404') ||
+                errText.includes('Not Found') ||
+                errText.includes("La séance n'est plus disponible"); // 🌟 精准狙击后端的报错文本
+
+            if (isNotFound) {
+                alert("Désolé, cette séance a été annulée ou n'est plus disponible.");
+
+                // 现在这一行肯定能执行了！卡片马上消失！
+                setScreenings(prev => prev.filter(s => s.id !== screeningId));
+            } else {
+                alert("Une erreur est survenue lors de l'enregistrement de votre RSVP.");
+            }
+        }
     }
 
     if (isLoading) return <p className="text-gray-400 py-4">Loading screenings...</p>
@@ -61,20 +82,20 @@ export default function PersonalizedScreeningsList() {
                             })}, ${dateObj.toLocaleTimeString('en-GB', {
                                 hour: '2-digit', minute: '2-digit'
                             })}`;
-                        } catch (e) {}
+                        } catch (e) { }
                     }
 
                     return (
-                        <RsvpScreeningCard 
-                            key={s.id} 
-                            id={s.id} 
-                            movie={s.filmTitle || 'Unknown Title'} 
-                            image={s.posterUrl ?? defaultMovie} 
-                            cinema={s.cinemaName || 'Unknown Cinema'} 
-                            dateFormatted={formattedDate} 
-                            initialIsGoing={!!s.isGoing} 
-                            initialGoingCount={s.totalGoingCount || 0} 
-                            onRsvp={handleRsvp} 
+                        <RsvpScreeningCard
+                            key={s.id}
+                            id={s.id}
+                            movie={s.filmTitle || 'Unknown Title'}
+                            image={s.posterUrl ?? defaultMovie}
+                            cinema={s.cinemaName || 'Unknown Cinema'}
+                            dateFormatted={formattedDate}
+                            initialIsGoing={!!s.isGoing}
+                            initialGoingCount={s.totalGoingCount || 0}
+                            onRsvp={handleRsvp}
                         />
                     );
                 })}

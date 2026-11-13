@@ -43,21 +43,28 @@ function ScreenDetailsPage() {
     const { user } = useAuth()
     const [screening, setScreening] = useState<Screening | null>(null)
 
+    // 🌟 修改点 1：新增 isLoading 状态，初始值为 true
+    const [isLoading, setIsLoading] = useState(true)
+
     useEffect(() => {
+        setIsLoading(true); // 每次 id 改变时，重新开启 loading
+
         apiFetch('/screenings/myrsvps')
             .then((list: Screening[]) => {
                 const currentScreening = list.find((s) => s.id === id);
                 setScreening(currentScreening ?? null);
             })
             .catch(console.error)
+            .finally(() => {
+                // 🌟 修改点 2：不管成功还是失败（或者没找到），请求结束就关闭 loading
+                setIsLoading(false);
+            })
     }, [id])
 
     const handleRsvpClick = async () => {
         if (!screening) return;
-
         const newIsGoing = !screening.isGoing;
         const currentCount = screening.totalGoingCount || 0;
-
         setScreening({
             ...screening,
             isGoing: newIsGoing,
@@ -66,12 +73,20 @@ function ScreenDetailsPage() {
 
         try {
             await apiFetch(`/screenings/${screening.id}/rsvp`, { method: 'POST' });
-        } catch (error) {
+        } catch (error: any) {
             setScreening({
                 ...screening,
                 isGoing: !newIsGoing,
                 totalGoingCount: newIsGoing ? currentCount - 1 : currentCount + 1
             });
+            const isNotFound = error?.status === 404 || error?.message?.includes('404');
+
+            if (isNotFound) {
+                alert("Désolé, cette séance a été annulée ou n'est plus disponible.");
+                navigate('/');
+            } else {
+                alert("Une erreur est survenue lors de l'enregistrement de votre RSVP.");
+            }
         }
     };
 
@@ -84,8 +99,20 @@ function ScreenDetailsPage() {
         navigate('/')
     }
 
-    if (!screening)
+    // 🌟 修改点 3：拆分 Loading 和 404 (Not Found) 的渲染逻辑
+    if (isLoading) {
         return <main className="py-12 px-10"><p>Loading...</p></main>
+    }
+
+    if (!screening) {
+        return (
+            <main className="py-12 px-10 flex flex-col items-center justify-center text-center">
+                <h2 className="text-xl font-bold text-text mb-2">Séance indisponible</h2>
+                <p className="text-text-muted mb-4">Cette séance n'existe plus ou a été supprimée.</p>
+                <Button variant="primary" onClick={() => navigate('/')}>Retour à l'accueil</Button>
+            </main>
+        )
+    }
 
     const start = new Date(screening.startsAt)
     const date = start.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
@@ -95,6 +122,7 @@ function ScreenDetailsPage() {
 
     return (
         <main className="max-w-[1000px] mx-auto py-12 px-10">
+            {/* 下面的正常渲染逻辑保持完全不变 */}
             <section className="flex flex-col md:flex-row gap-8 mb-12">
                 <img src={screening.posterUrl ?? defaultMovie} alt={screening.filmTitle} className={posterClass} />
                 <div>
@@ -122,8 +150,8 @@ function ScreenDetailsPage() {
                     <button
                         onClick={handleRsvpClick}
                         className={`ml-4 px-6 py-2 text-[14px] font-semibold rounded-xl transition-colors shrink-0 ${screening.isGoing
-                                ? 'bg-[#dcfce7] text-[#166534] border border-transparent'
-                                : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                            ? 'bg-[#dcfce7] text-[#166534] border border-transparent'
+                            : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
                             }`}
                     >
                         {screening.isGoing ? 'Going ✓' : 'RSVP'}
