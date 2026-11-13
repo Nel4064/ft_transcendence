@@ -1,0 +1,31 @@
+name: 🐞 fix (bug)
+description: Something doesn't work as expected
+title: "fix: "
+labels: ["fix", "needs-triage"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [frontend, backend, infra/CI, db]
+      multiple: true
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happens vs. what should happen
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      placeholder: "1. Go to ... 2. Click on ..."
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / screenshot (optional)
+      description: Paste the logs or drag an image here.
