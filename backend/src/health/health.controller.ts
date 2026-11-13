@@ -11,7 +11,7 @@ export class HealthController {
 			await this.prisma.$queryRaw`SELECT 1`;
 			return { status: 'ok', database: 'up'};
 		} catch {
-			throw new ServiceUnavailableException({ ststus: 'error', database: 'down'});
+			throw new ServiceUnavailableException({ status: 'error', database: 'down'});
 		}
 	}
 }
