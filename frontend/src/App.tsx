@@ -18,7 +18,7 @@ import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
 import MovieDetailsPage from './pages/movie-details/MovieDetailsPage'
 import ScreenDetailsPage from './pages/screenings-details/ScreenDetailsPage'
 import UserProfilePage from './pages/profile/UserProfilePage'
-import PersonalizedScreeningsList from './pages/screenings/PersonalizedScreeningsList'
+import ScreeningsList from './pages/screenings/ScreeningsList'
 import CalendarPage from './pages/calendar/CalendarPage'
 
 
@@ -41,7 +41,7 @@ function App() {
 				<Route element={<ProtectedRoute />}>
 					<Route path="/profile" element={<ProfilePage />} />
 					<Route path="/notifications" element={<NotificationsPage />} />
-					<Route path="/screenings" element={<PersonalizedScreeningsList />} />
+					<Route path="/screenings" element={<ScreeningsList />} />
 					<Route path="/reminders" element={<RemindersPage />} />
 					
 					<Route path="/movies/:title" element={<MovieDetailsPage />} />

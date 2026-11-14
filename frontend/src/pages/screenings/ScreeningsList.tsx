@@ -13,7 +13,7 @@ type Screening = {
     totalGoingCount: number
 }
 
-export default function PersonalizedScreeningsList() {
+export default function ScreeningsList() {
     const [screenings, setScreenings] = useState<Screening[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
