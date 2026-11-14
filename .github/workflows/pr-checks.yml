@@ -19,7 +19,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
 
       - run: npm install --no-save @commitlint/cli @commitlint/config-conventional
 
@@ -28,85 +28,110 @@ jobs:
       - name: Lint PR title
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
-        run:
-          echo "$PR_TITLE" | npx commitlint
+        run: |
+          if ! echo "$PR_TITLE" | npx commitlint; then
+            echo "::error::PR title must follow Conventional Commits: type(scope): description (e.g. fix(friends): send notification after transaction)"
+            exit 1
+          fi
 
-
-  # lint:
-  #   name: Lint
-  #   runs-on: ubuntu-latest
-  #   if: github.event.pull_request.draft == false
-  #   steps:
-  #     - uses: actions/checkout@v6
-
-  #     - uses: pnpm/action-setup@v4
-  #       with:
-  #         version: 10.28.2
-
-  #     - uses: actions/setup-node@v6
-  #       with:
-  #         node-version: '20'
-  #         cache: 'pnpm'
-
-  #     - run: pnpm install --frozen-lockfile
-
-  #     - run: pnpm lint
-
-  # format:
-  #   name: Format Check
-  #   runs-on: ubuntu-latest
-  #   if: github.event.pull_request.draft == false
-  #   steps:
-  #     - uses: actions/checkout@v6
-
-  #     - uses: pnpm/action-setup@v4
-  #       with:
-  #         version: 10.28.2
-
-  #     - uses: actions/setup-node@v6
-  #       with:
-  #         node-version: '20'
-  #         cache: 'pnpm'
-
-  #     - run: pnpm install --frozen-lockfile
-
-  #     - run: pnpm format:check
+  source-branch-check:
+    name: PR Source Branch (dev only into main)
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Check source branch
+        # Branch names are passed via env, never ${{ }} inside `run:`,
+        # so a crafted branch name cannot inject shell code.
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          if [ "$BASE_REF" = "main" ] && [ "$HEAD_REF" != "dev" ]; then
+            echo "::error::PRs into main must come from dev (got: $HEAD_REF). Change the base branch to dev."
+            exit 1
+          fi
+          echo "OK: $HEAD_REF -> $BASE_REF"
 
   # typecheck:
-  #   name: Typecheck
+  #   name: Typecheck (${{ matrix.app }})
   #   runs-on: ubuntu-latest
   #   if: github.event.pull_request.draft == false
+  #   strategy:
+  #     fail-fast: false          # one app failing must not cancel the other
+  #     matrix:
+  #       app: [frontend, backend]
+  #   defaults:
+  #     run:
+  #       working-directory: ${{ matrix.app }}
   #   steps:
-  #     - uses: actions/checkout@v6
+  #     - name: Checkout code
+  #       uses: actions/checkout@v6
 
-  #     - uses: pnpm/action-setup@v4
+  #     - name: Set up Node
+  #       uses: actions/setup-node@v6
   #       with:
-  #         version: 10.28.2
+  #         node-version: '24'
+  #         cache: 'npm'
+  #         cache-dependency-path: ${{ matrix.app }}/package-lock.json
 
-  #     - uses: actions/setup-node@v6
+  #     - name: Install dependencies
+  #       run: npm ci
+
+  #     - name: Generate Prisma client
+  #       if: matrix.app == 'backend'
+  #       run: npx prisma generate
+
+  #     - name: Check types
+  #       run: |
+  #         if [ "${{ matrix.app }}" = "frontend" ]; then
+  #           npx tsc -b
+  #         else
+  #           npx tsc --noEmit -p tsconfig.json
+  #         fi
+
+  # lint:
+  #   name: Lint (${{ matrix.app }})
+  #   runs-on: ubuntu-latest
+  #   if: github.event.pull_request.draft == false
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       app: [frontend, backend]
+  #   defaults:
+  #     run:
+  #       working-directory: ${{ matrix.app }}
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v6
+
+  #     - name: Set up Node
+  #       uses: actions/setup-node@v6
   #       with:
-  #         node-version: '20'
-  #         cache: 'pnpm'
+  #         node-version: '24'
+  #         cache: 'npm'
+  #         cache-dependency-path: ${{ matrix.app }}/package-lock.json
 
-  #     - run: pnpm install --frozen-lockfile
+  #     - name: Install dependencies
+  #       run: npm ci
 
-  #     - run: pnpm typecheck
+  #     - name: Run linter
+  #       run: npm run lint
 
   # summary:
   #   name: Final Summary
   #   runs-on: ubuntu-latest
   #   # Runs after the others, and even if some of them failed —
   #   # this job's own job is just to report, not to gate anything.
-  #   needs: [commit-lint, lint, format, typecheck]
+  #   needs: [commit-lint, source-branch-check, typecheck, lint]
   #   if: always()
   #   steps:
   #     - name: Build summary table
   #       run: |
   #         echo "## PR Auto-Checks Summary" >> $GITHUB_STEP_SUMMARY
   #         echo "" >> $GITHUB_STEP_SUMMARY
-  #         echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+  #         echo "| Check | Result |" >> $GITHUB_STEP_SUMMARY
   #         echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
-  #         echo "| PR Title (Conventional Commits) | ${{ needs.commit-lint.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-  #         echo "| Lint | ${{ needs.lint.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-  #         echo "| Format | ${{ needs.format.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-  #         echo "| Typecheck | ${{ needs.typecheck.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+  #         echo "| PR Title (Conventional Commits) | ${{ needs.commit-lint.result }} |" >> $GITHUB_STEP_SUMMARY
+  #         echo "| PR Source Branch (dev only into main) | ${{ needs.source-branch-check.result }} |" >> $GITHUB_STEP_SUMMARY
+  #         echo "| Typecheck | ${{ needs.typecheck.result }} |" >> $GITHUB_STEP_SUMMARY
+  #         echo "| Lint | ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY

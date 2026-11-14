@@ -1,5 +1,5 @@
 import Avatar from '../Avatar/Avatar'
-import ticket from '../../assets/ticket.svg'
+import chairDirector from '../../assets/chair-director.png'
 
 type NotificationsCardProps = {
     message: string
@@ -24,7 +24,7 @@ function NotificationsCard({ message, time, actor, unread = false, onClick }: No
         <button type="button" onClick={onClick} className={`${cardClass} ${unread ? unreadClass : readClass}`}>
             {actor
                 ? <Avatar src={actor.avatarUrl} name={actor.displayName} size={36} />
-                : <div className={fallbackClass}><img src={ticket} alt="CineClub" className={fallbackIconClass} /></div>}
+                : <div className={fallbackClass}><img src={chairDirector} alt="CineClub" className={fallbackIconClass} /></div>}
             <div>
                 <p className={`${messageClass} ${unread ? unreadMessageClass : readMessageClass}`}>{message}</p>
                 <p className={timeClass}>{time}</p>

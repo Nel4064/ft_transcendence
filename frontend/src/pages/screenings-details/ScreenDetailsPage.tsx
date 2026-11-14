@@ -4,8 +4,10 @@ import defaultMovie from '../../assets/default-movie.jpg'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/button/Button'
 import Avatar from '../../components/Avatar/Avatar'
+// 从 dev 合并过来的 Icon 组件
+import Icon from '../../components/Icon/Icon'
 
-// 🌟 1. 引入统一定义的类型和 API 方法（注意 type 和方法的拆分导入，避免 verbatimModuleSyntax 报错）
+// 从 HEAD 保留的统一定义类型和 API 方法
 import type { Friend, Screening } from '../../api/screenings'
 import { getScreening, rsvp, cancelRsvp, removeScreening } from '../../api/screenings'
 
@@ -19,16 +21,14 @@ function ScreenDetailsPage() {
     const { id } = useParams()
     const navigate = useNavigate()
     
-    // 🌟 2. 从 useAuth 获取 apiFetch
     const { user, apiFetch } = useAuth()
     const [screening, setScreening] = useState<Screening | null>(null)
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
-        if (!id) return; // 确保 id 存在
+        if (!id) return; 
 
         setIsLoading(true);
-        // 🌟 3. 使用封装好的 getScreening 方法
         getScreening(apiFetch, id)
             .then((data: Screening) => {
                 setScreening(data);
@@ -42,11 +42,12 @@ function ScreenDetailsPage() {
             })
     }, [id, apiFetch])
 
+    // 保留 HEAD 中的 RSVP 逻辑
     const handleRsvpClick = async () => {
         if (!screening) return;
         
         const newIsGoing = !screening.isGoing;
-        const currentCount = screening.totalGoingCount || 0; // 避免 undefined 计算报错
+        const currentCount = screening.totalGoingCount || 0; 
         
         // 乐观更新
         setScreening({
@@ -56,7 +57,6 @@ function ScreenDetailsPage() {
         });
 
         try {
-            // 🌟 4. 根据状态调用 rsvp() 或 cancelRsvp()
             if (screening.isGoing) {
                 await cancelRsvp(apiFetch, screening.id);
             } else {
@@ -88,18 +88,15 @@ function ScreenDetailsPage() {
     async function handleRemove() {
         if (!screening || !screening.externalCinemaId || !screening.externalShowId) return
         
-        // 🌟 5. 使用封装好的 removeScreening 方法
         await removeScreening(apiFetch, screening.externalCinemaId, screening.externalShowId)
         
         navigate('/')
     }
 
-    // Loading 渲染逻辑
     if (isLoading) {
         return <main className="py-12 px-10"><p>Loading...</p></main>
     }
 
-    // 404 渲染逻辑
     if (!screening) {
         return (
             <main className="py-12 px-10 flex flex-col items-center justify-center text-center">
@@ -137,11 +134,19 @@ function ScreenDetailsPage() {
             <ul className="flex flex-col gap-4 mt-6">
                 <li key={screening.id} className="flex items-center justify-between p-4 bg-surface border border-border rounded-lg text-body text-text-muted">
                     <div>
-                        <p className="text-body text-text font-medium">{date} at {time}{screening.version && ` · ${screening.version}`}</p>
-                        <p className="text-body text-text-muted mt-1">{screening.cinemaName} · {screening.cinemaAddress}, {screening.cinemaCity}</p>
-                        <p className="text-sm text-gray-400 mt-1">{(screening.totalGoingCount || 0)} going</p>
+                        {/* 🌟 这里融合了 dev 的 Icon UI 和你的数据结构 */}
+                        <p className="flex gap-2 items-center text-body text-text font-medium">
+                            <Icon name="calendar-event" />
+                            {date} at {time}{screening.version && ` · ${screening.version}`}
+                        </p>
+                        <p className="flex gap-2 items-center text-body text-text-muted mt-1">
+                            <Icon name="map-pin" />
+                            {screening.cinemaName} - {screening.cinemaAddress}, {screening.cinemaCity}
+                        </p>
+                        <p className="text-sm text-gray-400 mt-1 ml-6">{(screening.totalGoingCount || 0)} going</p>
                     </div>
 
+                    {/* 保留你的 RSVP 按钮，抛弃 dev 里没逻辑的静态 Button */}
                     <button
                         onClick={handleRsvpClick}
                         className={`ml-4 px-6 py-2 text-[14px] font-semibold rounded-xl transition-colors shrink-0 ${screening.isGoing

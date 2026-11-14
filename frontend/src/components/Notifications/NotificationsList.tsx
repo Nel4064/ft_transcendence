@@ -43,7 +43,10 @@ function NotificationsList() {
 		// Build a NEW array where only that notification gets a readAt
 		setNotifications((list) =>
 			list.map((n) => (n.id === id && n.readAt === null ? { ...n, readAt: now } : n)))
-		markNotificationRead(apiFetch, id).catch((err: Error) => setError(err.message))
+		markNotificationRead(apiFetch, id)
+			.then(() => window.dispatchEvent(new Event('update_navbar')))
+			.catch((err: Error) => setError(err.message))
+
 	}
 
 	if (loading)

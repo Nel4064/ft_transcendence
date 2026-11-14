@@ -140,7 +140,7 @@ export default function FriendsManager() {
             fetchFriends();
             
             // ✨ 通知 Navbar 刷新红点
-            window.dispatchEvent(new CustomEvent('update_friend_requests'));
+            window.dispatchEvent(new CustomEvent('update_navbar'));
             
         } catch (err: any) {
             showNotification(err.message || 'Operation failed', 'error');

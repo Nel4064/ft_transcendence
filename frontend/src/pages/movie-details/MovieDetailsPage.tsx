@@ -4,6 +4,7 @@ import defaultMovie from '../../assets/default-movie.jpg'
 import { normalizeTitle } from '../../utils/normalizeTitle'
 import { apiFetch } from '../../context/AuthContext'
 import Button from '../../components/button/Button'
+import Icon from '../../components/Icon/Icon'
 
 const FEED_URL = 'https://datacinesindes.fr/data-fair/api/v1/datasets/programmation-cinemas/lines'
 
@@ -109,10 +110,14 @@ function MovieDetailsPage() {
 				{screenings.map((s) => (
 					<li key={`${s.cineid}-${s.showid}`} className={rowClass}>
 						<div>
-							<p className="text-body text-text">
+							<p className="flex gap-2 text-body text-text">
+								<Icon name="calendar-event" />
 								{new Date(s.showstart).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
 							</p>
-							<p className="text-small text-text-muted">{s.cineville} · {s.cinenom}</p>
+							<p className="flex gap-2 text-small text-text-muted">
+								<Icon name="map-pin" />
+								{s.cineville} · {s.cinenom}
+							</p>
 						</div>
 						<Button variant="admin" size="lg" onClick={() => toggleEvent(s)}>
 							{created.has(`${s.cineid}-${s.showid}`) ? 'Remove Event' : 'Create Event'}

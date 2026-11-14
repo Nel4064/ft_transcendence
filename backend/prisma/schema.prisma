@@ -37,11 +37,11 @@ enum RequestStatus {
 enum NotificationType {
   FRIEND_REQUEST     // user sending the request → invited user
   FRIEND_ACCEPTED    // user accepting           → user who asked
-  EVENT_CANCELLED    // organizer who cancels    → everyone who RSVPed
   CLUB_PICK          // organizer who picks      → members
   CLUB_PICK_REMOVED  // organizer who unpicks    → members, those who RSVPed
   FRIEND_RSVP        // friend who RSVPs         → their friends
   ROLE_CHANGED       // admin who changes role   → user whose role changed
+//  EVENT_CANCELLED    // if event is cancelled (outside CineClub user's scope)    → everyone who RSVPed
 }
 
 model User {

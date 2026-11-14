@@ -51,19 +51,33 @@ services:
       # --- 42 OAuth (enable with auth module) ---
       - fortytwo_client_id
       - fortytwo_client_secret
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health > /dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 60s
 
   frontend:
     build:
       context: ./frontend
     networks:
       - client-side
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5173 > /dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
 
   proxy:
     build:
       context: ./proxy
     depends_on:
-      - frontend
-      - backend
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
     networks:
       - client-side
 
