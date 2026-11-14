@@ -1,35 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import defaultMovie from '../../assets/default-movie.jpg'
-import { apiFetch, useAuth } from '../../context/AuthContext'
+import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/button/Button'
 import Avatar from '../../components/Avatar/Avatar'
 
-type Friend = {
-    id: string
-    username: string
-    displayName: string
-    avatarUrl: string | null
-}
-
-type Screening = {
-    id: string
-    filmTitle: string
-    posterUrl: string | null
-    startsAt: string
-    cinemaName: string
-    cinemaAddress: string
-    cinemaCity: string
-    version: string | null
-    externalCinemaId: number
-    externalShowId: string
-    synopsis: string | null
-    trailerUrl: string | null
-    isGoing?: boolean
-    totalGoingCount?: number
-    friendsGoingCount?: number
-    friendsGoing?: Friend[]
-}
+// 🌟 1. 引入统一定义的类型和 API 方法（注意 type 和方法的拆分导入，避免 verbatimModuleSyntax 报错）
+import type { Friend, Screening } from '../../api/screenings'
+import { getScreening, rsvp, cancelRsvp, removeScreening } from '../../api/screenings'
 
 const posterClass = "w-64 shrink-0 self-start rounded-md shadow-card"
 const titleClass = "mb-4 font-serif font-bold text-title text-text"
@@ -40,17 +18,19 @@ const boxClass = "p-4 bg-surface border border-border rounded-lg shadow-card"
 function ScreenDetailsPage() {
     const { id } = useParams()
     const navigate = useNavigate()
-    const { user } = useAuth()
+    
+    // 🌟 2. 从 useAuth 获取 apiFetch
+    const { user, apiFetch } = useAuth()
     const [screening, setScreening] = useState<Screening | null>(null)
-
-    // 🌟 状态 1：新增 isLoading 状态，初始值为 true
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
+        if (!id) return; // 确保 id 存在
+
         setIsLoading(true);
-        apiFetch(`/screenings/${id}`)
+        // 🌟 3. 使用封装好的 getScreening 方法
+        getScreening(apiFetch, id)
             .then((data: Screening) => {
-                // 因为后端直接返回这一个对象，所以不需要 find，直接 set
                 setScreening(data);
             })
             .catch((error) => {
@@ -60,17 +40,14 @@ function ScreenDetailsPage() {
             .finally(() => {
                 setIsLoading(false);
             })
-    }, [id])
+    }, [id, apiFetch])
 
     const handleRsvpClick = async () => {
         if (!screening) return;
         
         const newIsGoing = !screening.isGoing;
-        const currentCount = screening.totalGoingCount || 0;
+        const currentCount = screening.totalGoingCount || 0; // 避免 undefined 计算报错
         
-        // 🌟 修改点 1：根据当前状态，决定发送 PUT(报名) 还是 DELETE(取消报名)
-        const method = screening.isGoing ? 'DELETE' : 'PUT';
-
         // 乐观更新
         setScreening({
             ...screening,
@@ -79,7 +56,12 @@ function ScreenDetailsPage() {
         });
 
         try {
-            await apiFetch(`/screenings/${screening.id}/rsvp`, { method });
+            // 🌟 4. 根据状态调用 rsvp() 或 cancelRsvp()
+            if (screening.isGoing) {
+                await cancelRsvp(apiFetch, screening.id);
+            } else {
+                await rsvp(apiFetch, screening.id);
+            }
         } catch (error: any) {
             // 回滚状态
             setScreening({
@@ -94,7 +76,6 @@ function ScreenDetailsPage() {
 
             if (isNotFound) {
                 alert("Désolé, cette séance a été annulée ou n'est plus disponible.");
-                // 🌟 修改点 2：活动找不到时，退回到列表页而不是首页
                 navigate('/screenings');
             } else if (isBadRequest) {
                 alert("Vous ne pouvez pas modifier le RSVP pour une séance passée.");
@@ -105,11 +86,11 @@ function ScreenDetailsPage() {
     };
 
     async function handleRemove() {
-        if (!screening) return
-        await apiFetch(
-            `/screenings/${screening.externalCinemaId}/${encodeURIComponent(screening.externalShowId)}`,
-            { method: 'DELETE' },
-        )
+        if (!screening || !screening.externalCinemaId || !screening.externalShowId) return
+        
+        // 🌟 5. 使用封装好的 removeScreening 方法
+        await removeScreening(apiFetch, screening.externalCinemaId, screening.externalShowId)
+        
         navigate('/')
     }
 
@@ -163,7 +144,6 @@ function ScreenDetailsPage() {
 
                     <button
                         onClick={handleRsvpClick}
-                        // 🌟 修改点 3 (Mineur / Style)：移除硬编码的颜色 bg-[#dcfce7]，改用 Tailwind 语义化颜色
                         className={`ml-4 px-6 py-2 text-[14px] font-semibold rounded-xl transition-colors shrink-0 ${screening.isGoing
                             ? 'bg-green-100 text-green-800 border border-transparent'
                             : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'

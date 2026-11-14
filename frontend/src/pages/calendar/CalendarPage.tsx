@@ -1,29 +1,29 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { apiFetch } from '../../context/AuthContext'
+import { useAuth } from '../../context/AuthContext'
 
-type Screening = {
-    id: string
-    filmTitle: string
-    posterUrl: string | null
-    startsAt: string
-    cinemaName?: string
-    isGoing: boolean
-}
+// 🌟 1. 遵循 API 规范：导入公共类型和封装好的请求方法 (拆分导入避免 verbatimModuleSyntax 报错)
+import type { Screening } from '../../api/screenings'
+import { getMyRsvpScreenings } from '../../api/screenings'
 
 export default function CalendarPage() {
     const navigate = useNavigate()
     const [screenings, setScreenings] = useState<Screening[]>([])
     const [isLoading, setIsLoading] = useState(true)
     
+    // 🌟 2. 按照规范，从 useAuth 中获取 apiFetch
+    const { apiFetch } = useAuth()
+    
     // Current year and month being displayed (defaults to local current time)
     const [currentDate, setCurrentDate] = useState(new Date())
 
     useEffect(() => {
         setIsLoading(true)
-        apiFetch('/screenings/myrsvps')
+        
+        // 🌟 3. 使用封装好的 API 方法，替代硬编码的 URL
+        getMyRsvpScreenings(apiFetch)
             .then((data: Screening[]) => {
-                // Keep only the screenings that the user confirmed attending (isGoing)
+                // 仅保留用户确认参加的场次，完美满足日历需求
                 const goingList = data.filter((s) => s.isGoing)
                 setScreenings(goingList)
                 setIsLoading(false)
@@ -33,7 +33,7 @@ export default function CalendarPage() {
                 setScreenings([])
                 setIsLoading(false)
             })
-    }, [])
+    }, [apiFetch]) // 🌟 将 apiFetch 加入依赖项
 
     // Month switching logic
     const prevMonth = () => {
