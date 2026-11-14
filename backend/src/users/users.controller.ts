@@ -40,9 +40,6 @@ export class UsersController {
     };
   }
 
-  // 💡 注：如果没用到 getMyScreenings，队友建议在此处或 PR 中将其移除以清理死代码。
-  // 如果你需要留着它，可以保留。这里按队友意见示范保留干净的代码结构。
-
   @UseGuards(JwtAuthGuard)
   @Patch('me')
   async updateProfile(@Req() req: AuthenticatedRequest, @Body() updateDto: UpdateProfileDto) {

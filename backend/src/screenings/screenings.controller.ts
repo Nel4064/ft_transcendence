@@ -13,14 +13,12 @@ export class ScreeningsController {
   @Get()
   findAll() { return this.screenings.findAll(); }
 
-  // 🌟 修改 1 (Mineur): 规范化 URL，把 'myRsvps' 改成 'my-rsvps'
   @UseGuards(JwtAuthGuard)
   @Get('my-rsvps')
   findAllWithRsvpInfo(@Req() req: AuthenticatedRequest) {
     return this.screenings.findAllWithRsvpInfo(req.user.userId);
   }
 
-  // 🌟 修改 2 (Problème 1): 新增根据 ID 获取单个场次的接口 (供详情页使用)
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   async findOne(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
@@ -31,9 +29,6 @@ export class ScreeningsController {
     return screening;
   }
 
-  // 🌟 修改 3 (Problème 2): 把原来的 Post toggle 删掉，拆分成 PUT 和 DELETE 两个幂等接口
-
-  // 3.1 报名 (PUT 代替 POST)
   @UseGuards(JwtAuthGuard)
   @Put(':id/rsvp')
   addRsvp(@Param('id') screeningId: string, @Req() req: AuthenticatedRequest) {
@@ -41,15 +36,12 @@ export class ScreeningsController {
     return this.screenings.addRsvp(req.user.userId, screeningId);
   }
 
-  // 3.2 取消报名 (DELETE)
   @UseGuards(JwtAuthGuard)
   @Delete(':id/rsvp')
   removeRsvp(@Param('id') screeningId: string, @Req() req: AuthenticatedRequest) {
-    // 对应 service 里需要新建一个 removeRsvp 方法 (里面用 deleteMany)
     return this.screenings.removeRsvp(req.user.userId, screeningId);
   }
 
-  // 👇 下面的 Admin 方法保持不变
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Post()

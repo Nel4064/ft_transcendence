@@ -4,10 +4,7 @@ import defaultMovie from '../../assets/default-movie.jpg'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/button/Button'
 import Avatar from '../../components/Avatar/Avatar'
-// 从 dev 合并过来的 Icon 组件
 import Icon from '../../components/Icon/Icon'
-
-// 从 HEAD 保留的统一定义类型和 API 方法
 import type { Screening } from '../../api/screenings'
 import { getScreening, rsvp, cancelRsvp, removeScreening } from '../../api/screenings'
 
@@ -20,14 +17,13 @@ const boxClass = "p-4 bg-surface border border-border rounded-lg shadow-card"
 function ScreenDetailsPage() {
     const { id } = useParams()
     const navigate = useNavigate()
-    
+
     const { user, apiFetch } = useAuth()
     const [screening, setScreening] = useState<Screening | null>(null)
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
-        if (!id) return; 
-
+        if (!id) return;
         setIsLoading(true);
         getScreening(apiFetch, id)
             .then((data: Screening) => {
@@ -42,14 +38,12 @@ function ScreenDetailsPage() {
             })
     }, [id, apiFetch])
 
-    // 保留 HEAD 中的 RSVP 逻辑
     const handleRsvpClick = async () => {
         if (!screening) return;
-        
+
         const newIsGoing = !screening.isGoing;
-        const currentCount = screening.totalGoingCount || 0; 
-        
-        // 乐观更新
+        const currentCount = screening.totalGoingCount || 0;
+
         setScreening({
             ...screening,
             isGoing: newIsGoing,
@@ -63,13 +57,12 @@ function ScreenDetailsPage() {
                 await rsvp(apiFetch, screening.id);
             }
         } catch (error: any) {
-            // 回滚状态
             setScreening({
                 ...screening,
                 isGoing: !newIsGoing,
                 totalGoingCount: newIsGoing ? currentCount - 1 : currentCount + 1
             });
-            
+
             const errText = String(error?.message || error);
             const isNotFound = error?.status === 404 || errText.includes('404') || errText.includes('Not Found') || errText.includes("La séance n'est plus disponible");
             const isBadRequest = error?.status === 400 || errText.includes('passée');
@@ -87,16 +80,12 @@ function ScreenDetailsPage() {
 
     async function handleRemove() {
         if (!screening || !screening.externalCinemaId || !screening.externalShowId) return
-        
         await removeScreening(apiFetch, screening.externalCinemaId, screening.externalShowId)
-        
         navigate('/screenings')
     }
-
     if (isLoading) {
         return <main className="py-12 px-10"><p>Loading...</p></main>
     }
-
     if (!screening) {
         return (
             <main className="py-12 px-10 flex flex-col items-center justify-center text-center">
@@ -106,13 +95,10 @@ function ScreenDetailsPage() {
             </main>
         )
     }
-
     const start = new Date(screening.startsAt)
     const date = start.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
     const time = start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
-
     const friendsList = screening.friendsGoing || [];
-
     return (
         <main className="max-w-[1000px] mx-auto py-12 px-10">
             <section className="flex flex-col md:flex-row gap-8 mb-12">
@@ -130,7 +116,6 @@ function ScreenDetailsPage() {
                     )}
                 </div>
             </section>
-
             <ul className="flex flex-col gap-4 mt-6">
                 <li key={screening.id} className="flex items-center justify-between p-4 bg-surface border border-border rounded-lg text-body text-text-muted">
                     <div>
@@ -145,19 +130,20 @@ function ScreenDetailsPage() {
                         </p>
                         <p className="text-sm text-gray-400 mt-1 ml-6">{(screening.totalGoingCount || 0)} going</p>
                     </div>
-
-                    {/* 保留你的 RSVP 按钮，抛弃 dev 里没逻辑的静态 Button */}
                     <button
                         onClick={handleRsvpClick}
-                        className={`ml-4 px-6 py-2 text-[14px] font-semibold rounded-xl transition-colors shrink-0 ${screening.isGoing
-                            ? 'bg-green-100 text-green-800 border border-transparent'
-                            : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                        // 如果 startsAt 早于当前时间，就禁用按钮
+                        disabled={new Date(screening.startsAt) < new Date()}
+                        className={`ml-4 px-6 py-2 text-[14px] font-semibold rounded-xl transition-colors shrink-0 
+                            ${new Date(screening.startsAt) < new Date() ? 'opacity-50 cursor-not-allowed ' : ''} 
+                            ${screening.isGoing
+                                ? 'bg-green-100 text-green-800 border border-transparent'
+                                : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
                             }`}
                     >
                         {screening.isGoing ? 'Going ✓' : 'RSVP'}
                     </button>
                 </li>
-
                 <li className="flex items-center justify-between p-4 bg-surface border border-border rounded-lg text-body text-text-muted ">
                     <div>
                         <p className="text-body text-text font-medium">
@@ -186,14 +172,20 @@ function ScreenDetailsPage() {
                     Add chat here
                 </div>
             </ul>
-
             {user?.role === 'ADMIN' && (
                 <div className="flex justify-end mt-4">
-                    <Button variant="admin" size="lg" onClick={handleRemove}> Remove Event </Button>
+                    <Button
+                        variant="admin"
+                        size="lg"
+                        onClick={handleRemove}
+                        disabled={new Date(screening.startsAt) < new Date()}
+                        className={new Date(screening.startsAt) < new Date() ? 'opacity-50 cursor-not-allowed' : ''}
+                    >
+                        Remove Event
+                    </Button>
                 </div>
             )}
         </main>
     )
 }
-
 export default ScreenDetailsPage

@@ -1,59 +1,90 @@
 import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import Icon from '../Icon/Icon'
 
-type RsvpCardProps = {
-    id: string
-    movie: string
-    image?: string
-    cinema: string
-    dateFormatted: string
-    initialIsGoing: boolean
-    initialGoingCount: number
-    onRsvp: (id: string) => Promise<void>
+interface RsvpCardProps {
+    id: string;
+    movie: string;
+    image: string;
+    cinema: string;
+    dateFormatted: string;
+    initialIsGoing: boolean;
+    initialGoingCount: number;
+    onRsvp: (id: string) => Promise<void>;
+    disabled?: boolean; 
 }
 
-// 这是带有 RSVP 按钮的长条形卡片样式
-export default function RsvpScreeningCard({ 
-    id, movie, image, cinema, dateFormatted, initialIsGoing, initialGoingCount, onRsvp
+export default function RsvpScreeningCard({
+    id,
+    movie,
+    image,
+    cinema,
+    dateFormatted,
+    initialIsGoing,
+    initialGoingCount,
+    onRsvp,
+    disabled
 }: RsvpCardProps) {
     const [isGoing, setIsGoing] = useState(initialIsGoing);
     const [goingCount, setGoingCount] = useState(initialGoingCount);
+    const [isProcessing, setIsProcessing] = useState(false);
 
-    const handleRsvpClick = async (e: React.MouseEvent) => {
-        e.preventDefault();
+    useEffect(() => {
+        setIsGoing(initialIsGoing);
+        setGoingCount(initialGoingCount);
+    }, [initialIsGoing, initialGoingCount]);
+
+    const handleClick = async () => {
+        if (isProcessing || disabled) return;
+
+        setIsProcessing(true);
         const newIsGoing = !isGoing;
+
         setIsGoing(newIsGoing);
-        setGoingCount(newIsGoing ? goingCount + 1 : goingCount - 1);
+        setGoingCount(prev => prev + (newIsGoing ? 1 : -1));
+
         try {
             await onRsvp(id);
         } catch (error) {
             setIsGoing(!newIsGoing);
-            setGoingCount(newIsGoing ? goingCount - 1 : goingCount + 1);
+            setGoingCount(prev => prev + (newIsGoing ? -1 : 1));
+        } finally {
+            setIsProcessing(false);
         }
-    }
+    };
 
     return (
-        <div className="flex items-center justify-between p-4 bg-surface border border-border rounded-xl shadow-card transition-transform hover:-translate-y-1">
-            <Link to={`/screenings/${id}`} className="flex items-center space-x-4 flex-grow">
-                {image ? (
-                    <img src={image} alt={movie} className="w-16 h-16 shrink-0 object-cover rounded-md" />
-                ) : (
-                    <div className="w-16 h-16 bg-[#eaddcf] shrink-0 rounded-md"></div> 
-                )}
-                <div className="flex flex-col text-left">
-                    <h3 className="font-serif font-bold text-lg text-text hover:underline">{movie}</h3>
-                    <p className="text-sm text-gray-500">{cinema} · {dateFormatted}</p>
-                    <p className="text-sm text-gray-400 mt-0.5">{goingCount} going</p>
+        <div className="flex items-center justify-between p-4 bg-surface border border-border rounded-lg shadow-card">
+            <Link to={`/screenings/${id}`} className="flex items-center gap-4 flex-1 hover:opacity-80 transition-opacity">
+                <img src={image} alt={movie} className="w-16 h-24 object-cover rounded-md shadow-card" />
+                <div className="flex flex-col">
+                    <h3 className="font-serif font-bold text-[18px] text-text mb-1">{movie}</h3>
+                    <p className="flex gap-2 items-center text-body text-text font-medium">
+                        <Icon name="calendar-event" />
+                        {dateFormatted}
+                    </p>
+                    <p className="flex gap-2 items-center text-body text-text-muted mt-1">
+                        <Icon name="map-pin" />
+                        {cinema}
+                    </p>
                 </div>
             </Link>
-            <button
-                onClick={handleRsvpClick}
-                className={`ml-4 px-6 py-2 text-sm font-medium rounded-xl transition-colors shrink-0 ${
-                    isGoing ? 'bg-[#dcfce7] text-[#166534]' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
-                }`}
-            >
-                {isGoing ? 'Going ✓' : 'RSVP'}
-            </button>
+
+            <div className="flex flex-col items-end shrink-0 pl-4 border-l border-border">
+                <p className="text-sm text-gray-400 mb-2">{goingCount} going</p>
+                <button
+                    onClick={handleClick}
+                    disabled={isProcessing || disabled}
+                    className={`px-6 py-2 text-[14px] font-semibold rounded-xl transition-colors
+                        ${disabled ? 'opacity-50 cursor-not-allowed' : ''} 
+                        ${isGoing
+                            ? 'bg-green-100 text-green-800 border border-transparent'
+                            : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                        }`}
+                >
+                    {isProcessing ? '...' : (isGoing ? 'Going ✓' : 'RSVP')}
+                </button>
+            </div>
         </div>
     )
 }
