@@ -44,7 +44,7 @@ export default function ScreeningsList() {
                     : s
             ));
             const errText = String(error?.message || error);
-            const isNotFound = error?.status === 404 || errText.includes('404') || errText.includes('Not Found');
+            const isNotFound = error?.status === 404 || errText.includes('404') || errText.includes('Not Found') || errText.includes("La séance n'est plus disponible") || errText.includes("introuvable") || errText.includes("annulée");
             const isBadRequest = error?.status === 400 || errText.includes('passée');
             if (isNotFound) {
                 alert("Désolé, cette séance a été annulée ou n'est plus disponible.");
