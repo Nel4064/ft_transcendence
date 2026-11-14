@@ -12,7 +12,7 @@ import {
   UploadedFile, 
   BadRequestException 
 } from '@nestjs/common';
-import type { Request } from 'express'; // 👈 解决类型冲突
+import type { AuthenticatedRequest } from '../auth/authenticated-request';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -20,13 +20,6 @@ import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UpdateProfileDto, ChangePasswordDto } from '../auth/dto/auth.dto';
 import { MulterErrorFilter } from './multer-error.filter';
-
-interface AuthenticatedRequest extends Request {
-  user: {
-    userId: string;
-    username: string;
-  };
-}
 
 @Controller('users')
 export class UsersController {

@@ -43,7 +43,7 @@ function ScreenDetailsPage() {
     const { user } = useAuth()
     const [screening, setScreening] = useState<Screening | null>(null)
 
-    // 🌟 修改点 1：新增 isLoading 状态，初始值为 true
+    // 🌟 状态 1：新增 isLoading 状态，初始值为 true
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
@@ -64,8 +64,14 @@ function ScreenDetailsPage() {
 
     const handleRsvpClick = async () => {
         if (!screening) return;
+        
         const newIsGoing = !screening.isGoing;
         const currentCount = screening.totalGoingCount || 0;
+        
+        // 🌟 修改点 1：根据当前状态，决定发送 PUT(报名) 还是 DELETE(取消报名)
+        const method = screening.isGoing ? 'DELETE' : 'PUT';
+
+        // 乐观更新
         setScreening({
             ...screening,
             isGoing: newIsGoing,
@@ -73,18 +79,25 @@ function ScreenDetailsPage() {
         });
 
         try {
-            await apiFetch(`/screenings/${screening.id}/rsvp`, { method: 'POST' });
+            await apiFetch(`/screenings/${screening.id}/rsvp`, { method });
         } catch (error: any) {
+            // 回滚状态
             setScreening({
                 ...screening,
                 isGoing: !newIsGoing,
                 totalGoingCount: newIsGoing ? currentCount - 1 : currentCount + 1
             });
-            const isNotFound = error?.status === 404 || error?.message?.includes('404');
+            
+            const errText = String(error?.message || error);
+            const isNotFound = error?.status === 404 || errText.includes('404') || errText.includes('Not Found') || errText.includes("La séance n'est plus disponible");
+            const isBadRequest = error?.status === 400 || errText.includes('passée');
 
             if (isNotFound) {
                 alert("Désolé, cette séance a été annulée ou n'est plus disponible.");
-                navigate('/');
+                // 🌟 修改点 2：活动找不到时，退回到列表页而不是首页
+                navigate('/screenings');
+            } else if (isBadRequest) {
+                alert("Vous ne pouvez pas modifier le RSVP pour une séance passée.");
             } else {
                 alert("Une erreur est survenue lors de l'enregistrement de votre RSVP.");
             }
@@ -100,11 +113,12 @@ function ScreenDetailsPage() {
         navigate('/')
     }
 
-    // 🌟 修改点 3：拆分 Loading 和 404 (Not Found) 的渲染逻辑
+    // Loading 渲染逻辑
     if (isLoading) {
         return <main className="py-12 px-10"><p>Loading...</p></main>
     }
 
+    // 404 渲染逻辑
     if (!screening) {
         return (
             <main className="py-12 px-10 flex flex-col items-center justify-center text-center">
@@ -123,7 +137,6 @@ function ScreenDetailsPage() {
 
     return (
         <main className="max-w-[1000px] mx-auto py-12 px-10">
-            {/* 下面的正常渲染逻辑保持完全不变 */}
             <section className="flex flex-col md:flex-row gap-8 mb-12">
                 <img src={screening.posterUrl ?? defaultMovie} alt={screening.filmTitle} className={posterClass} />
                 <div>
@@ -150,8 +163,9 @@ function ScreenDetailsPage() {
 
                     <button
                         onClick={handleRsvpClick}
+                        // 🌟 修改点 3 (Mineur / Style)：移除硬编码的颜色 bg-[#dcfce7]，改用 Tailwind 语义化颜色
                         className={`ml-4 px-6 py-2 text-[14px] font-semibold rounded-xl transition-colors shrink-0 ${screening.isGoing
-                            ? 'bg-[#dcfce7] text-[#166534] border border-transparent'
+                            ? 'bg-green-100 text-green-800 border border-transparent'
                             : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
                             }`}
                     >

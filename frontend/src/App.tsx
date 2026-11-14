@@ -9,7 +9,6 @@ import SelectMoviesPage from './pages/select-movies/SelectMoviesPage'
 import BottomNav from './components/BottomNav/BottomNav'
 import PrivacyPolicyPage from './pages/privacy-policy/PrivacyPolicyPage'
 import TermsOfServicePage from './pages/terms-of-service/TermsOfServicePage'
-import RemindersPage from './pages/reminders/RemindersPage'
 import FriendsPage from './pages/friends/FriendsPage'
 import ManageMembersPage from './pages/manage-members/ManageMembersPage'
 import { AuthProvider } from './context/AuthContext'
@@ -42,7 +41,7 @@ function App() {
 					<Route path="/profile" element={<ProfilePage />} />
 					<Route path="/notifications" element={<NotificationsPage />} />
 					<Route path="/screenings" element={<ScreeningsList />} />
-					<Route path="/reminders" element={<RemindersPage />} />
+					
 					
 					<Route path="/movies/:title" element={<MovieDetailsPage />} />
 					<Route path="/screenings/:id" element={<ScreenDetailsPage />} />
