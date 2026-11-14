@@ -8,7 +8,7 @@ import Avatar from '../../components/Avatar/Avatar'
 import Icon from '../../components/Icon/Icon'
 
 // 从 HEAD 保留的统一定义类型和 API 方法
-import type { Friend, Screening } from '../../api/screenings'
+import type { Screening } from '../../api/screenings'
 import { getScreening, rsvp, cancelRsvp, removeScreening } from '../../api/screenings'
 
 const posterClass = "w-64 shrink-0 self-start rounded-md shadow-card"
@@ -90,7 +90,7 @@ function ScreenDetailsPage() {
         
         await removeScreening(apiFetch, screening.externalCinemaId, screening.externalShowId)
         
-        navigate('/')
+        navigate('/screenings')
     }
 
     if (isLoading) {
