@@ -120,30 +120,6 @@ export class ScreeningsService {
     return screening;
   }
 
-  async toggleRsvp(userId: string, screeningId: string) {
-    const existing = await this.prisma.rsvp.findUnique({
-      where: { userId_screeningId: { userId, screeningId } }
-    });
-
-    if (existing) {
-      await this.prisma.rsvp.delete({ where: { id: existing.id } });
-      return { isGoing: false };
-    } else {
-      // 在执行 create 之前，先查一下场次还在不在
-      const screening = await this.prisma.screening.findUnique({
-        where: { id: screeningId }
-      });
-      if (!screening) {
-        throw new NotFoundException("La séance n'est plus disponible.");
-      }
-      // 查得到，说明是安全的，执行插入
-      await this.prisma.rsvp.create({
-        data: { userId, screeningId }
-      });
-      return { isGoing: true };
-    }
-  }
-
   async findOne(screeningId: string, userId: string) {
     // 逻辑和 findAllWithRsvpInfo 类似，但只查一条数据
     const friendships = await this.prisma.friendship.findMany({
