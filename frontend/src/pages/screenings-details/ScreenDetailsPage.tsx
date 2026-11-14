@@ -83,6 +83,59 @@ function ScreenDetailsPage() {
         await removeScreening(apiFetch, screening.externalCinemaId, screening.externalShowId)
         navigate('/screenings')
     }
+
+    const formatICSDate = (date: Date) => {
+        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
+
+    const handleIcsDownload = () => {
+        if (!screening) return;
+        const startDate = new Date(screening.startsAt);
+        const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // 默认 2 小时时长
+
+        const icsContent = [
+            "BEGIN:VCALENDAR",
+            "VERSION:2.0",
+            "PRODID:-//MovieClub//EN",
+            "BEGIN:VEVENT",
+            `DTSTART:${formatICSDate(startDate)}`,
+            `DTEND:${formatICSDate(endDate)}`,
+            `SUMMARY:🎬 ${screening.filmTitle}`,
+            `DESCRIPTION:${screening.synopsis || 'Movie screening session.'}`,
+            `LOCATION:${screening.cinemaName}, ${screening.cinemaAddress}, ${screening.cinemaCity}`,
+            "BEGIN:VALARM",
+            "TRIGGER:-PT1H", // ⏰ 提前 1 小时弹窗提醒！
+            "ACTION:DISPLAY",
+            "DESCRIPTION:Reminder",
+            "END:VALARM",
+            "END:VEVENT",
+            "END:VCALENDAR"
+        ].join('\n');
+
+        const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = `${screening.filmTitle.replace(/\s+/g, '_')}_screening.ics`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const handleGoogleCalendar = () => {
+        if (!screening) return;
+        const startDate = new Date(screening.startsAt);
+        const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+
+        const title = encodeURIComponent(`🎬 ${screening.filmTitle}`);
+        const details = encodeURIComponent(screening.synopsis || 'Movie screening session.');
+        const location = encodeURIComponent(`${screening.cinemaName}, ${screening.cinemaAddress}, ${screening.cinemaCity}`);
+        const dates = `${formatICSDate(startDate)}/${formatICSDate(endDate)}`;
+
+        const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=${location}`;
+        window.open(url, '_blank');
+    };
+
+
     if (isLoading) {
         return <main className="py-12 px-10"><p>Loading...</p></main>
     }
@@ -95,10 +148,12 @@ function ScreenDetailsPage() {
             </main>
         )
     }
+    
     const start = new Date(screening.startsAt)
     const date = start.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
     const time = start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
     const friendsList = screening.friendsGoing || [];
+
     return (
         <main className="max-w-[1000px] mx-auto py-12 px-10">
             <section className="flex flex-col md:flex-row gap-8 mb-12">
@@ -116,23 +171,41 @@ function ScreenDetailsPage() {
                     )}
                 </div>
             </section>
+            
             <ul className="flex flex-col gap-4 mt-6">
                 <li key={screening.id} className="flex items-center justify-between p-4 bg-surface border border-border rounded-lg text-body text-text-muted">
                     <div>
-                        {/* 🌟 这里融合了 dev 的 Icon UI 和你的数据结构 */}
                         <p className="flex gap-2 items-center text-body text-text font-medium">
                             <Icon name="calendar-event" />
                             {date} at {time}{screening.version && ` · ${screening.version}`}
                         </p>
-                        <p className="flex gap-2 items-center text-body text-text-muted mt-1">
+                        <p className="flex gap-2 items-center text-body text-text-muted mt-1 mb-3">
                             <Icon name="map-pin" />
                             {screening.cinemaName} - {screening.cinemaAddress}, {screening.cinemaCity}
                         </p>
+
+                        {/* calendar buttons */}
+                        {screening.isGoing && new Date(screening.startsAt) >= new Date() && (
+                            <div className="flex gap-3 ml-6 mb-2">
+                                <button 
+                                    onClick={handleGoogleCalendar}
+                                    className="text-[12px] font-medium text-brand hover:text-brand/80 transition-colors border border-brand/30 rounded px-2 py-1 flex items-center gap-1 bg-brand/5"
+                                >
+                                    + Google Calendar
+                                </button>
+                                <button 
+                                    onClick={handleIcsDownload}
+                                    className="text-[12px] font-medium text-brand hover:text-brand/80 transition-colors border border-brand/30 rounded px-2 py-1 flex items-center gap-1 bg-brand/5"
+                                >
+                                    + Apple/Outlook (.ics)
+                                </button>
+                            </div>
+                        )}
+
                         <p className="text-sm text-gray-400 mt-1 ml-6">{(screening.totalGoingCount || 0)} going</p>
                     </div>
                     <button
                         onClick={handleRsvpClick}
-                        // 如果 startsAt 早于当前时间，就禁用按钮
                         disabled={new Date(screening.startsAt) < new Date()}
                         className={`ml-4 px-6 py-2 text-[14px] font-semibold rounded-xl transition-colors shrink-0 
                             ${new Date(screening.startsAt) < new Date() ? 'opacity-50 cursor-not-allowed ' : ''} 
@@ -144,6 +217,7 @@ function ScreenDetailsPage() {
                         {screening.isGoing ? 'Going ✓' : 'RSVP'}
                     </button>
                 </li>
+                
                 <li className="flex items-center justify-between p-4 bg-surface border border-border rounded-lg text-body text-text-muted ">
                     <div>
                         <p className="text-body text-text font-medium">
@@ -172,6 +246,7 @@ function ScreenDetailsPage() {
                     Add chat here
                 </div>
             </ul>
+            
             {user?.role === 'ADMIN' && (
                 <div className="flex justify-end mt-4">
                     <Button
