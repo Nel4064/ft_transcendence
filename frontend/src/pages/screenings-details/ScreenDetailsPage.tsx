@@ -47,16 +47,17 @@ function ScreenDetailsPage() {
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
-        setIsLoading(true); // 每次 id 改变时，重新开启 loading
-
-        apiFetch('/screenings/myrsvps')
-            .then((list: Screening[]) => {
-                const currentScreening = list.find((s) => s.id === id);
-                setScreening(currentScreening ?? null);
+        setIsLoading(true);
+        apiFetch(`/screenings/${id}`)
+            .then((data: Screening) => {
+                // 因为后端直接返回这一个对象，所以不需要 find，直接 set
+                setScreening(data);
             })
-            .catch(console.error)
+            .catch((error) => {
+                console.error(error);
+                setScreening(null);
+            })
             .finally(() => {
-                // 🌟 修改点 2：不管成功还是失败（或者没找到），请求结束就关闭 loading
                 setIsLoading(false);
             })
     }, [id])
@@ -107,9 +108,9 @@ function ScreenDetailsPage() {
     if (!screening) {
         return (
             <main className="py-12 px-10 flex flex-col items-center justify-center text-center">
-                <h2 className="text-xl font-bold text-text mb-2">Séance indisponible</h2>
-                <p className="text-text-muted mb-4">Cette séance n'existe plus ou a été supprimée.</p>
-                <Button variant="primary" onClick={() => navigate('/')}>Retour à l'accueil</Button>
+                <h2 className="text-xl font-bold text-text mb-2">Screening Unavailable</h2>
+                <p className="text-text-muted mb-4">This screening no longer exists or has been removed.</p>
+                <Button variant="primary" onClick={() => navigate('/screenings')}>Back to Screenings</Button>
             </main>
         )
     }

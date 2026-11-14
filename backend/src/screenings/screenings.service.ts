@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
@@ -142,5 +142,112 @@ export class ScreeningsService {
       });
       return { isGoing: true };
     }
+  }
+
+  async findOne(screeningId: string, userId: string) {
+    // 逻辑和 findAllWithRsvpInfo 类似，但只查一条数据
+    const friendships = await this.prisma.friendship.findMany({
+      where: { userId },
+      select: { friendId: true },
+    });
+    const friendIds = friendships.map(f => f.friendId);
+
+    const screening = await this.prisma.screening.findUnique({
+      where: { id: screeningId },
+      include: {
+        _count: {
+          select: { rsvps: true },
+        },
+        rsvps: {
+          where: {
+            userId: { in: [userId, ...friendIds] },
+          },
+          include: {
+            user: {
+              select: { id: true, username: true, displayName: true, avatarUrl: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!screening) return null;
+
+    // 格式化返回数据，和列表页保持一致，前端就能直接用了！
+    const { _count, rsvps, ...rest } = screening;
+    const myRsvp = rsvps.find(r => r.userId === userId);
+    const friendsRsvps = rsvps.filter(r => r.userId !== userId);
+
+    return {
+      ...rest,
+      totalGoingCount: _count.rsvps,
+      isGoing: !!myRsvp,
+      friendsGoingCount: friendsRsvps.length,
+      friendsGoing: friendsRsvps.map(r => r.user),
+    };
+  }
+
+  // ==========================================
+  // 2. 报名 RSVP (使用 PUT，幂等操作)
+  // ==========================================
+  async addRsvp(userId: string, screeningId: string) {
+    // 检查 1：活动是否存在？
+    const screening = await this.prisma.screening.findUnique({
+      where: { id: screeningId },
+      select: { startsAt: true } // 为了性能，我们只查需要的时间字段
+    });
+
+    if (!screening) {
+      throw new NotFoundException("La séance n'est plus disponible.");
+    }
+
+    // 检查 2：活动是不是已经过去了？(满足队友 refuser les séances passées 的要求)
+    if (screening.startsAt < new Date()) {
+      throw new BadRequestException("Vous ne pouvez pas RSVP pour une séance passée.");
+    }
+
+    // 🌟 核心技巧：使用 upsert 代替 create
+    // upsert 的意思是：如果记录不存在，就 create；如果已经存在，就 update。
+    // 这样就算用户手抖狂点按钮发了 10 个请求，数据库也不会报 500 Unique Constraint 错误！
+    await this.prisma.rsvp.upsert({
+      where: {
+        userId_screeningId: { userId, screeningId }
+      },
+      update: {}, // 如果已经存在，我们什么都不用改
+      create: {
+        userId,
+        screeningId
+      }
+    });
+
+    return { isGoing: true };
+  }
+
+  // ==========================================
+  // 3. 取消报名 (使用 DELETE，幂等操作)
+  // ==========================================
+  async removeRsvp(userId: string, screeningId: string) {
+    // 按照队友要求，同样先检查活动在不在
+    const screening = await this.prisma.screening.findUnique({
+      where: { id: screeningId },
+      select: { id: true }
+    });
+
+    if (!screening) {
+      throw new NotFoundException("La séance n'est plus disponible.");
+    }
+
+    // 🌟 核心技巧：使用 deleteMany 代替 delete
+    // delete：如果找不到记录，Prisma 会报错抛出异常。
+    // deleteMany：如果找不到记录，Prisma 会静默跳过（影响行数为 0）。
+    // 这完美实现了“幂等性”：删一次和删十次结果一样，都不会报错。
+    await this.prisma.rsvp.deleteMany({
+      where: {
+        userId,
+        screeningId
+      }
+    });
+
+    return { isGoing: false };
   }
 }
