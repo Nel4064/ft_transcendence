@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
@@ -14,10 +14,53 @@ export class ScreeningsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
-  ) {}
+  ) { }
 
   findAll() {
     return this.prisma.screening.findMany({ orderBy: { startsAt: 'asc' } });
+  }
+
+  async findAllWithRsvpInfo(userId: string) {
+    const friendships = await this.prisma.friendship.findMany({
+      where: { userId },
+      select: { friendId: true },
+    });
+    const friendIds = friendships.map(f => f.friendId);
+    const screenings = await this.prisma.screening.findMany({
+      include: {
+        _count: {
+          select: { rsvps: true },
+        },
+        rsvps: {
+          where: {
+            userId: { in: [userId, ...friendIds] },
+          },
+          include: {
+            user: {
+              select: { id: true, username: true, displayName: true, avatarUrl: true },
+            },
+          },
+        },
+      },
+      orderBy: {
+        startsAt: 'asc',
+      },
+    });
+
+    return screenings.map(screening => {
+      const { _count, rsvps, ...rest } = screening;
+
+      const myRsvp = rsvps.find(r => r.userId === userId);
+      const friendsRsvps = rsvps.filter(r => r.userId !== userId);
+
+      return {
+        ...rest,
+        totalGoingCount: _count.rsvps,
+        isGoing: !!myRsvp,
+        friendsGoingCount: friendsRsvps.length,
+        friendsGoing: friendsRsvps.map(r => r.user),
+      };
+    });
   }
 
   async pick(cineid: number, showid: string, actorId: string) {
@@ -72,4 +115,83 @@ export class ScreeningsService {
     return screening;
   }
 
+  async findOne(screeningId: string, userId: string) {
+    const friendships = await this.prisma.friendship.findMany({
+      where: { userId },
+      select: { friendId: true },
+    });
+    const friendIds = friendships.map(f => f.friendId);
+    const screening = await this.prisma.screening.findUnique({
+      where: { id: screeningId },
+      include: {
+        _count: {
+          select: { rsvps: true },
+        },
+        rsvps: {
+          where: {
+            userId: { in: [userId, ...friendIds] },
+          },
+          include: {
+            user: {
+              select: { id: true, username: true, displayName: true, avatarUrl: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!screening) return null;
+    const { _count, rsvps, ...rest } = screening;
+    const myRsvp = rsvps.find(r => r.userId === userId);
+    const friendsRsvps = rsvps.filter(r => r.userId !== userId);
+    return {
+      ...rest,
+      totalGoingCount: _count.rsvps,
+      isGoing: !!myRsvp,
+      friendsGoingCount: friendsRsvps.length,
+      friendsGoing: friendsRsvps.map(r => r.user),
+    };
+  }
+
+  async addRsvp(userId: string, screeningId: string) {
+    const screening = await this.prisma.screening.findUnique({
+      where: { id: screeningId },
+      select: { startsAt: true }
+    });
+    if (!screening) {
+      throw new NotFoundException("La séance n'est plus disponible.");
+    }
+    if (screening.startsAt < new Date()) {
+      throw new BadRequestException("Vous ne pouvez pas RSVP pour une séance passée.");
+    }
+
+    await this.prisma.rsvp.upsert({
+      where: {
+        userId_screeningId: { userId, screeningId }
+      },
+      update: {},
+      create: {
+        userId,
+        screeningId
+      }
+    });
+    return { isGoing: true };
+  }
+
+  async removeRsvp(userId: string, screeningId: string) {
+    const screening = await this.prisma.screening.findUnique({
+      where: { id: screeningId },
+      select: { id: true }
+    });
+    if (!screening) {
+      throw new NotFoundException("La séance n'est plus disponible.");
+    }
+    await this.prisma.rsvp.deleteMany({
+      where: {
+        userId,
+        screeningId
+      }
+    });
+    return { isGoing: false };
+  }
 }
