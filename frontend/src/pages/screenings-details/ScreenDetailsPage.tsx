@@ -68,12 +68,12 @@ function ScreenDetailsPage() {
             const isBadRequest = error?.status === 400 || errText.includes('passée');
 
             if (isNotFound) {
-                alert("Désolé, cette séance a été annulée ou n'est plus disponible.");
+                alert("Sorry, this session has been canceled or is no longer available.");
                 navigate('/screenings');
             } else if (isBadRequest) {
-                alert("Vous ne pouvez pas modifier le RSVP pour une séance passée.");
+                alert("You cannot modify the RSVP for a past session.");
             } else {
-                alert("Une erreur est survenue lors de l'enregistrement de votre RSVP.");
+                alert("An error occurred while saving your RSVP.");
             }
         }
     };

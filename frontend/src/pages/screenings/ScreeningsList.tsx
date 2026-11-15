@@ -6,7 +6,7 @@ import { type Screening, getMyRsvpScreenings, rsvp, cancelRsvp } from '../../api
 
 export default function ScreeningsList() {
     const [screenings, setScreenings] = useState<Screening[]>([])
-    const [isLoading, setIsLoading] = useState(true)    // 控制当前显示的是 Upcoming 还是 History
+    const [isLoading, setIsLoading] = useState(true)
     const [activeTab, setActiveTab] = useState<'upcoming' | 'history'>('upcoming')
     const { apiFetch } = useAuth()
     useEffect(() => {
@@ -47,12 +47,12 @@ export default function ScreeningsList() {
             const isNotFound = error?.status === 404 || errText.includes('404') || errText.includes('Not Found') || errText.includes("La séance n'est plus disponible") || errText.includes("introuvable") || errText.includes("annulée");
             const isBadRequest = error?.status === 400 || errText.includes('passée');
             if (isNotFound) {
-                alert("Désolé, cette séance a été annulée ou n'est plus disponible.");
+                alert("Sorry, this session has been canceled or is no longer available.");
                 setScreenings(prev => prev.filter(s => s.id !== screeningId));
             } else if (isBadRequest) {
-                alert("Vous ne pouvez pas modifier le RSVP pour une séance passée.");
+                alert("You cannot change the RSVP for a past session.");
             } else {
-                alert("Une erreur est survenue lors de l'enregistrement de votre RSVP.");
+                alert("An error occurred while saving your RSVP.");
             }
         }
     }
