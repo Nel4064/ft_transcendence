@@ -1,19 +1,25 @@
-import { Controller, UseFilters, Get, Post, Patch, Param, Body, Req, UseGuards, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { ChangePasswordDto, UpdateProfileDto } from '../auth/dto/auth.dto';
+import { 
+  Body, 
+  Controller, 
+  Get, 
+  Param, 
+  Patch, 
+  Post, 
+  Req, 
+  UseGuards, 
+  UseFilters, 
+  UseInterceptors, 
+  UploadedFile, 
+  BadRequestException 
+} from '@nestjs/common';
+import type { AuthenticatedRequest } from '../auth/authenticated-request';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import type { Request } from 'express';
+import { UsersService } from './users.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { UpdateProfileDto, ChangePasswordDto } from '../auth/dto/auth.dto';
 import { MulterErrorFilter } from './multer-error.filter';
-
-interface AuthenticatedRequest extends Request {
-  user: {
-    userId: string;
-    username: string;
-  };
-}
 
 @Controller('users')
 export class UsersController {
@@ -45,7 +51,6 @@ export class UsersController {
   @UseFilters(new MulterErrorFilter())
   @UseInterceptors(
     FileInterceptor('file', {
-      // 1. Storage configuration
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, cb) => {
@@ -53,7 +58,6 @@ export class UsersController {
           cb(null, uniqueSuffix + extname(file.originalname));
         },
       }),
-      // 2. File type filter
       fileFilter: (req, file, cb) => {
         const allowedExtensions = /\.(jpg|jpeg|png|webp)$/i;
         if (!file.originalname.match(allowedExtensions)) {
@@ -64,9 +68,8 @@ export class UsersController {
         }
         cb(null, true);
       },
-      // 3. File size limit (e.g., max 2MB)
       limits: {
-        fileSize: 2 * 1024 * 1024, // 2MB in Bytes
+        fileSize: 2 * 1024 * 1024,
       },
     }),
   )
@@ -78,11 +81,6 @@ export class UsersController {
     return this.usersService.updateAvatar(req.user.userId, avatarUrl);
   }
 
-  @Get(':id')
-  async getUserPublicProfile(@Param('id') id: string) {
-    return this.usersService.getUserPublicProfile(id);
-  }
-
   @UseGuards(JwtAuthGuard)
   @Patch('me/password')
   async changePassword(
@@ -90,5 +88,10 @@ export class UsersController {
     @Body() dto: ChangePasswordDto
   ) {
     return this.usersService.changePassword(req.user.userId, dto);
+  }
+
+  @Get(':id')
+  async getUserPublicProfile(@Param('id') id: string) {
+    return this.usersService.getUserPublicProfile(id);
   }
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent} from 'react'
+import { useState, useEffect, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/button/Button'
@@ -16,7 +16,7 @@ function SignInPage() {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  const { login, authenticate2fa } = useAuth()
+  const { login, authenticate2fa, user } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
@@ -43,7 +43,7 @@ function SignInPage() {
       setUserId(callbackUserId)
       setRequires2FA(true)
       setError('2FA is enabled. Please enter the 6-digit code from your authenticator app.')
-      
+
       // Clean up plaintext parameters in the URL to prevent repeated triggers on refresh
       window.history.replaceState({}, document.title, window.location.pathname)
       return
@@ -54,6 +54,14 @@ function SignInPage() {
       window.history.replaceState({}, document.title, window.location.pathname)
     }
   }, [searchParams, navigate])
+
+  useEffect(() => {
+    // if the user is already logged in, redirect to home page
+    if (user) {
+    // force redirect to home page, replace: true will replace the history, preventing the user from clicking the browser's "back" button and going back to the login page
+      navigate('/', { replace: true })
+    }
+  }, [user, navigate])
 
   // Step 1: Standard email/password login
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
