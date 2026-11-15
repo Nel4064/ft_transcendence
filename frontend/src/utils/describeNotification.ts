@@ -15,6 +15,8 @@ export function describeNotification(n: NotificationItem) {
 			return `${actorName} sent you a friend request`
 		case 'FRIEND_ACCEPTED':
 			return `${actorName} accepted your friend request`
+		case 'FRIEND_RSVP':
+			return `${actorName} is going to ${filmTitle} (${formatDateTime(startsAt)})`
 		default:
 			return 'New unknown notification'
 	}
