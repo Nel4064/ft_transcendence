@@ -41,8 +41,6 @@ function App() {
 					<Route path="/profile" element={<ProfilePage />} />
 					<Route path="/notifications" element={<NotificationsPage />} />
 					<Route path="/screenings" element={<ScreeningsList />} />
-					
-					
 					<Route path="/movies/:title" element={<MovieDetailsPage />} />
 					<Route path="/screenings/:id" element={<ScreenDetailsPage />} />
 					<Route path="/friends" element={<FriendsPage />} />
