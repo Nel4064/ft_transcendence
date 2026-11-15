@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiFetch, useAuth } from '../../context/AuthContext'
 import Button, { buttonClass } from '../../components/button/Button'
+import Input from '../../components/Input/Input'
+import Heading from '../../components/Heading/Heading'
 
-const inputClass = "py-2.5 px-3 border border-border rounded-md text-control"
 const linkClass = "text-brand hover:text-brand-hover"
 
 function SignUpPage() {
@@ -53,10 +54,10 @@ function SignUpPage() {
 	return (
 		<main>
 			<form className="flex flex-col gap-2 max-w-[320px] mx-auto my-[320px]" onSubmit={handleSubmit}>
-				<h1 className="text-center font-serif text-title font-bold">Create an Account</h1>
+				<Heading className="text-center">Create an Account</Heading>
 				<div className="relative p-5 bg-surface border border-border rounded-md shadow-card">
 					<div className="flex flex-col gap-2">
-						<input
+						<Input
 							id="username"
 							type="text"
 							value={username}
@@ -64,20 +65,18 @@ function SignUpPage() {
 							onChange={(e) => setUsername(e.target.value)}
 							minLength={2}
 							required
-							className={inputClass}
 						/>
 
-						<input
+						<Input
 							id="email"
 							type="email"
 							value={email}
 							placeholder="Your email"
 							onChange={(e) => setEmail(e.target.value)}
 							required
-							className={inputClass}
 						/>
 
-						<input
+						<Input
 							id="password"
 							type="password"
 							value={password}
@@ -85,10 +84,9 @@ function SignUpPage() {
 							onChange={(e) => setPassword(e.target.value)}
 							required
 							minLength={6}
-							className={inputClass}
 						/>
 
-						<input
+						<Input
 							id="confirm-password"
 							type="password"
 							value={confirmPassword}
@@ -96,7 +94,6 @@ function SignUpPage() {
 							onChange={(e) => setConfirmPassword(e.target.value)}
 							required
 							minLength={6}
-							className={inputClass}
 						/>
 
 						<label className="mt-3 pb-2 text-body text-text-light">

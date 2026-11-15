@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import Loader from '../../components/Loader/Loader';
+import Heading from '../../components/Heading/Heading';
 
 interface UserProfile {
   id: string;
@@ -50,7 +52,7 @@ export default function UserProfilePage() {
   };
 
   if (loading) {
-    return <div className="text-center py-20 text-text-muted">Loading...</div>;
+    return <Loader />;
   }
 
   if (error || !profile) {
@@ -94,7 +96,7 @@ export default function UserProfilePage() {
           </div>
           
           <div>
-            <h1 className="font-serif text-2xl text-text font-bold">{profile.displayName || profile.username}</h1>
+            <Heading level="section" as="h1">{profile.displayName || profile.username}</Heading>
             <p className="text-text-muted text-sm">@{profile.username}</p>
           </div>
 

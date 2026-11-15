@@ -3,9 +3,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/button/Button'
 import Logo from '../../components/Logo/Logo'
+import Input from '../../components/Input/Input'
+import Heading from '../../components/Heading/Heading'
 
-const inputClass =
-  'py-2.5 px-3 border border-border rounded-md text-control'
 
 function SignInPage() {
   const [email, setEmail] = useState('')
@@ -139,15 +139,15 @@ function SignInPage() {
         className="flex flex-col gap-2 max-w-[320px] mx-auto my-[320px]"
         onSubmit={requires2FA ? handleVerify2FA : handleSubmit}
       >
-        <h1 className="text-center text-title font-serif font-bold">
+        <Heading className="text-center">
           {requires2FA ? 'Two-Factor Authentication' : <Logo />}
-        </h1>
+        </Heading>
 
         <div className="relative p-5 bg-surface border border-border rounded-md shadow-card">
           <div className="flex flex-col gap-2">
             {!requires2FA ? (
               <>
-                <input
+                <Input
                   id="identifier"
                   type="text"
                   value={email}
@@ -156,10 +156,9 @@ function SignInPage() {
                   required
                   minLength={2}
                   autoComplete="username"
-                  className={inputClass}
                 />
 
-                <input
+                <Input
                   id="password"
                   type="password"
                   value={password}
@@ -168,7 +167,6 @@ function SignInPage() {
                   required
                   minLength={6}
                   autoComplete="current-password"
-                  className={inputClass}
                 />
               </>
             ) : (
@@ -177,7 +175,7 @@ function SignInPage() {
                   Enter the 6-digit code from your authenticator app.
                 </p>
 
-                <input
+                <Input
                   id="twoFactorCode"
                   type="text"
                   value={code}
@@ -191,7 +189,6 @@ function SignInPage() {
                   inputMode="numeric"
                   autoComplete="one-time-code"
                   autoFocus
-                  className={inputClass}
                 />
               </>
             )}

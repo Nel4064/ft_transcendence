@@ -7,11 +7,11 @@ import Avatar from '../../components/Avatar/Avatar'
 import Icon from '../../components/Icon/Icon'
 import type { Screening } from '../../api/screenings'
 import { getScreening, rsvp, cancelRsvp, removeScreening } from '../../api/screenings'
+import Loader from '../../components/Loader/Loader'
+import Heading from '../../components/Heading/Heading'
 
 const posterClass = "w-64 shrink-0 self-start rounded-md shadow-card"
-const titleClass = "mb-4 font-serif font-bold text-title text-text"
 const synopsisClass = "text-body text-text-muted"
-const sectionTitleClass = "mb-4 font-serif font-bold text-section text-text"
 const boxClass = "p-4 bg-surface border border-border rounded-lg shadow-card"
 
 // 118 -> "1h58"
@@ -138,7 +138,7 @@ function ScreenDetailsPage() {
         window.open(url, '_blank');
     };
     if (isLoading) {
-        return <main className="py-12 px-10"><p>Loading...</p></main>
+        return <main className="py-12 px-10"><Loader /></main>
     }
     if (!screening) {
         return (
@@ -158,7 +158,7 @@ function ScreenDetailsPage() {
             <section className="flex flex-col md:flex-row gap-8 mb-12">
                 <img src={screening.posterUrl ?? defaultMovie} alt={screening.filmTitle} className={posterClass} />
                 <div>
-                    <h1 className={titleClass}>{screening.filmTitle}</h1>
+                    <Heading className="mb-4">{screening.filmTitle}</Heading>
                     <dl className="mb-4 flex flex-col gap-1 text-body">
                         {screening.director && (
                             <div><dt className="inline font-bold text-text">Director: </dt><dd className="inline text-text-muted">{screening.director}</dd></div>
@@ -173,7 +173,7 @@ function ScreenDetailsPage() {
                     <p className={synopsisClass}>{screening.synopsis ?? 'No synopsis available.'}</p>
                     {screening.trailerUrl && (
                         <section className="mt-6">
-                            <h2 className={sectionTitleClass}>Trailer</h2>
+                            <Heading level="section" className="mb-4">Trailer</Heading>
                             <div className={boxClass}>
                                 <video src={screening.trailerUrl} controls className="w-full rounded-md" />
                             </div>

@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import MoviesList from '../../components/movies/MoviesList'
 import Button from '../../components/button/Button'
+import Input from '../../components/Input/Input'
+import Heading from '../../components/Heading/Heading'
 
-const titleClass = "mb-6 font-serif font-bold text-section text-text"
 const boxClass = "flex items-center gap-4 max-w-[1000px] mx-auto mb-[100px] p-8 bg-surface border border-border rounded-lg shadow-card"
-const inputClass = "flex-1 py-4 px-5 border border-border rounded-md text-control"
 const selectClass = "py-4 px-5 border border-border rounded-md text-control bg-surface cursor-pointer"
 
 function SelectMoviesPage() {
@@ -14,15 +14,16 @@ function SelectMoviesPage() {
 
 	return (
 		<main className="py-12 px-10">
-			<h1 className={titleClass}>Pick screening(s) for the club</h1>
+			<Heading level="section" as="h1" className="mb-6">Pick screening(s) for the club</Heading>
 			<section className={boxClass}>
-				<input
+				<Input
 					id="search"
+					size="xl"
 					type={filter === 'date' ? 'date' : 'text'}
 					value={searchTerm}
 					placeholder="Search for a movie"
 					onChange={(e) => setSearchTerm(e.target.value)}
-					className={inputClass}
+					className="flex-1"
 				/>
 				<select
 					value={filter}

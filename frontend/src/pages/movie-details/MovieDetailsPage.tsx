@@ -5,6 +5,8 @@ import { normalizeTitle } from '../../utils/normalizeTitle'
 import { apiFetch } from '../../context/AuthContext'
 import Button from '../../components/button/Button'
 import Icon from '../../components/Icon/Icon'
+import Loader from '../../components/Loader/Loader'
+import Heading from '../../components/Heading/Heading'
 
 const FEED_URL = 'https://datacinesindes.fr/data-fair/api/v1/datasets/programmation-cinemas/lines'
 
@@ -24,9 +26,7 @@ type Screening = {
 }
 
 const posterClass = "w-64 shrink-0 self-start rounded-md shadow-card"
-const titleClass = "mb-4 font-serif font-bold text-title text-text"
 const synopsisClass = "text-body text-text-muted"
-const sectionTitleClass = "mb-4 font-serif font-bold text-section text-text"
 const rowClass = "flex items-center justify-between gap-4 p-4 bg-surface border border-border rounded-lg shadow-card"
 const boxClass = "p-4 bg-surface border border-border rounded-lg shadow-card"
 
@@ -89,7 +89,7 @@ function MovieDetailsPage() {
 	}
 
 	if (screenings.length === 0)
-		return <main className="py-12 px-10"><p>Loading...</p></main>
+		return <main className="py-12 px-10"><Loader /></main>
 
 	const first = screenings[0]
 	const poster = first.filmposter?.startsWith('https://') ? first.filmposter : defaultMovie
@@ -105,7 +105,7 @@ function MovieDetailsPage() {
 			<section className="flex flex-col md:flex-row gap-8 mb-12">
 				<img src={poster} alt={first.filmtitle} className={posterClass} />
 				<div>
-					<h1 className={titleClass}>{first.filmtitle}</h1>
+					<Heading className="mb-4">{first.filmtitle}</Heading>
 					<dl className="mb-4 flex flex-col gap-1 text-body">
 						{director && (
 							<div><dt className="inline font-bold text-text">Director: </dt><dd className="inline text-text-muted">{director}</dd></div>
@@ -121,7 +121,7 @@ function MovieDetailsPage() {
 					<p className={synopsisClass}>{synopsis ?? 'No synopsis available.'}</p>
 					{trailer && (
 						<section className="mt-6">
-							<h2 className={sectionTitleClass}>Trailer</h2>
+							<Heading level="section" className="mb-4">Trailer</Heading>
 							<div className={boxClass}>
 								<video src={trailer} controls className="w-full rounded-md" />
 							</div>
@@ -129,7 +129,7 @@ function MovieDetailsPage() {
 				</div>
 			</section>
 
-			<h2 className={sectionTitleClass}>Upcoming screenings</h2>
+			<Heading level="section" className="mb-4">Upcoming screenings</Heading>
 			<ul className="flex flex-col gap-4">
 				{screenings.map((s) => (
 					<li key={`${s.cineid}-${s.showid}`} className={rowClass}>

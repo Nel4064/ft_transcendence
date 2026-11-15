@@ -41,6 +41,11 @@ and SIL OFL 1.1 for fonts.
 - Licence: MIT
 - Link: https://tabler.io/icons/icon/chair-director
 
+### `frontend/src/assets/id-off.png`
+- Author / Source: Tabler Icons by Paweł Kuna (codecalm), icon "id-off"
+- Licence: MIT
+- Link: https://tabler.io/icons/icon/id-off
+
 ### `frontend/src/assets/default-movie.jpg`
 - Author / Source: StockSnap.io, photo "camera vintage"
 - Licence: CC0
