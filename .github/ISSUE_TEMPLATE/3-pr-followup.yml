@@ -1,0 +1,27 @@
+name: 🔁 PR review follow-up
+description: Review comment to address later
+title: "review: "
+labels: ["PR-review-follow-up", "needs-triage"]
+body:
+  - type: input
+    id: pr
+    attributes:
+      label: Original PR
+      placeholder: "#31"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [frontend, backend, infra/CI, db]
+      multiple: true
+    validations:
+      required: true
+  - type: textarea
+    id: note
+    attributes:
+      label: Comment
+      description: Paste or summarize the review comment.
+    validations:
+      required: true

@@ -1,0 +1,30 @@
+name: ✨ feat (feature)
+description: New feature or module from the subject
+title: "feat: "
+labels: ["feat", "needs-triage"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - frontend
+        - backend
+        - infra/CI
+        - db
+      multiple: true
+    validations:
+      required: true             # cannot submit without choosing
+  - type: textarea
+    id: what
+    attributes:
+      label: Problem / Need
+      description: What is missing today, and what should the user be able to do?
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Expected result
+      description: What should work once this is done? One item per line.
+      placeholder: "- [ ] ..."
