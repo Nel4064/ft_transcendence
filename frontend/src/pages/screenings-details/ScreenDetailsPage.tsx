@@ -19,6 +19,9 @@ type Screening = {
     externalShowId: string
     synopsis: string | null
     trailerUrl: string | null
+	director: string | null
+	cast: string | null
+	runtimeMinutes: number | null
 }
 
 const posterClass = "w-64 shrink-0 self-start rounded-md shadow-card"
@@ -26,9 +29,14 @@ const titleClass = "mb-4 font-serif font-bold text-title text-text"
 const synopsisClass = "text-body text-text-muted"
 const sectionTitleClass = "mb-4 font-serif font-bold text-section text-text"
 const boxClass = "p-4 bg-surface border border-border rounded-lg shadow-card"
-
 const fakeFriends = ['Alice Martin', 'Bob Durand', 'Chloé Petit', 'David Moreau']
 
+// 118 -> "1h58"
+function formatRuntime(minutes: number) {
+	const h = Math.floor(minutes / 60)
+	const m = String(minutes % 60).padStart(2, '0')
+	return `${h}h${m}`
+}
 
 function ScreenDetailsPage() {
 	const { id } = useParams()
@@ -63,6 +71,18 @@ function ScreenDetailsPage() {
 				<img src={screening.posterUrl ?? defaultMovie} alt={screening.filmTitle} className={posterClass} />
 				<div>
 					<h1 className={titleClass}>{screening.filmTitle}</h1>
+					<dl className="mb-4 flex flex-col gap-1 text-body">
+						{screening.director && (
+							<div><dt className="inline font-bold text-text">Director: </dt><dd className="inline text-text-muted">{screening.director}</dd></div>
+						)}
+						{screening.cast && (
+							<div><dt className="inline font-bold text-text">Cast: </dt><dd className="inline text-text-muted">{screening.cast}</dd></div>
+						)}
+						{screening.runtimeMinutes && (
+							<div><dt className="inline font-bold text-text">Duration: </dt><dd className="inline text-text-muted">{formatRuntime(screening.runtimeMinutes)}</dd></div>
+						)}
+					</dl>
+
 					<p className={synopsisClass}>{screening.synopsis ?? 'No synopsis available.'}</p>
 					{screening.trailerUrl && (
 						<section className="mt-6">
