@@ -1,6 +1,6 @@
 name: 📝 docs (documentation)
-description: Missing, outdated or unclear documentation
-title: "docs: "
+description: 'Missing, outdated or unclear documentation. Title tip: "docs(<scope>): what to document", e.g. "docs(README.md): ..."'
+title: "docs(): "
 labels: ["docs", "needs-triage"]
 body:
   - type: input
