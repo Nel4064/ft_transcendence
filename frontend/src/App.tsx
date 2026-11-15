@@ -47,6 +47,7 @@ function App() {
 					<Route path="/screenings/:id" element={<ScreenDetailsPage />} />
 					<Route path="/friends" element={<FriendsPage />} />
 					<Route path="/users/:id" element={<UserProfilePage />} />
+					<Route path="/chat/:friendId" element={<ChatPage />} />
 				</Route>
 
 				<Route element={<ProtectedRoute adminOnly />}>
