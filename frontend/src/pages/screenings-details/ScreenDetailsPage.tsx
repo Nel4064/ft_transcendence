@@ -83,11 +83,9 @@ function ScreenDetailsPage() {
         await removeScreening(apiFetch, screening.externalCinemaId, screening.externalShowId)
         navigate('/screenings')
     }
-
     const formatICSDate = (date: Date) => {
         return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     };
-
     const handleIcsDownload = () => {
         if (!screening) return;
         const startDate = new Date(screening.startsAt);
@@ -104,14 +102,13 @@ function ScreenDetailsPage() {
             `DESCRIPTION:${screening.synopsis || 'Movie screening session.'}`,
             `LOCATION:${screening.cinemaName}, ${screening.cinemaAddress}, ${screening.cinemaCity}`,
             "BEGIN:VALARM",
-            "TRIGGER:-PT1H", // ⏰ 提前 1 小时弹窗提醒！
+            "TRIGGER:-PT1H",
             "ACTION:DISPLAY",
             "DESCRIPTION:Reminder",
             "END:VALARM",
             "END:VEVENT",
             "END:VCALENDAR"
         ].join('\n');
-
         const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
         const link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
@@ -125,7 +122,6 @@ function ScreenDetailsPage() {
         if (!screening) return;
         const startDate = new Date(screening.startsAt);
         const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
-
         const title = encodeURIComponent(`🎬 ${screening.filmTitle}`);
         const details = encodeURIComponent(screening.synopsis || 'Movie screening session.');
         const location = encodeURIComponent(`${screening.cinemaName}, ${screening.cinemaAddress}, ${screening.cinemaCity}`);
@@ -134,8 +130,6 @@ function ScreenDetailsPage() {
         const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=${location}`;
         window.open(url, '_blank');
     };
-
-
     if (isLoading) {
         return <main className="py-12 px-10"><p>Loading...</p></main>
     }
@@ -148,12 +142,10 @@ function ScreenDetailsPage() {
             </main>
         )
     }
-    
     const start = new Date(screening.startsAt)
     const date = start.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
     const time = start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
     const friendsList = screening.friendsGoing || [];
-
     return (
         <main className="max-w-[1000px] mx-auto py-12 px-10">
             <section className="flex flex-col md:flex-row gap-8 mb-12">
@@ -170,8 +162,7 @@ function ScreenDetailsPage() {
                         </section>
                     )}
                 </div>
-            </section>
-            
+            </section>        
             <ul className="flex flex-col gap-4 mt-6">
                 <li key={screening.id} className="flex items-center justify-between p-4 bg-surface border border-border rounded-lg text-body text-text-muted">
                     <div>
@@ -183,8 +174,6 @@ function ScreenDetailsPage() {
                             <Icon name="map-pin" />
                             {screening.cinemaName} - {screening.cinemaAddress}, {screening.cinemaCity}
                         </p>
-
-                        {/* calendar buttons */}
                         {screening.isGoing && new Date(screening.startsAt) >= new Date() && (
                             <div className="flex gap-3 ml-6 mb-2">
                                 <button 
