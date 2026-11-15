@@ -99,7 +99,7 @@ function Navbar() {
             )}
 
             {user ? (
-                <NavLink to="/profile" className="ml-7 ">
+                <NavLink to="/profile" className="ml-7 shrink-0">
                     <Avatar src={user?.avatarUrl ? user.avatarUrl : undefined} size={70} />
                 </NavLink>
             ) : (
