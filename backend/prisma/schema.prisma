@@ -35,13 +35,13 @@ enum RequestStatus {
 }
 
 enum NotificationType {
-  FRIEND_REQUEST // user sending the request → invited user
-  FRIEND_ACCEPTED // user accepting           → user who asked
-  EVENT_CANCELLED // organizer who cancels    → everyone who RSVPed
-  CLUB_PICK // organizer who picks      → members
-  CLUB_PICK_REMOVED // organizer who unpicks    → members, those who RSVPed
-  FRIEND_RSVP // friend who RSVPs         → their friends
-  ROLE_CHANGED // admin who changes role   → user whose role changed
+  FRIEND_REQUEST     // user sending the request → invited user
+  FRIEND_ACCEPTED    // user accepting           → user who asked
+  CLUB_PICK          // organizer who picks      → members
+  CLUB_PICK_REMOVED  // organizer who unpicks    → members, those who RSVPed
+  FRIEND_RSVP        // friend who RSVPs         → their friends
+  ROLE_CHANGED       // admin who changes role   → user whose role changed
+//  EVENT_CANCELLED    // if event is cancelled (outside CineClub user's scope)    → everyone who RSVPed
 }
 
 enum ChatType {
@@ -87,6 +87,7 @@ model User {
   sentMessages      Message[]      @relation("SentMessages")
   receivedMessages  Message[]      @relation("ReceivedMessages")
 
+  rsvps         Rsvp[]
   @@map("users") // Maps the model to a lowercase "users" table in the database
 }
 
@@ -153,10 +154,8 @@ model Screening {
   cinemaLongitude  Float? // _coords.lon (V3)
 
   // // Club side
-  // curatedById      String?
-  // curatedBy        User?             @relation("curatedBy", fields: [curatedById], references: [id])
-  // isCancelled      Boolean           @default(false)
-  // rsvps            Rsvp[]
+  //isCancelled      Boolean           @default(false)
+  rsvps            Rsvp[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -165,6 +164,21 @@ model Screening {
   @@unique([externalCinemaId, externalShowId])
   @@index([startsAt])
   @@map("screenings")
+}
+
+// 💡 只要表里有这条记录，就代表该用户要去；没有记录就代表不去
+model Rsvp {
+  id          String    @id @default(uuid())
+  userId      String    @db.Uuid
+  screeningId String    
+
+  createdAt   DateTime  @default(now())
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  screening   Screening @relation(fields: [screeningId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, screeningId])
+  @@map("rsvps")
 }
 
 model Notification {

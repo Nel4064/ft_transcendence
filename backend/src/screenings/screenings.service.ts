@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { ActivityService } from '../activity/activity.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 const FEED = 'https://datacinesindes.fr/data-fair/api/v1/datasets/programmation-cinemas/lines';
 const clean = (v?: string | null) => (v && v !== 'null' && v.trim()) || null;
@@ -13,14 +13,57 @@ export class ScreeningsService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly activity: ActivityService,
-  ) {}
+    private readonly notifications: NotificationsService,
+  ) { }
 
   findAll() {
     return this.prisma.screening.findMany({ orderBy: { startsAt: 'asc' } });
   }
 
-  async pick(cineid: number, showid: string) {
+  async findAllWithRsvpInfo(userId: string) {
+    const friendships = await this.prisma.friendship.findMany({
+      where: { userId },
+      select: { friendId: true },
+    });
+    const friendIds = friendships.map(f => f.friendId);
+    const screenings = await this.prisma.screening.findMany({
+      include: {
+        _count: {
+          select: { rsvps: true },
+        },
+        rsvps: {
+          where: {
+            userId: { in: [userId, ...friendIds] },
+          },
+          include: {
+            user: {
+              select: { id: true, username: true, displayName: true, avatarUrl: true },
+            },
+          },
+        },
+      },
+      orderBy: {
+        startsAt: 'asc',
+      },
+    });
+
+    return screenings.map(screening => {
+      const { _count, rsvps, ...rest } = screening;
+
+      const myRsvp = rsvps.find(r => r.userId === userId);
+      const friendsRsvps = rsvps.filter(r => r.userId !== userId);
+
+      return {
+        ...rest,
+        totalGoingCount: _count.rsvps,
+        isGoing: !!myRsvp,
+        friendsGoingCount: friendsRsvps.length,
+        friendsGoing: friendsRsvps.map(r => r.user),
+      };
+    });
+  }
+
+  async pick(cineid: number, showid: string, actorId: string) {
     const res = await fetch(`${FEED}?cineid_eq=${cineid}&showid_eq=${encodeURIComponent(showid)}`);
     const r = (await res.json()).results?.[0];
     if (!r) throw new NotFoundException('Screening not in feed');
@@ -51,25 +94,104 @@ export class ScreeningsService {
     };
     const key = { externalCinemaId: data.externalCinemaId, externalShowId: data.externalShowId };
     const screening = await this.prisma.screening.upsert({ where: { externalCinemaId_externalShowId: key }, create: data, update: data });
-    await this.activity.notifyAllUsers('CLUB_PICK', {
+    await this.notifications.notifyAllUsers('CLUB_PICK', {
       screeningId: screening.id,
       filmTitle: screening.filmTitle,
       cinemaName: screening.cinemaName,
       startsAt: screening.startsAt.toISOString(),
-    });
+    }, actorId);
     return screening;
   }
 
-  async unpick(cineid: number, showid: string) {
+  async unpick(cineid: number, showid: string, actorId: string) {
     const key = { externalCinemaId: cineid, externalShowId: showid };
     const screening = await this.prisma.screening.delete({ where: { externalCinemaId_externalShowId: key } });
-    await this.activity.notifyAllUsers('CLUB_PICK_REMOVED', {
+    await this.notifications.notifyAllUsers('CLUB_PICK_REMOVED', {
       screeningId: screening.id,
       filmTitle: screening.filmTitle,
       cinemaName: screening.cinemaName,
       startsAt: screening.startsAt.toISOString(),
-    });
+    }, actorId);
     return screening;
   }
 
+  async findOne(screeningId: string, userId: string) {
+    const friendships = await this.prisma.friendship.findMany({
+      where: { userId },
+      select: { friendId: true },
+    });
+    const friendIds = friendships.map(f => f.friendId);
+    const screening = await this.prisma.screening.findUnique({
+      where: { id: screeningId },
+      include: {
+        _count: {
+          select: { rsvps: true },
+        },
+        rsvps: {
+          where: {
+            userId: { in: [userId, ...friendIds] },
+          },
+          include: {
+            user: {
+              select: { id: true, username: true, displayName: true, avatarUrl: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!screening) return null;
+    const { _count, rsvps, ...rest } = screening;
+    const myRsvp = rsvps.find(r => r.userId === userId);
+    const friendsRsvps = rsvps.filter(r => r.userId !== userId);
+    return {
+      ...rest,
+      totalGoingCount: _count.rsvps,
+      isGoing: !!myRsvp,
+      friendsGoingCount: friendsRsvps.length,
+      friendsGoing: friendsRsvps.map(r => r.user),
+    };
+  }
+
+  async addRsvp(userId: string, screeningId: string) {
+    const screening = await this.prisma.screening.findUnique({
+      where: { id: screeningId },
+      select: { startsAt: true }
+    });
+    if (!screening) {
+      throw new NotFoundException("La séance n'est plus disponible.");
+    }
+    if (screening.startsAt < new Date()) {
+      throw new BadRequestException("Vous ne pouvez pas RSVP pour une séance passée.");
+    }
+
+    await this.prisma.rsvp.upsert({
+      where: {
+        userId_screeningId: { userId, screeningId }
+      },
+      update: {},
+      create: {
+        userId,
+        screeningId
+      }
+    });
+    return { isGoing: true };
+  }
+
+  async removeRsvp(userId: string, screeningId: string) {
+    const screening = await this.prisma.screening.findUnique({
+      where: { id: screeningId },
+      select: { id: true }
+    });
+    if (!screening) {
+      throw new NotFoundException("La séance n'est plus disponible.");
+    }
+    await this.prisma.rsvp.deleteMany({
+      where: {
+        userId,
+        screeningId
+      }
+    });
+    return { isGoing: false };
+  }
 }

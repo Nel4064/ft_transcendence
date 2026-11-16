@@ -2,23 +2,23 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 import Navbar from './components/Navbar/Navbar'
 import HomePage from './pages/home/HomePage'
-import ActivityPage from './pages/activity/ActivityPage'
+import NotificationsPage from './pages/notifications/NotificationsPage'
 import SignInPage from './pages/sign-in/SignInPage'
 import SignUpPage from './pages/sign-up/SignUpPage'
 import SelectMoviesPage from './pages/select-movies/SelectMoviesPage'
 import BottomNav from './components/BottomNav/BottomNav'
 import PrivacyPolicyPage from './pages/privacy-policy/PrivacyPolicyPage'
 import TermsOfServicePage from './pages/terms-of-service/TermsOfServicePage'
-import RemindersPage from './pages/reminders/RemindersPage'
 import FriendsPage from './pages/friends/FriendsPage'
 import ManageMembersPage from './pages/manage-members/ManageMembersPage'
-import ScreeningsPage from './pages/screenings/ScreeningsPage'
 import { AuthProvider } from './context/AuthContext'
 import ProfilePage from './pages/profile/ProfilePage'
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
 import MovieDetailsPage from './pages/movie-details/MovieDetailsPage'
 import ScreenDetailsPage from './pages/screenings-details/ScreenDetailsPage'
 import UserProfilePage from './pages/profile/UserProfilePage'
+import ScreeningsList from './pages/screenings/ScreeningsList'
+import CalendarPage from './pages/calendar/CalendarPage'
 
 
 function App() {
@@ -39,15 +39,14 @@ function App() {
 				{/* Pages réservées aux utilisateurs connectés */}
 				<Route element={<ProtectedRoute />}>
 					<Route path="/profile" element={<ProfilePage />} />
-					<Route path="/activity" element={<ActivityPage />} />
-					<Route path="/screenings" element={<ScreeningsPage />} />
-					<Route path="/reminders" element={<RemindersPage />} />
-					
+					<Route path="/notifications" element={<NotificationsPage />} />
+					<Route path="/screenings" element={<ScreeningsList />} />
 					<Route path="/movies/:title" element={<MovieDetailsPage />} />
 					<Route path="/screenings/:id" element={<ScreenDetailsPage />} />
 					<Route path="/friends" element={<FriendsPage />} />
 					<Route path="/users/:id" element={<UserProfilePage />} />
 					<Route path="/chat/:friendId" element={<ChatPage />} />
+					<Route path="/calendar" element={<CalendarPage />} />
 				</Route>
 
 				<Route element={<ProtectedRoute adminOnly />}>
