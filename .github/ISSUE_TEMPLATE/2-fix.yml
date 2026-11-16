@@ -1,6 +1,6 @@
 name: 🐞 fix (bug)
-description: Something doesn't work as expected
-title: "fix: "
+description: 'Something does not work as expected. Title tip: "fix(<scope>): what is broken", e.g. "fix(chat): ..."'
+title: "fix(): "
 labels: ["fix", "needs-triage"]
 body:
   - type: dropdown
