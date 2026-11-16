@@ -234,7 +234,7 @@ export default function FriendsManager() {
                                 </div>
 
                                 <div className="flex items-center space-x-2">
-                                    <Button onClick={() => alert(`Redirecting to chat with ${friend.username}`)}>
+                                    <Button onClick={() => navigate(`/chat/${friend.id}`)}>
                                         Chat
                                     </Button>
                                     <Button

@@ -3,16 +3,9 @@ import { useAuth } from '../../context/AuthContext'
 import { useState, useEffect, useRef } from 'react'
 import { getDirectHistory } from '../../api/chat'
 import { io, Socket } from 'socket.io-client'
+import Avatar from '../../components/Avatar/Avatar'
 
-export default function ChatPage(){
-	const { friendId } = useParams();
-	if (!friendId) return null;
-	const { user, apiFetch } = useAuth();
-	const navigate = useNavigate();
-	const bottomRef = useRef<HTMLDivElement | null>(null);
-	const socketRef = useRef<Socket | null>(null);
-
-	type Message = {
+type Message = {
     id: string;
     content: string;
     senderId: string;
@@ -24,28 +17,59 @@ export default function ChatPage(){
         displayName: string;
         avatarUrl?: string | null;
     };
-	};
+};
+
+type FriendUser = {
+    id: string;
+    username: string;
+    displayName: string;
+    avatarUrl?: string | null;
+};
+
+export default function ChatPage(){
+	const { friendId } = useParams();
+	const { user, apiFetch } = useAuth();
+	const navigate = useNavigate();
+	void user;
+	const bottomRef = useRef<HTMLDivElement | null>(null);
+	const socketRef = useRef<Socket | null>(null);
 
 	const [ loading, setLoading ] = useState(true);
 	const [ messages, setMessages ] = useState<Message[]>([]);
 	const [ input, setInput ] = useState('');
 	const [ error, setError ] = useState<string | null>(null);
+	const [friendUser, setFriendUser] = useState<FriendUser | null>(null);
 
+	// get history
 	useEffect (() => {
-		// get history
-		const fetchDirectHistory = async () => {
+		if (!friendId) return;
+		let isCancelled = false;
+		setLoading(true);
+    	setError(null);
+    	setMessages([]); 
+		setFriendUser(null);
+		
+		const fetchData = async () => {
 			try {
-				const directHistory = await getDirectHistory(apiFetch, friendId);
-				setMessages(directHistory);
+				const [historyData, userData] = await Promise.all([
+				getDirectHistory(apiFetch, friendId),
+                apiFetch(`/users/${friendId}`)
+				]);
+				if (!isCancelled) {
+					setMessages(historyData);
+					setFriendUser(userData);
+				}
 			} catch (err: any) {
-				setError(err.message || 'Failed to load history');
-				console.error('Failed to load history:', err);
+				if (!isCancelled)
+					setError(err.message || 'Failed to load history');
+				// console.error('Failed to load history:', err);
 			} finally {
-				setLoading(false);
+				if (!isCancelled) setLoading(false);
 			}
 		};
-		fetchDirectHistory();
-	}, [friendId]);
+		fetchData();
+		return () => { isCancelled = true; };
+	}, [friendId, apiFetch]);
 
 	// websocket connection
 	useEffect (() => {
@@ -57,7 +81,10 @@ export default function ChatPage(){
 
 		socket.on('newMessage', (msg) => {
 			if (msg.senderId === friendId || msg.receiverId === friendId)
-				setMessages(prev => [...prev, msg]);
+				setMessages(prev => {
+			if (prev.some(m=> m.id === msg.id)) return prev;
+			return [...prev, msg];
+			});
 		});
 
 		socket.on('chatError', (errormsg) => {
@@ -84,4 +111,56 @@ export default function ChatPage(){
 		})
 		setInput("");
 	};
+
+	return (
+		<main className="max-w-[800px] mx-auto h-[calc(100vh-120px)] p-4 flex flex-col">
+			{/* HEADER */}
+			<div className="flex items-center gap-4 px-6 py-4 border-b border-border bg-surface">
+				{/* back to friends page */}
+				<button
+					type="button"
+					onClick={() => navigate('/friends')}
+					className="py-1 px-2 text-sm text-text-muted hover:text-text hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
+					title="Back to Friends"
+				>
+					← Friends
+				</button>
+
+				{/* avatar & friend name */}
+				<Avatar 
+					src={friendUser?.avatarUrl} 
+					name={friendUser?.displayName || friendUser?.username} 
+					size={42} 
+				/>
+				<div className="flex flex-col">
+					<h2 className="font-bold text-text text-base leading-snug">
+						{friendUser?.displayName || friendUser?.username || 'Loading...'}
+					</h2>
+					{friendUser?.username && (
+						<p className="text-xs text-text-muted">@{friendUser.username}</p>
+					)}
+				</div>
+			</div>
+
+    	  		{/* message list */}
+				<div className="flex-1 overflow-y-auto p-6 space-y-4">
+					Message list
+				</div>
+
+				{/* input form */}
+				<form 
+					onSubmit={(e) => { 
+						e.preventDefault();
+						handleSend();
+  					}}
+  					className="p-4 border-t border-border bg-surface flex items-center gap-3"
+				>
+				
+				<div>
+
+				</div>
+					Input Area
+				</form>
+  		</main>
+	)
 }

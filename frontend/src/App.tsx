@@ -19,6 +19,7 @@ import ScreenDetailsPage from './pages/screenings-details/ScreenDetailsPage'
 import UserProfilePage from './pages/profile/UserProfilePage'
 import ScreeningsList from './pages/screenings/ScreeningsList'
 import CalendarPage from './pages/calendar/CalendarPage'
+import ChatPage from './pages/chat/ChatPage'
 
 
 function App() {
