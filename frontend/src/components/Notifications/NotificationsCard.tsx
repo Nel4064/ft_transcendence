@@ -1,8 +1,9 @@
+import type { ReactNode } from 'react'
 import Avatar from '../Avatar/Avatar'
 import chairDirector from '../../assets/chair-director.png'
 
 type NotificationsCardProps = {
-    message: string
+    message: ReactNode
     time: string    // already formatted, e.g. "2 hours ago"
     actor?: { displayName: string; avatarUrl: string | null } | null
     unread?: boolean
@@ -15,7 +16,7 @@ const readClass = "bg-bg"
 const fallbackClass = "w-9 h-9 shrink-0 rounded-full border-2 border-brand bg-surface flex items-center justify-center"
 const fallbackIconClass = "w-5 h-5"
 const messageClass = "text-body"
-const unreadMessageClass = "font-semibold text-text"
+const unreadMessageClass = "text-body"
 const readMessageClass = "text-text-muted"
 const timeClass = "text-small text-text-light"
 
