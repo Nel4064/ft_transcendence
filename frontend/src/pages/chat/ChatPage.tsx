@@ -127,18 +127,24 @@ export default function ChatPage(){
 				</button>
 
 				{/* avatar & friend name */}
-				<Avatar 
-					src={friendUser?.avatarUrl} 
-					name={friendUser?.displayName || friendUser?.username} 
-					size={42} 
-				/>
-				<div className="flex flex-col">
-					<h2 className="font-bold text-text text-base leading-snug">
-						{friendUser?.displayName || friendUser?.username || 'Loading...'}
-					</h2>
-					{friendUser?.username && (
-						<p className="text-xs text-text-muted">@{friendUser.username}</p>
-					)}
+				<div 
+					className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+					onClick={() =>friendId && navigate(`/users/${friendId}`)}
+					title="Click to view profile"
+				>
+					<Avatar 
+						src={friendUser?.avatarUrl} 
+						name={friendUser?.displayName || friendUser?.username} 
+						size={42} 
+					/>
+					<div className="flex flex-col">
+						<h2 className="font-bold text-text text-base leading-snug">
+							{friendUser?.displayName || friendUser?.username || 'Loading...'}
+						</h2>
+						{friendUser?.username && (
+							<p className="text-xs text-text-muted">@{friendUser.username}</p>
+						)}
+					</div>
 				</div>
 			</div>
 
@@ -155,11 +161,29 @@ export default function ChatPage(){
   					}}
   					className="p-4 border-t border-border bg-surface flex items-center gap-3"
 				>
-				
-				<div>
-
-				</div>
-					Input Area
+					<div className="relative flex-1">
+						<input 
+							type="text"
+							value={input}
+							maxLength={500}
+							onChange={(e) => setInput(e.target.value)}
+							placeholder="Type a message..."
+							className="w-full py-2.5 px-6 bg-slate-50 border border-border rounded-full text-sm focus:outline-none focus:border-brand transition-colors"
+						/>
+						{input.length > 400 && (
+							<span className="absolute right-3 bottom-3.5 text-xs text-text-muted">
+								{500 - input.length}
+							</span>
+						)}
+					</div>
+					{/* send button */}
+					<button 
+						type="submit"
+						disabled={!input.trim()}
+						className="px-5 py-2.5 bg-brand hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full text-sm font-bold transition-colors"
+					>
+						Send
+					</button>
 				</form>
   		</main>
 	)
