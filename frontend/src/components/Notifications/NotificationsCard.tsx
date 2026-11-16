@@ -10,7 +10,7 @@ type NotificationsCardProps = {
     onClick?: () => void
 }
 
-const cardClass = "flex items-center gap-3 p-4 border border-border rounded-lg shadow-card w-full text-left cursor-pointer"
+const cardClass = "flex items-center gap-3 p-4 border border-border rounded-lg shadow-card"
 const unreadClass = "bg-brand/15"
 const readClass = "bg-bg"
 const fallbackClass = "w-9 h-9 shrink-0 rounded-full border-2 border-brand bg-surface flex items-center justify-center"
@@ -20,9 +20,9 @@ const unreadMessageClass = "text-body"
 const readMessageClass = "text-text-muted"
 const timeClass = "text-small text-text-light"
 
-function NotificationsCard({ message, time, actor, unread = false, onClick }: NotificationsCardProps) {
+function NotificationsCard({ message, time, actor, unread = false}: NotificationsCardProps) {
     return (
-        <button type="button" onClick={onClick} className={`${cardClass} ${unread ? unreadClass : readClass}`}>
+        <div className={`${cardClass} ${unread ? unreadClass : readClass}`}>
             {actor
                 ? <Avatar src={actor.avatarUrl} name={actor.displayName} size={36} />
                 : <div className={fallbackClass}><img src={chairDirector} alt="CineClub" className={fallbackIconClass} /></div>}
@@ -30,7 +30,7 @@ function NotificationsCard({ message, time, actor, unread = false, onClick }: No
                 <p className={`${messageClass} ${unread ? unreadMessageClass : readMessageClass}`}>{message}</p>
                 <p className={timeClass}>{time}</p>
             </div>
-        </button>
+        </div>
     )
 }
 
