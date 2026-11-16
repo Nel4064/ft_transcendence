@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { io } from 'socket.io-client'
 import NotificationsCard from './NotificationsCard'
 import { useAuth } from '../../context/AuthContext'
-import { getNotifications, markNotificationRead, type NotificationItem } from '../../api/notifications'
+import { getNotifications, markAllNotificationsRead, type NotificationItem } from '../../api/notifications'
 import { describeNotification } from '../../utils/describeNotification'
 import { formatRelativeTime } from '../../utils/formatRelativeTime'
 import Loader from '../Loader/Loader'
@@ -16,17 +16,27 @@ function NotificationsList() {
 	const [notifications, setNotifications] = useState<NotificationItem[]>([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
-    const [, setNow] = useState(Date.now())
+	const [, setNow] = useState(Date.now())
 	useEffect(() => {
 		const timer = setInterval(() => setNow(Date.now()), 60 * 1000)
 		return () => clearInterval(timer)
 	}, [])
 
-	// Fetch once on mount, then again whenever the backend pushes a notification
+	// Fetch on mount and on every pushed notification; show the list as received
 	useEffect(() => {
+
+		function markAllRead() {
+			markAllNotificationsRead(apiFetch)
+				.then(() => window.dispatchEvent(new Event('update_navbar')))
+				.catch((err: Error) => setError(err.message))
+		}
+
 		function load() {
 			getNotifications(apiFetch)
-				.then(setNotifications)
+				.then((list) => {
+					setNotifications(list)
+					if (list.some((n) => n.readAt === null)) markAllRead()
+					})
 				.catch((err: Error) => setError(err.message))
 				.finally(() => setLoading(false))
 		}
@@ -38,17 +48,6 @@ function NotificationsList() {
 		// Cleanup: runs when the component leaves the screen
 		return () => { socket.disconnect() }
 	}, [apiFetch])
-
-    function handleRead(id: string) {
-		const now = new Date().toISOString()
-		// Build a NEW array where only that notification gets a readAt
-		setNotifications((list) =>
-			list.map((n) => (n.id === id && n.readAt === null ? { ...n, readAt: now } : n)))
-		markNotificationRead(apiFetch, id)
-			.then(() => window.dispatchEvent(new Event('update_navbar')))
-			.catch((err: Error) => setError(err.message))
-
-	}
 
 	if (loading)
 		return <Loader />
@@ -66,7 +65,6 @@ function NotificationsList() {
 					time={formatRelativeTime(n.createdAt)}
 					actor={n.actor}
 					unread={n.readAt === null}
-                    onClick={() => handleRead(n.id)}
 				/>
 			))}
 		</div>

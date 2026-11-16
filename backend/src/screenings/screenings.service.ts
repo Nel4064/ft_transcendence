@@ -156,7 +156,7 @@ export class ScreeningsService {
   async addRsvp(userId: string, screeningId: string) {
     const screening = await this.prisma.screening.findUnique({
       where: { id: screeningId },
-      select: { startsAt: true }
+      select: { startsAt: true, filmTitle: true }
     });
     if (!screening) {
       throw new NotFoundException("La séance n'est plus disponible.");
@@ -165,16 +165,29 @@ export class ScreeningsService {
       throw new BadRequestException("Vous ne pouvez pas RSVP pour une séance passée.");
     }
 
-    await this.prisma.rsvp.upsert({
-      where: {
-        userId_screeningId: { userId, screeningId }
-      },
-      update: {},
-      create: {
-        userId,
-        screeningId
-      }
+    const { count } = await this.prisma.rsvp.createMany({
+      data: [{ userId, screeningId }],
+      skipDuplicates: true,
     });
+    if (count === 0) return { isGoing: true };   // already going: nothing new, nobody to notify
+
+    const friendships = await this.prisma.friendship.findMany({
+      where: { userId },
+      select: { friendId: true },
+    });
+    const friendIds = friendships.map(f => f.friendId);
+
+    await this.notifications.notifyUsers(
+      'FRIEND_RSVP',
+      {
+        screeningId,
+        filmTitle: screening.filmTitle,
+        startsAt: screening.startsAt.toISOString(),
+      },
+      userId,
+      friendIds
+    );
+
     return { isGoing: true };
   }
 

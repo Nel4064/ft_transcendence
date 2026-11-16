@@ -1,6 +1,6 @@
 name: ✨ feat (feature)
-description: New feature or module from the subject
-title: "feat: "
+description: 'New feature or module from the subject. Title tip: "feat(<scope>): what to add", e.g. "feat(frontend): ..."'
+title: "feat(): "
 labels: ["feat", "needs-triage"]
 body:
   - type: dropdown

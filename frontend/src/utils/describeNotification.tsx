@@ -8,13 +8,15 @@ export function describeNotification(n: NotificationItem) {
 
 	switch (n.type) {
 		case 'CLUB_PICK':
-			return `${actorName} picked ${filmTitle} (${formatDateTime(startsAt)})`
+			return <><strong>{actorName}</strong> picked <strong>{filmTitle}</strong> ({formatDateTime(startsAt)})</>
 		case 'CLUB_PICK_REMOVED':
-			return `${actorName} unpicked ${filmTitle} (${formatDateTime(startsAt)})`
+			return <><strong>{actorName}</strong> unpicked <strong>{filmTitle}</strong> ({formatDateTime(startsAt)})</>
 		case 'FRIEND_REQUEST':
-			return `${actorName} sent you a friend request`
+			return <><strong>{actorName}</strong> sent you a friend request</>
 		case 'FRIEND_ACCEPTED':
-			return `${actorName} accepted your friend request`
+			return <><strong>{actorName}</strong> accepted your friend request</>
+		case 'FRIEND_RSVP':
+			return <><strong>{actorName}</strong> is going to <strong>{filmTitle}</strong> ({formatDateTime(startsAt)})</>
 		default:
 			return 'New unknown notification'
 	}
