@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { getDirectHistory } from '../../api/chat'
 import { io, Socket } from 'socket.io-client'
 import Avatar from '../../components/Avatar/Avatar'
+import Button from '../../components/button/Button'
 
 type Message = {
 	id: string;
@@ -26,6 +27,30 @@ type FriendUser = {
 	avatarUrl?: string | null;
 };
 
+function isSameDate(date1: Date, date2: Date): boolean {
+	return (
+		date1.getFullYear() === date2.getFullYear() &&
+		date1.getMonth() === date2.getMonth() &&
+		date1.getDate() === date2.getDate()
+	);
+}
+
+function formatMessageTime(dateString: string): string {
+	const targetDate = new Date(dateString);
+	const timeStr = targetDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false});
+	const dateStr = targetDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+	const today = new Date();
+	const yesterday = new Date(today);
+	yesterday.setDate(today.getDate() - 1);
+	
+	if (isSameDate(targetDate, today))
+		return (timeStr);
+	else if (isSameDate(targetDate, yesterday))
+		return (`yesterday ${timeStr}`);
+	else
+		return (`${dateStr} ${timeStr}`);
+};
+
 export default function ChatPage() {
 	const { friendId } = useParams();
 	const { user, apiFetch } = useAuth();
@@ -38,7 +63,7 @@ export default function ChatPage() {
 	const [input, setInput] = useState('');
 	const [error, setError] = useState<string | null>(null);
 	const [friendUser, setFriendUser] = useState<FriendUser | null>(null);
-
+	const [isFriend, setIsFriend] = useState(true);
 	// get history + friend info
 	useEffect(() => {
 		if (!friendId) return;
@@ -60,7 +85,15 @@ export default function ChatPage() {
 				}
 			} catch (err: any) {
 				if (!isCancelled)
-					setError(err.message || 'Failed to load history');
+				{
+					const errorText = err.message || 'Failed to load history';
+					if (errorText.toLowerCase().includes('not friends') || errorText.includes('403')){
+						setIsFriend(false);
+					}
+					else {
+						setError(errorText);
+					}
+				}
 				// console.error('Failed to load history:', err);
 			} finally {
 				if (!isCancelled) setLoading(false);
@@ -89,6 +122,10 @@ export default function ChatPage() {
 
 		socket.on('chatError', (errormsg) => {
 			console.error(errormsg);
+			    const msg = typeof errormsg === 'string' ? errormsg : errormsg?.message;
+    			if (msg && msg.toLowerCase().includes('not friends')) {
+    			    setIsFriend(false);
+    			}
 		});
 
 		return () => {
@@ -104,7 +141,7 @@ export default function ChatPage() {
 
 	function handleSend() {
 		const text = input.trim();
-		if (!text) return;
+		if (!text || !isFriend) return;
 		if (!socketRef.current) return;
 		socketRef.current.emit('sendMessage', {
 			receiverId: friendId,
@@ -166,7 +203,7 @@ export default function ChatPage() {
 				{/* empty */}
 				{!loading && !error && messages.length === 0 && (
 					<p className="text-center text-text-muted text-sm py-8">
-						No messages yet. Say hello!
+						{isFriend? "No messages yet. Say hello!" : "No conversation history available."}
 					</p>
 				)}
 
@@ -198,7 +235,7 @@ export default function ChatPage() {
 									{msg.content}
 								</div>
 								<span className="text-[11px] text-text-muted mt-1 px-1">
-									{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+									{formatMessageTime(msg.createdAt)}
 								</span>
 							</div>
 						</div>
@@ -210,37 +247,54 @@ export default function ChatPage() {
 			</div>
 
 			{/* INPUT FORM */}
-			<form
-				onSubmit={(e) => {
-					e.preventDefault();
-					handleSend();
-				}}
-				className="p-4 border-t border-border bg-surface flex items-center gap-3"
-			>
-				<div className="relative flex-1">
-					<input
-						type="text"
-						value={input}
-						maxLength={500}
-						onChange={(e) => setInput(e.target.value)}
-						placeholder="Type a message..."
-						className="w-full py-2.5 px-6 bg-slate-50 border border-border rounded-full text-sm focus:outline-none focus:border-brand transition-colors"
-					/>
-					{input.length > 400 && (
-						<span className="absolute right-3 bottom-3.5 text-xs text-text-muted">
-							{500 - input.length}
-						</span>
-					)}
-				</div>
-				{/* send button */}
-				<button
-					type="submit"
-					disabled={!input.trim()}
-					className="px-5 py-2.5 bg-brand hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full text-sm font-bold transition-colors"
+			{isFriend? (
+				<form
+					onSubmit={(e) => {
+						e.preventDefault();
+						handleSend();
+					}}
+					className="p-4 border-t border-border bg-surface flex items-center gap-3"
 				>
-					Send
-				</button>
-			</form>
+					<div className="relative flex-1">
+						<input
+							type="text"
+							value={input}
+							disabled={!isFriend}
+							maxLength={500}
+							onChange={(e) => setInput(e.target.value)}
+							placeholder={isFriend? "Type a message..." : "Messaging disabled"}
+							className="w-full py-2.5 px-6 bg-slate-50 border border-border rounded-full text-sm focus:outline-none focus:border-brand transition-colors"
+						/>
+						{input.length > 400 && (
+							<span className="absolute right-3 bottom-3.5 text-xs text-text-muted">
+								{500 - input.length}
+							</span>
+						)}
+					</div>
+					{/* send button */}
+					<button
+						type="submit"
+						disabled={!isFriend || !input.trim()}
+						className="px-5 py-2.5 bg-brand hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full text-sm font-bold transition-colors"
+					>
+						Send
+					</button>
+				</form>
+			):(
+				<div className="p-4 border-t border-border bg-slate-50 flex items-center justify-between px-6 text-sm">
+					<span className="text-text-muted">
+						You cannot send messages because you are not friends.
+					</span>
+					<Button
+						variant="secondary"
+						size="md"
+						onClick={() => navigate('/friends')}
+						className="text-xs !py-1.5 !px-3"
+					>
+						Go to Friends
+					</Button>
+				</div>
+			)}
 		</main>
-	)
+	);
 }
