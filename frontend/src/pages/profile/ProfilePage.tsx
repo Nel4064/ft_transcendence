@@ -2,6 +2,8 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import Avatar from '../../components/Avatar/Avatar'
 import Button from '../../components/button/Button'
+import Input from '../../components/Input/Input'
+import Heading from '../../components/Heading/Heading'
 import { useState, useRef, useEffect } from 'react'
 
 function ProfilePage() {
@@ -186,19 +188,18 @@ function ProfilePage() {
 
                 {/* ✏️ Profile edit card (Display Name, Bio, Language) */}
                 <div className="p-5 bg-surface border border-border rounded-md shadow-card flex flex-col gap-4">
-                    <h2 className="text-card font-serif font-bold text-text">Edit Profile</h2>
+                    <Heading level="card" as="h2">Edit Profile</Heading>
 
                     <form onSubmit={handleUpdateProfile} className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-1">
-                            <label className="text-small font-medium text-text">Display Name</label>
-                            <input
-                                type="text"
-                                value={displayName}
-                                onChange={(e) => setDisplayName(e.target.value)}
-                                placeholder="Enter your display name"
-                                className="py-2 px-3 border border-border rounded-md text-control bg-surface text-text focus:outline-none focus:border-brand"
-                            />
-                        </div>
+                        <Input
+                            id="displayName"
+                            size="md"
+                            label="Display Name"
+                            type="text"
+                            value={displayName}
+                            onChange={(e) => setDisplayName(e.target.value)}
+                            placeholder="Enter your display name"
+                        />
 
                         <div className="flex flex-col gap-1">
                             <label className="text-small font-medium text-text">Bio</label>
@@ -231,7 +232,7 @@ function ProfilePage() {
 
                 {/* 2FA management card */}
                 <div className="p-5 bg-surface border border-border rounded-md shadow-card flex flex-col gap-4">
-                    <h2 className="text-card font-serif font-bold text-text">Two-Factor Authentication (2FA)</h2>
+                    <Heading level="card" as="h2">Two-Factor Authentication (2FA)</Heading>
 
                     <div className="flex items-center justify-between flex-wrap gap-4">
                         <div>
@@ -267,13 +268,14 @@ function ProfilePage() {
                             )}
                             <p className="text-small text-text-muted">2. Enter the 6-digit code from your app to verify and activate:</p>
                             <div className="flex gap-2">
-                                <input
+                                <Input
+                                    size="md"
                                     type="text"
                                     maxLength={6}
                                     placeholder="123456"
                                     value={totpCode}
                                     onChange={(e) => setTotpCode(e.target.value)}
-                                    className="py-2 px-3 border border-border rounded-md text-control tracking-widest font-mono bg-surface text-text"
+                                    className="tracking-widest font-mono"
                                     required
                                 />
                                 <Button type="submit">
@@ -291,13 +293,14 @@ function ProfilePage() {
                         <form onSubmit={handleDisable2fa} className="flex flex-col gap-3 mt-2 pt-4 border-t border-border">
                             <p className="text-small text-text-muted">Enter the 6-digit code from your authenticator app to disable 2FA:</p>
                             <div className="flex gap-2">
-                                <input
+                                <Input
+                                    size="md"
                                     type="text"
                                     maxLength={6}
                                     placeholder="123456"
                                     value={disableCode}
                                     onChange={(e) => setDisableCode(e.target.value)}
-                                    className="py-2 px-3 border border-border rounded-md text-control tracking-widest font-mono bg-surface text-text"
+                                    className="tracking-widest font-mono"
                                     required
                                 />
                                 <Button type="submit" variant="danger">

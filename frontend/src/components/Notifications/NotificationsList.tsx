@@ -5,9 +5,10 @@ import { useAuth } from '../../context/AuthContext'
 import { getNotifications, markAllNotificationsRead, type NotificationItem } from '../../api/notifications'
 import { describeNotification } from '../../utils/describeNotification'
 import { formatRelativeTime } from '../../utils/formatRelativeTime'
+import Loader from '../Loader/Loader'
+import EmptyState from '../EmptyState/EmptyState'
 
 const listClass = "flex flex-col gap-2.5"
-const statusClass = "text-body text-text-muted"
 const errorClass = "text-body text-danger"
 
 function NotificationsList() {
@@ -49,11 +50,11 @@ function NotificationsList() {
 	}, [apiFetch])
 
 	if (loading)
-		return <p className={statusClass}>Loading…</p>
+		return <Loader />
 	if (error)
 		return <p className={errorClass}>{error}</p>
 	if (notifications.length === 0)
-		return <p className={statusClass}>No notifications yet.</p>
+		return <EmptyState message="No notifications yet." />
 
 	return (
 		<div className={listClass}>

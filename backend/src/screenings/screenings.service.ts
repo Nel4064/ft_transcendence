@@ -64,12 +64,12 @@ export class ScreeningsService {
   }
 
   async pick(cineid: number, showid: string, actorId: string) {
-    const res = await fetch(`${FEED}?cineid_eq=${cineid}&showid_eq=${encodeURIComponent(showid)}`);
+    const res = await fetch(`${FEED}?showid_eq=${encodeURIComponent(showid)}`);
     const r = (await res.json()).results?.[0];
     if (!r) throw new NotFoundException('Screening not in feed');
     const minutes = Math.round(r.filmduration / 60);
     const data = {
-      externalCinemaId: r.cineid,
+      externalCinemaId: r.cineid ?? (cineid || 0),
       externalShowId: r.showid,
       filmTitle: r.filmtitle,
       director: clean(r.filmdirector),
@@ -93,19 +93,26 @@ export class ScreeningsService {
       cinemaLongitude: r['_coords.lon'] ?? null,
     };
     const key = { externalCinemaId: data.externalCinemaId, externalShowId: data.externalShowId };
-    const screening = await this.prisma.screening.upsert({ where: { externalCinemaId_externalShowId: key }, create: data, update: data });
+    const screening = await this.prisma.screening.upsert({
+      where: { externalCinemaId_externalShowId: key },
+      create: data,
+      update: data
+    });
     await this.notifications.notifyAllUsers('CLUB_PICK', {
       screeningId: screening.id,
       filmTitle: screening.filmTitle,
       cinemaName: screening.cinemaName,
       startsAt: screening.startsAt.toISOString(),
     }, actorId);
+
     return screening;
   }
 
   async unpick(cineid: number, showid: string, actorId: string) {
-    const key = { externalCinemaId: cineid, externalShowId: showid };
-    const screening = await this.prisma.screening.delete({ where: { externalCinemaId_externalShowId: key } });
+    const key = { externalCinemaId: cineid || 0, externalShowId: showid };
+    const screening = await this.prisma.screening.delete({
+      where: { externalCinemaId_externalShowId: key }
+    });
     await this.notifications.notifyAllUsers('CLUB_PICK_REMOVED', {
       screeningId: screening.id,
       filmTitle: screening.filmTitle,
