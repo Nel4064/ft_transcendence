@@ -236,11 +236,11 @@ export default function FriendsManager() {
             {activeTab === 'requests' && (
                 <div className="space-y-3">
 					{loading ? (
-						<Loader text="Loading request..." />
+						<Loader text="Loading requests..." />
 					) : requestsError ? (
 						<p className="text-danger text-center py-8">{requestsError}</p>
 					) : pendingRequests.length === 0 ? (
-						<EmptyState message="No new friend request" />
+						<EmptyState message="No new friend requests" />
                     ) : (
 						pendingRequests.map((req) => (
 							<FriendsCard key={req.id} user={req.sender} subtitle="Wants to add you as a friend">
