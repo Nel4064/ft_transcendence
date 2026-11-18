@@ -164,7 +164,7 @@ export default function FriendsManager() {
     return (
         <div className="max-w-2xl mx-auto my-12 p-6 bg-surface border border-border text-text rounded-lg shadow-card relative">
             {message && (
-                <div className={`mb-4 p-3 rounded-lg text-sm ${message.type === 'success' ? 'bg-admin' : 'bg-danger'}`}>
+                <div className={`mb-4 p-3 rounded-lg text-sm ${message.type === 'success' ? 'bg-success' : 'bg-danger'}`}>
                     {message.text}
                 </div>
             )}
