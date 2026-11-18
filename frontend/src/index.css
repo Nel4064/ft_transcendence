@@ -8,6 +8,7 @@
 	--color-danger: var(--ds-danger);
 	--color-admin: var(--ds-admin);
 	--color-admin-hover: var(--ds-admin-hover);
+	--color-success: var(--ds-success);
 	--color-text-admin-muted: var(--ds-text-admin-muted);
 
 	--color-text: var(--ds-text);
