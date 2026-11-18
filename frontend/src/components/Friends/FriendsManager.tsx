@@ -49,7 +49,7 @@ export default function FriendsManager() {
 
     const [loading, setLoading] = useState(true);
 	const [friendsError, setFriendsError] = useState<string | null>(null);
-	const [requestsError, setRequestsError] = useState<string | null>(null); 
+	const [requestsError, setRequestsError] = useState<string | null>(null);
 
     useEffect(() => {
         sessionStorage.setItem('friends_activeTab', activeTab);
@@ -292,7 +292,7 @@ export default function FriendsManager() {
 										className="w-8 h-8 flex items-center justify-center text-text-muted hover:text-text hover:bg-bg rounded-lg transition-colors"
 										title="Hide this result"
 									>
-										x
+										✕
 									</button>
 								</FriendsCard> 
                             ))
