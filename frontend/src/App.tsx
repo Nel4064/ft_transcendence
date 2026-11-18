@@ -19,7 +19,7 @@ import ScreenDetailsPage from './pages/screenings-details/ScreenDetailsPage'
 import UserProfilePage from './pages/profile/UserProfilePage'
 import ScreeningsList from './pages/screenings/ScreeningsList'
 import CalendarPage from './pages/calendar/CalendarPage'
-
+import YourEventPage from './pages/your-event/YourEventPage'
 
 function App() {
 	return (
@@ -51,6 +51,7 @@ function App() {
 				<Route element={<ProtectedRoute adminOnly />}>
 					<Route path="/select-movies" element={<SelectMoviesPage />} />
 					<Route path="/manage-members" element={<ManageMembersPage />} />
+					<Route path="/your-event" element={<YourEventPage />} />
 				</Route>
 
 					<Route path="*" element={

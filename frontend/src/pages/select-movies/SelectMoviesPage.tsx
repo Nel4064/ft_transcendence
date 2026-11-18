@@ -1,9 +1,10 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import MoviesList from '../../components/movies/MoviesList'
 import Button from '../../components/button/Button'
 
 const titleClass = "mb-6 font-serif font-bold text-section text-text"
-const boxClass = "flex items-center gap-4 max-w-[1000px] mx-auto mb-[100px] p-8 bg-surface border border-border rounded-lg shadow-card"
+const boxClass = "flex items-center gap-4 max-w-[1000px] mx-auto mb-4 p-8 bg-surface border border-border rounded-lg shadow-card"
 const inputClass = "flex-1 py-4 px-5 border border-border rounded-md text-control"
 const selectClass = "py-4 px-5 border border-border rounded-md text-control bg-surface cursor-pointer"
 
@@ -35,6 +36,12 @@ function SelectMoviesPage() {
 				</select>
 				<Button variant="admin" size="xl" onClick={() => setAppliedTerm(searchTerm)}>Search</Button>
 			</section>
+			<p className="max-w-[1000px] mx-auto mb-[100px] text-center text-small text-text-muted">
+				Can't find your movie?{' '}
+				<Link to="/your-event" className="font-bold text-text-admin-muted hover:text-admin transition-colors duration-300">
+					Create your own event
+				</Link>
+			</p>
 			<section className="grid grid-cols-4 gap-5 max-w-[2000px] mx-auto my-[50px]">
 				<MoviesList searchTerm={appliedTerm} filter={filter} perPage={20} />
 			</section>
