@@ -1,5 +1,8 @@
 import Button from '../button/Button';
 import Avatar from '../Avatar/Avatar';
+import Input from '../Input/Input';
+import Heading from '../Heading/Heading';
+import EmptyState from '../EmptyState/EmptyState';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -168,7 +171,7 @@ export default function FriendsManager() {
 
             {/* Top Header & Close Button */}
             <div className="flex items-center justify-between mb-6">
-                <h2 className="font-serif font-bold text-section text-text">Friends Center</h2>
+                <Heading level="section">Friends Center</Heading>
                 <button
                     onClick={() => {
                         sessionStorage.removeItem('friends_activeTab');
@@ -215,7 +218,7 @@ export default function FriendsManager() {
             {activeTab === 'friends' && (
                 <div className="space-y-3">
                     {friends.length === 0 ? (
-                        <p className="text-text-muted text-center py-8">No friends yet, go add some!</p>
+                        <EmptyState message="No friends yet, go add some!" />
                     ) : (
                         friends.map((friend) => (
                             <div key={friend.id} className="flex items-center justify-between p-3 bg-bg border border-border rounded-md">
@@ -291,7 +294,8 @@ export default function FriendsManager() {
             {activeTab === 'search' && (
                 <div>
                     <form onSubmit={handleSearch} className="flex space-x-2 mb-6">
-                        <input
+                        <Input
+                            size="md"
                             type="text"
                             value={searchKeyword}
                             onChange={(e) => {
@@ -302,7 +306,7 @@ export default function FriendsManager() {
                                 }
                             }}
                             placeholder="Enter username or display name..."
-                            className="flex-1 bg-surface border border-border rounded-md px-4 py-2 text-text placeholder-text-light focus:outline-none focus:border-brand"
+                            className="flex-1"
                         />
                         <Button type="submit" size="lg">Search</Button>
                     </form>

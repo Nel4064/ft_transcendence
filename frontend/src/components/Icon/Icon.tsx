@@ -1,9 +1,11 @@
 import mapPin from '../../assets/map-pin.png'
 import calendarEvent from '../../assets/calendar-event.png'
+import idOff from '../../assets/id-off.png'
 
 const icons = {
     'calendar-event': calendarEvent,
     'map-pin': mapPin,
+    'id-off': idOff,
 }
 
 type IconProps = {

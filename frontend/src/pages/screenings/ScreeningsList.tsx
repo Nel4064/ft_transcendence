@@ -3,6 +3,9 @@ import RsvpScreeningCard from '../../components/Screenings/RsvpScreeningCard'
 import defaultMovie from '../../assets/default-movie.jpg'
 import { useAuth } from '../../context/AuthContext'
 import { type Screening, getMyRsvpScreenings, rsvp, cancelRsvp } from '../../api/screenings'
+import Loader from '../../components/Loader/Loader'
+import Heading from '../../components/Heading/Heading'
+import EmptyState from '../../components/EmptyState/EmptyState'
 
 export default function ScreeningsList() {
     const [screenings, setScreenings] = useState<Screening[]>([])
@@ -63,9 +66,9 @@ export default function ScreeningsList() {
     return (
         <div className="w-3/4 max-w-[800px] mx-auto py-6 px-4 md:px-0">
             <div className="mb-6 text-left">
-                <h1 className="font-serif text-[28px] md:text-[32px] font-bold text-gray-900 tracking-tight mb-1">
+                <Heading className="tracking-tight mb-1">
                     My Screenings
-                </h1>
+                </Heading>
                 <p className="text-[14px] text-gray-500 mb-6">
                     Manage your upcoming movie club sessions and view your past attendances.
                 </p>
@@ -91,13 +94,13 @@ export default function ScreeningsList() {
                 </div>
             </div>
             {isLoading ? (
-                <p className="text-gray-400 py-4">Loading screenings...</p>
+                <Loader text="Loading screenings..." />
             ) : displayedScreenings.length === 0 ? (
-                <p className="text-gray-400 py-4">
-                    {activeTab === 'upcoming'
+                <EmptyState
+                    message={activeTab === 'upcoming'
                         ? "No upcoming screenings yet."
                         : "You haven't attended any screenings in the past."}
-                </p>
+                />
             ) : (
                 <div className="flex flex-col gap-3">
                     {displayedScreenings.map((s) => {

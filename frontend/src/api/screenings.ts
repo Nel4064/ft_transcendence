@@ -21,6 +21,9 @@ export type Screening = {
     externalShowId?: string;
     synopsis?: string | null;
     trailerUrl?: string | null;
+    director?: string | null;
+    cast?: string | null;
+    runtimeMinutes?: number | null;
     friendsGoingCount?: number;
     friendsGoing?: Friend[];
 };

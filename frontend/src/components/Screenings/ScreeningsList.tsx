@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import ScreeningsCard from './ScreeningsCard'
+import EmptyState from '../EmptyState/EmptyState'
 import defaultMovie from '../../assets/default-movie.jpg'
 import { apiFetch } from '../../context/AuthContext'
 
@@ -19,7 +20,7 @@ function ScreeningsList() {
 	}, [])
 
 	if (screenings.length === 0)
-		return <p className="text-text-muted">No upcoming screenings yet.</p>
+		return <EmptyState message="No upcoming screenings yet." />
 
 	return (
 		<div className="flex flex-row gap-6 overflow-x-auto pb-4 snap-x">
