@@ -145,4 +145,56 @@ export class UsersService {
     return { message: 'Password changed successfully' };
   }
 
+  // 👇 新增：专门给 Admin Dashboard 用的接口
+  async getAllMembersForAdmin() {
+    const now = new Date();
+
+    // 1. 从数据库拉取用户数据以及关联的 RSVPs 活动时间
+    const users = await this.prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        displayName: true,
+        avatarUrl: true,
+        role: true,
+        createdAt: true,
+        rsvps: {
+          select: {
+            screening: {
+              select: {
+                startsAt: true, // 🌟 这里改成了 startsAt
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // 2. 在内存中映射和聚合数据，拼装成前端完全一致的格式
+    return users.map((user) => {
+      // 🌟 这里的过滤条件也同步改用 startsAt
+      const attended = user.rsvps.filter(r => r.screening.startsAt < now).length;
+      const upcoming = user.rsvps.filter(r => r.screening.startsAt >= now).length;
+
+      // 格式化日期 (例如: "Nov 2026")
+      const joinedDate = user.createdAt.toLocaleDateString('en-US', {
+        month: 'short',
+        year: 'numeric',
+      });
+
+      return {
+        id: user.id,
+        username: user.displayName || user.username,
+        handle: `@${user.username.toLowerCase()}`,
+        avatar: user.avatarUrl || 'https://i.pravatar.cc/150', // 给个默认头像防空指针
+        role: user.role,
+        joinedDate: joinedDate,
+        rsvps: {
+          attended,
+          upcoming,
+        },
+      };
+    });
+  }
+
 }

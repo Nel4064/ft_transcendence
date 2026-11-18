@@ -20,6 +20,9 @@ import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UpdateProfileDto, ChangePasswordDto } from '../auth/dto/auth.dto';
 import { MulterErrorFilter } from './multer-error.filter';
+import { Roles } from '../auth/roles.decorator';
+import { RolesGuard } from '../auth/roles.guard';
+import { Role } from '@generated/prisma/client';
 
 @Controller('users')
 export class UsersController {
@@ -93,5 +96,12 @@ export class UsersController {
   @Get(':id')
   async getUserPublicProfile(@Param('id') id: string) {
     return this.usersService.getUserPublicProfile(id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard) 
+  @Roles(Role.ADMIN) // 只有 Admin 才能访问
+  @Get('admin/manage-members')
+  async getAdminDashboardMembers() {
+    return this.usersService.getAllMembersForAdmin();
   }
 }

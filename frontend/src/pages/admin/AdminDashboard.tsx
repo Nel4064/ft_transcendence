@@ -1,6 +1,6 @@
-import { useState } from 'react';
-// 建议安装 lucide-react 来使用这些极其干净的图标: npm install lucide-react
+import { useState, useEffect } from 'react';
 import { Search, Shield, Ban, Film, CalendarClock, Trash2, ShieldAlert } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 // --- 类型定义 ---
 type Role = 'ADMIN' | 'MEMBER';
@@ -18,59 +18,76 @@ interface UserStat {
     };
 }
 
-// --- 模拟数据 (替换为你的后端 API 请求) ---
-const MOCK_USERS: UserStat[] = [
-    {
-        id: '1',
-        username: 'Léa Martin',
-        handle: '@leamartin',
-        avatar: 'https://i.pravatar.cc/150?u=lea',
-        role: 'ADMIN',
-        joinedDate: 'Oct 2026',
-        rsvps: { attended: 24, upcoming: 3 },
-    },
-    {
-        id: '2',
-        username: 'Thomas B.',
-        handle: '@thomas_dev',
-        avatar: 'https://i.pravatar.cc/150?u=thomas',
-        role: 'MEMBER',
-        joinedDate: 'Nov 2026',
-        rsvps: { attended: 5, upcoming: 1 },
-    },
-    {
-        id: '3',
-        username: 'Ghost User',
-        handle: '@inactive_user',
-        avatar: 'https://i.pravatar.cc/150?u=ghost',
-        role: 'MEMBER',
-        joinedDate: 'Nov 2026',
-        rsvps: { attended: 0, upcoming: 0 },
-    },
-];
-
-// 假设这是当前登录的管理员 ID (用于判断是否是自己)
-const CURRENT_USER_ID = '1';
-
 export default function AdminDashboard() {
-    const [users, setUsers] = useState<UserStat[]>(MOCK_USERS);
+    // 🌟 1. 状态管理升级：加入 loading 状态，默认用户列表为空
+    const [users, setUsers] = useState<UserStat[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState<'ALL' | Role>('ALL');
 
-    // --- 模拟操作函数 ---
-    const handleMakeAdmin = (id: string) => {
+    // 🌟 2. 假设你有一个全局的 Auth 钩子来获取当前登录的管理员 ID
+    const { user } = useAuth();
+    const CURRENT_USER_ID = user?.id;
+
+
+    // 🌟 3. 接入刚才写的 NestJS 后端接口
+    useEffect(() => {
+        const fetchMembers = async () => {
+            try {
+                const response = await fetch('/api/users/admin/manage-members', { // 确认路径是否带 /api
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                setUsers(data);
+            } catch (error) {
+                console.error("Failed to fetch members", error);
+            } finally {
+                // 🌟 关键：放在 finally 里，无论成功失败都会关闭 Loading
+                setIsLoading(false);
+            }
+        };
+        fetchMembers();
+    }, []);
+
+    // --- 真实操作函数 (接入 API) ---
+    const handleMakeAdmin = async (id: string) => {
+        if (!window.confirm('Are you sure you want to promote this user to Admin?')) return;
+
+        // 🌟 发送请求给后端
+        await fetch(`api/users/admin/${id}/role`, { method: 'PATCH', body: JSON.stringify({ role: 'ADMIN' }) });
+
         setUsers(users.map(u => u.id === id ? { ...u, role: 'ADMIN' } : u));
-        console.log(`Promoted user ${id} to ADMIN`);
     };
 
-    const handleRemove = (id: string) => {
+    const handleRemove = async (id: string) => {
+        if (!window.confirm('Are you sure you want to remove this user from the club?')) return;
+        await fetch(`api/users/admin/${id}`, { method: 'DELETE' });
         setUsers(users.filter(u => u.id !== id));
-        console.log(`Removed user ${id}`);
     };
 
-    const handleBan = (id: string) => {
+    const handleBan = async (id: string) => {
+        if (!window.confirm('Are you sure you want to ban this user?')) return;
+        await fetch(`api/users/admin/${id}/ban`, { method: 'POST' });
         setUsers(users.filter(u => u.id !== id));
-        console.log(`Banned user ${id}`);
+    };
+
+    // 🌟 4. 新增：辞职（自我降级）与最后一名管理员保护逻辑
+    const handleResign = async (id: string) => {
+        const adminCount = users.filter(u => u.role === 'ADMIN').length;
+
+        // 最后一名管理员保护
+        if (adminCount <= 1) {
+            alert("⚠️ You are the last admin in the club! Please promote another member to Admin before resigning.");
+            return;
+        }
+
+        if (!window.confirm('Are you sure you want to remove your own Admin rights? You will lose access to this dashboard.')) return;
+
+        await fetch(`api/users/admin/${id}/resign`, { method: 'POST' });
+        setUsers(users.map(u => u.id === id ? { ...u, role: 'MEMBER' } : u));
     };
 
     // --- 过滤逻辑 ---
@@ -80,6 +97,10 @@ export default function AdminDashboard() {
         const matchesRole = roleFilter === 'ALL' || user.role === roleFilter;
         return matchesSearch && matchesRole;
     });
+
+    if (isLoading) {
+        return <div className="min-h-screen flex items-center justify-center text-stone-500">Loading members...</div>;
+    }
 
     return (
         <div className="max-w-6xl mx-auto p-6 bg-stone-50 min-h-screen">
@@ -96,6 +117,7 @@ export default function AdminDashboard() {
 
             {/* 搜索与筛选 */}
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                {/* ... (此处保持你的原生代码不变) ... */}
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
                     <input
@@ -177,9 +199,12 @@ export default function AdminDashboard() {
                                     <td className="py-4 px-6">
                                         <div className="flex items-center justify-end gap-2">
                                             {user.role === 'ADMIN' ? (
-                                                // 🌟 核心逻辑：同级防互踢。如果是其他管理员，按钮禁用。如果是自己，可以辞职。
                                                 user.id === CURRENT_USER_ID ? (
-                                                    <button className="text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors">
+                                                    // 🌟 5. 绑定新的 handleResign 事件
+                                                    <button
+                                                        onClick={() => handleResign(user.id)}
+                                                        className="text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors"
+                                                    >
                                                         Resign (Remove my Admin)
                                                     </button>
                                                 ) : (
