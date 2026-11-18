@@ -1,4 +1,5 @@
 import ScreeningsList from '../../components/Screenings/ScreeningsList'
+import Heading from '../../components/Heading/Heading'
 
 
 function HomePage() {
@@ -12,7 +13,7 @@ function HomePage() {
 
 				<section className="py-12 px-10">
 					<div className="flex justify-between items-center mb-6">
-						<h2 className="font-serif text-section text-text font-bold">Upcoming Screenings...</h2>
+						<Heading level="section">Upcoming Screenings...</Heading>
 					</div>
 
 					<ScreeningsList />

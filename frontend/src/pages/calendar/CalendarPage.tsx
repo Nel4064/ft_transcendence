@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthContext'
 
 import type { Screening } from '../../api/screenings'
 import { getMyRsvpScreenings } from '../../api/screenings'
+import Loader from '../../components/Loader/Loader'
+import Heading from '../../components/Heading/Heading'
 
 export default function CalendarPage() {
     const navigate = useNavigate()
@@ -50,15 +52,15 @@ export default function CalendarPage() {
     }
     const monthTitle = currentDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
     if (isLoading) {
-        return <main className="py-12 px-10 text-center"><p className="text-gray-400">Loading your calendar...</p></main>
+        return <main className="py-12 px-10"><Loader text="Loading your calendar..." /></main>
     }
     return (
         <main className="max-w-[1000px] mx-auto py-12 px-6">
             <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
                 <div>
-                    <h1 className="font-serif text-[28px] md:text-[32px] font-bold text-gray-900 tracking-tight">
+                    <Heading className="tracking-tight">
                         My Screening Calendar
-                    </h1>
+                    </Heading>
                     <p className="text-[14px] text-gray-500 mt-1">
                         Review past sessions and see upcoming movie club events.
                     </p>
