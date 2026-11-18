@@ -82,7 +82,7 @@ function Navbar() {
                         <NavLink to="/select-movies" className={linkClassAdmin}>Select Movies</NavLink>
                     )}
                     {user.role === 'ADMIN' && (
-                        <NavLink to="/manage-members" className={linkClassAdmin}>Manage Members</NavLink>
+                        <NavLink to="/admin" className={linkClassAdmin}>Admin Dashboard</NavLink>
                     )}
                     <NavLink to="/screenings" className={linkClass}>Screenings</NavLink>
                     <NavLink to="/calendar" className={linkClass}>Calendar</NavLink>
