@@ -10,7 +10,7 @@ const FEED_URL = 'https://datacinesindes.fr/data-fair/api/v1/datasets/programmat
 
 type Screening = {
 	showid: string
-	cineid: number
+	cineid?: number
 	filmtitle: string
 	showstart: string
 	cinenom: string
@@ -18,7 +18,6 @@ type Screening = {
 	filmposter?: string
 	filmstoryline?: string
 	filmtrailer?: string
-
 }
 
 const posterClass = "w-64 shrink-0 self-start rounded-md shadow-card"
@@ -33,13 +32,13 @@ function MovieDetailsPage() {
 	const [screenings, setScreenings] = useState<Screening[]>([])
 	const [created, setCreated] = useState<Set<string>>(new Set())
 
-	// Le backend récupère lui-même les infos de la séance dans le flux à partir de (cineid, showid).
-	// Si l'event existe déjà, on le supprime.
 	async function toggleEvent(s: Screening) {
-		const key = `${s.cineid}-${s.showid}`
+		const actualCineId = s.cineid || 0;
+		const key = `${actualCineId}-${s.showid}`;
+
 		try {
 			if (created.has(key)) {
-				await apiFetch(`/screenings/${s.cineid}/${encodeURIComponent(s.showid)}`, { method: 'DELETE' })
+				await apiFetch(`/screenings/${actualCineId}/${encodeURIComponent(s.showid)}`, { method: 'DELETE' })
 				setCreated((prev) => {
 					const next = new Set(prev)
 					next.delete(key)
@@ -48,7 +47,10 @@ function MovieDetailsPage() {
 			} else {
 				await apiFetch('/screenings', {
 					method: 'POST',
-					body: JSON.stringify({ cineid: s.cineid, showid: s.showid }),
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ cineid: actualCineId, showid: s.showid }),
 				})
 				setCreated((prev) => new Set(prev).add(key))
 			}
@@ -57,17 +59,15 @@ function MovieDetailsPage() {
 		}
 	}
 
-	// Events déjà créés, pour que le bouton soit dans le bon état au chargement.
 	useEffect(() => {
 		apiFetch('/screenings')
 			.then((list: { externalCinemaId: number, externalShowId: string }[]) =>
-				setCreated(new Set(list.map((e) => `${e.externalCinemaId}-${e.externalShowId}`))))
-			.catch(() => {})
+				setCreated(new Set(list.map((e) => `${e.externalCinemaId}-${e.externalShowId}`)))
+			)
+			.catch(() => { })
 	}, [])
 
 	useEffect(() => {
-		// Séances des 7 prochains jours à Paris, puis on garde celles de ce film.
-		// Pas de filmtitle_eq : chaque cinéma écrit le titre à sa façon (majuscules...).
 		const now = new Date()
 		const end = new Date(now.getTime() + 7 * 24 * 3600 * 1000)
 		const url = `${FEED_URL}?size=500&sort=showstart&cinecp_starts=75` +
@@ -107,23 +107,28 @@ function MovieDetailsPage() {
 
 			<h2 className={sectionTitleClass}>Upcoming screenings</h2>
 			<ul className="flex flex-col gap-4">
-				{screenings.map((s) => (
-					<li key={`${s.cineid}-${s.showid}`} className={rowClass}>
-						<div>
-							<p className="flex gap-2 text-body text-text">
-								<Icon name="calendar-event" />
-								{new Date(s.showstart).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
-							</p>
-							<p className="flex gap-2 text-small text-text-muted">
-								<Icon name="map-pin" />
-								{s.cineville} · {s.cinenom}
-							</p>
-						</div>
-						<Button variant="admin" size="lg" onClick={() => toggleEvent(s)}>
-							{created.has(`${s.cineid}-${s.showid}`) ? 'Remove Event' : 'Create Event'}
-						</Button>
-					</li>
-				))}
+				{screenings.map((s) => {
+					const actualCineId = s.cineid || 0;
+					const key = `${actualCineId}-${s.showid}`;
+					
+					return (
+						<li key={key} className={rowClass}>
+							<div>
+								<p className="flex gap-2 text-body text-text">
+									<Icon name="calendar-event" />
+									{new Date(s.showstart).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+								</p>
+								<p className="flex gap-2 text-small text-text-muted">
+									<Icon name="map-pin" />
+									{s.cineville} · {s.cinenom}
+								</p>
+							</div>
+							<Button variant="admin" size="lg" onClick={() => toggleEvent(s)}>
+								{created.has(key) ? 'Remove Event' : 'Create Event'}
+							</Button>
+						</li>
+					);
+				})}
 			</ul>
 		</main>
 	)
