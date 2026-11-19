@@ -49,7 +49,7 @@ model User {
   username         String   @unique @db.VarChar(50)
   displayName      String   @db.VarChar(50)
   email            String   @unique @db.VarChar(255)
-  
+    
   // Authentication
   passwordHash     String?  @db.VarChar(255)  // Optional: Only for local registration
   oauth42Id        String?  @unique           // Optional: Only for 42 OAuth login
@@ -79,6 +79,9 @@ model User {
   // Relations
   notificationsRecv  Notification[] @relation("NotificationRecipient")  // received by this user
   notificationsSent  Notification[] @relation("NotificationActor")     // caused by this user
+  
+  //admin ban
+  isBanned Boolean @default(false)
 
   rsvps         Rsvp[]
   @@map("users") // Maps the model to a lowercase "users" table in the database
