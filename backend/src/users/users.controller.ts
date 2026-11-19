@@ -110,7 +110,7 @@ export class UsersController {
   @Roles(Role.ADMIN)
   async updateMemberRole(
     @Param('id') targetUserId: string,
-    @Body('role') role: 'ADMIN' | 'MEMBER',
+    @Body('role') role: 'ADMIN' | 'USER',
     @Req() req: any,
   ) {
     return this.usersService.updateUserRole(req.user.id, targetUserId, role);
@@ -124,6 +124,39 @@ export class UsersController {
     @Req() req: any,
   ) {
     return this.usersService.removeMember(req.user.id, targetUserId);
+  }
+
+  @Post('admin/:id/resign')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async resignAdmin(
+    @Param('id') targetUserId: string,
+    @Req() req: any,
+  ) {
+    const currentAdminId = req.user.userId ?? req.user.id;
+    return this.usersService.resignAdmin(currentAdminId, targetUserId);
+  }
+
+  @Post('admin/:id/ban')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async banMember(
+    @Param('id') targetUserId: string,
+    @Req() req: any,
+  ) {
+    const currentAdminId = req.user.userId ?? req.user.id;
+    return this.usersService.banMember(currentAdminId, targetUserId);
+  }
+
+  @Post('admin/:id/unban')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async unbanMember(
+    @Param('id') targetUserId: string,
+    @Req() req: any,
+  ) {
+    const currentAdminId = req.user.userId ?? req.user.id;
+    return this.usersService.unbanMember(currentAdminId, targetUserId);
   }
 
 }

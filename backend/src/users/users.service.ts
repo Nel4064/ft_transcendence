@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { ChangePasswordDto } from '../auth/dto/auth.dto'
 import * as fs from 'fs';
 import * as path from 'path';
+import { Role } from '@generated/prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -147,63 +148,44 @@ export class UsersService {
 
   // 👇 新增：专门给 Admin Dashboard 用的接口
   async getAllMembersForAdmin() {
-    const now = new Date();
-
-    // 1. 从数据库拉取用户数据以及关联的 RSVPs 活动时间
     const users = await this.prisma.user.findMany({
+      // 1. 如果用了 select，确保加上 isBanned: true（如果没写 select 查整行则默认已包含）
       select: {
         id: true,
         username: true,
         displayName: true,
         avatarUrl: true,
         role: true,
+        isBanned: true, // 🌟 补上这一行
         createdAt: true,
         rsvps: {
-          select: {
-            screening: {
-              select: {
-                startsAt: true, // 🌟 这里改成了 startsAt
-              },
-            },
-          },
+          include: { screening: true },
         },
       },
+      orderBy: { createdAt: 'desc' },
     });
 
-    // 2. 在内存中映射和聚合数据，拼装成前端完全一致的格式
-    return users.map((user) => {
-      // 🌟 这里的过滤条件也同步改用 startsAt
-      const attended = user.rsvps.filter(r => r.screening.startsAt < now).length;
-      const upcoming = user.rsvps.filter(r => r.screening.startsAt >= now).length;
-
-      // 格式化日期 (例如: "Nov 2026")
-      const joinedDate = user.createdAt.toLocaleDateString('en-US', {
-        month: 'short',
-        year: 'numeric',
-      });
-
-      return {
-        id: user.id,
-        username: user.displayName || user.username,
-        handle: `@${user.username.toLowerCase()}`,
-        avatar: user.avatarUrl,
-        role: user.role,
-        joinedDate: joinedDate,
-        rsvps: {
-          attended,
-          upcoming,
-        },
-      };
-    });
+    return users.map((user) => ({
+      id: user.id,
+      username: user.displayName || user.username,
+      handle: `@${user.username}`,
+      avatar: user.avatarUrl || null,
+      role: user.role,
+      isBanned: user.isBanned, // 🌟 补上这一行，传给前端
+      joinedDate: user.createdAt.toISOString().split('T')[0],
+      rsvps: {
+        // ...保持你原有的 rsvps 统计逻辑不变
+      },
+    }));
   }
 
   async updateUserRole(
     currentAdminId: string,
     targetUserId: string,
-    newRole: 'ADMIN' | 'MEMBER',
+    newRole: 'ADMIN' | 'USER',
   ) {
     // 1. 校验角色值是否合法
-    if (newRole !== 'ADMIN' && newRole !== 'MEMBER') {
+    if (newRole !== 'ADMIN' && newRole !== 'USER') {
       throw new BadRequestException('Invalid role value');
     }
 
@@ -230,7 +212,7 @@ export class UsersService {
     // 5. 更新数据库角色
     return this.prisma.user.update({
       where: { id: targetUserId },
-      data: { role: newRole === 'MEMBER' ? 'USER' : 'ADMIN' },
+      data: { role: newRole === 'USER' ? 'USER' : 'ADMIN' },
       select: {
         id: true,
         username: true,
@@ -266,6 +248,115 @@ export class UsersService {
     });
 
     return { message: 'User removed successfully', id: targetUserId };
+  }
+
+  async resignAdmin(currentAdminId: string, targetUserId: string) {
+    // 1. 只能辞去自己的管理员权限，不能通过此接口降级别人
+    if (currentAdminId !== targetUserId) {
+      throw new ForbiddenException('You can only resign your own admin role');
+    }
+
+    // 2. 确认用户存在且当前是 ADMIN
+    const user = await this.prisma.user.findUnique({
+      where: { id: currentAdminId },
+      select: { id: true, role: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.role !== Role.ADMIN) {
+      throw new BadRequestException('You are not an admin');
+    }
+
+    // 3. 后端兜底：检查是否是最后一名管理员
+    const adminCount = await this.prisma.user.count({
+      where: { role: Role.ADMIN },
+    });
+
+    if (adminCount <= 1) {
+      throw new BadRequestException(
+        'Cannot resign: you are the last admin in the club. Promote another member first.',
+      );
+    }
+
+    // 4. 降级为普通用户 (Schema 中枚举为 USER)
+    return this.prisma.user.update({
+      where: { id: currentAdminId },
+      data: { role: Role.USER },
+      select: {
+        id: true,
+        username: true,
+        role: true,
+      },
+    });
+  }
+
+  async banMember(currentAdminId: string, targetUserId: string) {
+    // 1. 防止管理员封禁自己
+    if (currentAdminId === targetUserId) {
+      throw new BadRequestException('You cannot ban yourself');
+    }
+
+    // 2. 检查目标用户是否存在
+    const targetUser = await this.prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: { id: true, role: true, isBanned: true },
+    });
+
+    if (!targetUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    // 3. 保护同级管理员不被封禁
+    if (targetUser.role === Role.ADMIN) {
+      throw new ForbiddenException('Cannot ban another admin');
+    }
+
+    if (targetUser.isBanned) {
+      throw new BadRequestException('User is already banned');
+    }
+
+    // 4. 标记为封禁
+    return this.prisma.user.update({
+      where: { id: targetUserId },
+      data: { isBanned: true },
+      select: {
+        id: true,
+        username: true,
+        isBanned: true,
+      },
+    });
+  }
+
+  async unbanMember(currentAdminId: string, targetUserId: string) {
+    if (currentAdminId === targetUserId) {
+      throw new BadRequestException('Invalid operation on yourself');
+    }
+
+    const targetUser = await this.prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: { id: true, isBanned: true },
+    });
+
+    if (!targetUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!targetUser.isBanned) {
+      throw new BadRequestException('User is not banned');
+    }
+
+    return this.prisma.user.update({
+      where: { id: targetUserId },
+      data: { isBanned: false },
+      select: {
+        id: true,
+        username: true,
+        isBanned: true,
+      },
+    });
   }
 
 }

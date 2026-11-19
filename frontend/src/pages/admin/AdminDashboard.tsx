@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Shield, Ban, Film, CalendarClock, Trash2, ShieldAlert } from 'lucide-react';
+import { Search, Shield, Ban, Film, CalendarClock, Trash2, ShieldAlert, RotateCcw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import Avatar from '../../components/Avatar/Avatar'; // 请确认 Avatar 组件的相对路径是否正确
+import Avatar from '../../components/Avatar/Avatar';
 
-// --- 类型定义 ---
-type Role = 'ADMIN' | 'MEMBER';
+// --- 类型定义（与 Prisma Schema 对齐） ---
+type Role = 'ADMIN' | 'USER';
 
 interface UserStat {
     id: string;
     username: string;
     handle: string;
-    avatar: string;
+    avatar: string | null;
     role: Role;
+    isBanned: boolean;
     joinedDate: string;
     rsvps: {
         attended: number;
@@ -25,7 +26,7 @@ export default function AdminDashboard() {
     const [users, setUsers] = useState<UserStat[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [roleFilter, setRoleFilter] = useState<'ALL' | Role>('ALL');
+    const [roleFilter, setRoleFilter] = useState<'ALL' | Role | 'BANNED'>('ALL');
 
     const { user } = useAuth();
     const CURRENT_USER_ID = user?.id;
@@ -81,7 +82,7 @@ export default function AdminDashboard() {
     };
 
     const handleRemove = async (id: string) => {
-        if (!window.confirm('Are you sure you want to remove this user from the club?')) return;
+        if (!window.confirm('Are you sure you want to permanently remove this user from the club?')) return;
 
         try {
             const response = await fetch(`/api/users/admin/${id}`, {
@@ -105,10 +106,26 @@ export default function AdminDashboard() {
                 headers: getAuthHeaders(),
             });
             if (!response.ok) throw new Error('Failed to ban user');
-            setUsers(users.filter(u => u.id !== id));
+            setUsers(users.map(u => (u.id === id ? { ...u, isBanned: true } : u)));
         } catch (error) {
             console.error(error);
             alert('Failed to ban user.');
+        }
+    };
+
+    const handleUnban = async (id: string) => {
+        if (!window.confirm('Are you sure you want to unban this user?')) return;
+
+        try {
+            const response = await fetch(`/api/users/admin/${id}/unban`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+            });
+            if (!response.ok) throw new Error('Failed to unban user');
+            setUsers(users.map(u => (u.id === id ? { ...u, isBanned: false } : u)));
+        } catch (error) {
+            console.error(error);
+            alert('Failed to unban user.');
         }
     };
 
@@ -129,7 +146,8 @@ export default function AdminDashboard() {
                 headers: getAuthHeaders(),
             });
             if (!response.ok) throw new Error('Failed to resign');
-            setUsers(users.map(u => (u.id === id ? { ...u, role: 'MEMBER' } : u)));
+            setUsers(users.map(u => (u.id === id ? { ...u, role: 'USER' } : u)));
+            navigate('/');
         } catch (error) {
             console.error(error);
             alert('Failed to resign.');
@@ -141,8 +159,15 @@ export default function AdminDashboard() {
         const matchesSearch =
             u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
             u.handle.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesRole = roleFilter === 'ALL' || u.role === roleFilter;
-        return matchesSearch && matchesRole;
+
+        const matchesFilter =
+            roleFilter === 'ALL'
+                ? true
+                : roleFilter === 'BANNED'
+                ? u.isBanned
+                : u.role === roleFilter;
+
+        return matchesSearch && matchesFilter;
     });
 
     if (isLoading) {
@@ -168,7 +193,7 @@ export default function AdminDashboard() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
                     <input
                         type="text"
-                        placeholder="Search user by name ..."
+                        placeholder="Search user by name or handle..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400 bg-white"
@@ -176,12 +201,13 @@ export default function AdminDashboard() {
                 </div>
                 <select
                     value={roleFilter}
-                    onChange={(e) => setRoleFilter(e.target.value as 'ALL' | Role)}
+                    onChange={(e) => setRoleFilter(e.target.value as 'ALL' | Role | 'BANNED')}
                     className="py-2 px-4 border border-stone-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-stone-400 text-stone-700"
                 >
-                    <option value="ALL">All Roles</option>
+                    <option value="ALL">All Users</option>
                     <option value="ADMIN">Admins Only</option>
-                    <option value="MEMBER">Members Only</option>
+                    <option value="USER">Members Only</option>
+                    <option value="BANNED">Banned Only</option>
                 </select>
             </div>
 
@@ -191,8 +217,8 @@ export default function AdminDashboard() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-stone-100/50 border-b border-stone-200 text-sm text-stone-500">
-                                <th className="py-4 px-6 font-medium">USERS</th>
-                                <th className="py-4 px-6 font-medium">ROLE</th>
+                                <th className="py-4 px-6 font-medium">USER INFO</th>
+                                <th className="py-4 px-6 font-medium">STATUS / ROLE</th>
                                 <th className="py-4 px-6 font-medium">JOINED DATE</th>
                                 <th className="py-4 px-6 font-medium">ACTIVITY (RSVPs)</th>
                                 <th className="py-4 px-6 font-medium text-right">ACTIONS</th>
@@ -200,8 +226,15 @@ export default function AdminDashboard() {
                         </thead>
                         <tbody className="divide-y divide-stone-100">
                             {filteredUsers.map((member) => (
-                                <tr key={member.id} className="hover:bg-stone-50/50 transition-colors">
-                                    {/* 用户信息（点击头像或用户名跳转 Profile） */}
+                                <tr
+                                    key={member.id}
+                                    className={
+                                        member.isBanned
+                                            ? 'bg-red-50/30 hover:bg-red-50/50 transition-colors'
+                                            : 'hover:bg-stone-50/50 transition-colors'
+                                    }
+                                >
+                                    {/* 用户信息 */}
                                     <td className="py-4 px-6">
                                         <div className="flex items-center gap-3">
                                             <div
@@ -209,12 +242,14 @@ export default function AdminDashboard() {
                                                 className="cursor-pointer hover:opacity-80 transition-opacity shrink-0"
                                                 title="Click to view profile"
                                             >
-                                                <Avatar src={member.avatar} name={member.username} size={40} />
+                                                <Avatar src={member.avatar || undefined} name={member.username} size={40} />
                                             </div>
                                             <div>
                                                 <p
                                                     onClick={() => navigate(`/users/${member.id}`)}
-                                                    className="font-semibold text-stone-900 cursor-pointer hover:underline"
+                                                    className={`font-semibold cursor-pointer hover:underline ${
+                                                        member.isBanned ? 'text-stone-500 line-through' : 'text-stone-900'
+                                                    }`}
                                                     title="Click to view profile"
                                                 >
                                                     {member.username}
@@ -224,18 +259,25 @@ export default function AdminDashboard() {
                                         </div>
                                     </td>
 
-                                    {/* 角色 */}
+                                    {/* 角色与封禁状态 */}
                                     <td className="py-4 px-6">
-                                        <span
-                                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                                                member.role === 'ADMIN'
-                                                    ? 'bg-amber-100 text-amber-800'
-                                                    : 'bg-stone-100 text-stone-700'
-                                            }`}
-                                        >
-                                            {member.role === 'ADMIN' && <Shield className="w-3.5 h-3.5" />}
-                                            {member.role === 'ADMIN' ? 'Admin' : 'Member'}
-                                        </span>
+                                        {member.isBanned ? (
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                                                <Ban className="w-3.5 h-3.5" />
+                                                Banned
+                                            </span>
+                                        ) : (
+                                            <span
+                                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                                                    member.role === 'ADMIN'
+                                                        ? 'bg-amber-100 text-amber-800'
+                                                        : 'bg-stone-100 text-stone-700'
+                                                }`}
+                                            >
+                                                {member.role === 'ADMIN' && <Shield className="w-3.5 h-3.5" />}
+                                                {member.role === 'ADMIN' ? 'Admin' : 'Member'}
+                                            </span>
+                                        )}
                                     </td>
 
                                     {/* 加入时间 */}
@@ -273,6 +315,23 @@ export default function AdminDashboard() {
                                                         Cannot edit co-admin
                                                     </span>
                                                 )
+                                            ) : member.isBanned ? (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleUnban(member.id)}
+                                                        className="inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+                                                    >
+                                                        <RotateCcw className="w-4 h-4" />
+                                                        Unban
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleRemove(member.id)}
+                                                        className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                        title="Permanently Remove User"
+                                                    >
+                                                        <Trash2 className="w-5 h-5" />
+                                                    </button>
+                                                </>
                                             ) : (
                                                 <>
                                                     <button
