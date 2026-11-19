@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Shield, Ban, Film, CalendarClock, Trash2, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import Avatar from '../../components/Avatar/Avatar'; // 请确认 Avatar 组件的相对路径是否正确
 
 // --- 类型定义 ---
 type Role = 'ADMIN' | 'MEMBER';
@@ -19,23 +21,32 @@ interface UserStat {
 }
 
 export default function AdminDashboard() {
-    // 🌟 1. 状态管理升级：加入 loading 状态，默认用户列表为空
+    const navigate = useNavigate();
     const [users, setUsers] = useState<UserStat[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState<'ALL' | Role>('ALL');
 
-    // 🌟 2. 假设你有一个全局的 Auth 钩子来获取当前登录的管理员 ID
     const { user } = useAuth();
     const CURRENT_USER_ID = user?.id;
 
+    // 统一请求头辅助函数
+    const getAuthHeaders = (includeJson = false) => {
+        const headers: Record<string, string> = {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+        };
+        if (includeJson) {
+            headers['Content-Type'] = 'application/json';
+        }
+        return headers;
+    };
 
-    // 🌟 3. 接入刚才写的 NestJS 后端接口
+    // 拉取成员列表
     useEffect(() => {
         const fetchMembers = async () => {
             try {
-                const response = await fetch('/api/users/admin/manage-members', { // 确认路径是否带 /api
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                const response = await fetch('/api/users/admin/manage-members', {
+                    headers: getAuthHeaders(),
                 });
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -43,58 +54,94 @@ export default function AdminDashboard() {
                 const data = await response.json();
                 setUsers(data);
             } catch (error) {
-                console.error("Failed to fetch members", error);
+                console.error('Failed to fetch members', error);
             } finally {
-                // 🌟 关键：放在 finally 里，无论成功失败都会关闭 Loading
                 setIsLoading(false);
             }
         };
         fetchMembers();
     }, []);
 
-    // --- 真实操作函数 (接入 API) ---
+    // --- 操作函数 ---
     const handleMakeAdmin = async (id: string) => {
         if (!window.confirm('Are you sure you want to promote this user to Admin?')) return;
 
-        // 🌟 发送请求给后端
-        await fetch(`api/users/admin/${id}/role`, { method: 'PATCH', body: JSON.stringify({ role: 'ADMIN' }) });
-
-        setUsers(users.map(u => u.id === id ? { ...u, role: 'ADMIN' } : u));
+        try {
+            const response = await fetch(`/api/users/admin/${id}/role`, {
+                method: 'PATCH',
+                headers: getAuthHeaders(true),
+                body: JSON.stringify({ role: 'ADMIN' }),
+            });
+            if (!response.ok) throw new Error('Failed to promote user');
+            setUsers(users.map(u => (u.id === id ? { ...u, role: 'ADMIN' } : u)));
+        } catch (error) {
+            console.error(error);
+            alert('Failed to promote user to Admin.');
+        }
     };
 
     const handleRemove = async (id: string) => {
         if (!window.confirm('Are you sure you want to remove this user from the club?')) return;
-        await fetch(`api/users/admin/${id}`, { method: 'DELETE' });
-        setUsers(users.filter(u => u.id !== id));
+
+        try {
+            const response = await fetch(`/api/users/admin/${id}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders(),
+            });
+            if (!response.ok) throw new Error('Failed to remove user');
+            setUsers(users.filter(u => u.id !== id));
+        } catch (error) {
+            console.error(error);
+            alert('Failed to remove user.');
+        }
     };
 
     const handleBan = async (id: string) => {
         if (!window.confirm('Are you sure you want to ban this user?')) return;
-        await fetch(`api/users/admin/${id}/ban`, { method: 'POST' });
-        setUsers(users.filter(u => u.id !== id));
+
+        try {
+            const response = await fetch(`/api/users/admin/${id}/ban`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+            });
+            if (!response.ok) throw new Error('Failed to ban user');
+            setUsers(users.filter(u => u.id !== id));
+        } catch (error) {
+            console.error(error);
+            alert('Failed to ban user.');
+        }
     };
 
-    // 🌟 4. 新增：辞职（自我降级）与最后一名管理员保护逻辑
+    // 辞职（自我降级）与最后一名管理员保护逻辑
     const handleResign = async (id: string) => {
         const adminCount = users.filter(u => u.role === 'ADMIN').length;
 
-        // 最后一名管理员保护
         if (adminCount <= 1) {
-            alert("⚠️ You are the last admin in the club! Please promote another member to Admin before resigning.");
+            alert('⚠️ You are the last admin in the club! Please promote another member to Admin before resigning.');
             return;
         }
 
         if (!window.confirm('Are you sure you want to remove your own Admin rights? You will lose access to this dashboard.')) return;
 
-        await fetch(`api/users/admin/${id}/resign`, { method: 'POST' });
-        setUsers(users.map(u => u.id === id ? { ...u, role: 'MEMBER' } : u));
+        try {
+            const response = await fetch(`/api/users/admin/${id}/resign`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+            });
+            if (!response.ok) throw new Error('Failed to resign');
+            setUsers(users.map(u => (u.id === id ? { ...u, role: 'MEMBER' } : u)));
+        } catch (error) {
+            console.error(error);
+            alert('Failed to resign.');
+        }
     };
 
     // --- 过滤逻辑 ---
-    const filteredUsers = users.filter(user => {
-        const matchesSearch = user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            user.handle.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesRole = roleFilter === 'ALL' || user.role === roleFilter;
+    const filteredUsers = users.filter(u => {
+        const matchesSearch =
+            u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            u.handle.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesRole = roleFilter === 'ALL' || u.role === roleFilter;
         return matchesSearch && matchesRole;
     });
 
@@ -117,7 +164,6 @@ export default function AdminDashboard() {
 
             {/* 搜索与筛选 */}
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                {/* ... (此处保持你的原生代码不变) ... */}
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
                     <input
@@ -153,32 +199,48 @@ export default function AdminDashboard() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-stone-100">
-                            {filteredUsers.map((user) => (
-                                <tr key={user.id} className="hover:bg-stone-50/50 transition-colors">
-
-                                    {/* 用户信息 */}
+                            {filteredUsers.map((member) => (
+                                <tr key={member.id} className="hover:bg-stone-50/50 transition-colors">
+                                    {/* 用户信息（点击头像或用户名跳转 Profile） */}
                                     <td className="py-4 px-6">
                                         <div className="flex items-center gap-3">
-                                            <img src={user.avatar} alt={user.username} className="w-10 h-10 rounded-full object-cover bg-stone-200" />
+                                            <div
+                                                onClick={() => navigate(`/users/${member.id}`)}
+                                                className="cursor-pointer hover:opacity-80 transition-opacity shrink-0"
+                                                title="Click to view profile"
+                                            >
+                                                <Avatar src={member.avatar} name={member.username} size={40} />
+                                            </div>
                                             <div>
-                                                <p className="font-semibold text-stone-900">{user.username}</p>
-                                                <p className="text-sm text-stone-500">{user.handle}</p>
+                                                <p
+                                                    onClick={() => navigate(`/users/${member.id}`)}
+                                                    className="font-semibold text-stone-900 cursor-pointer hover:underline"
+                                                    title="Click to view profile"
+                                                >
+                                                    {member.username}
+                                                </p>
+                                                <p className="text-sm text-stone-500">{member.handle}</p>
                                             </div>
                                         </div>
                                     </td>
 
                                     {/* 角色 */}
                                     <td className="py-4 px-6">
-                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${user.role === 'ADMIN' ? 'bg-amber-100 text-amber-800' : 'bg-stone-100 text-stone-700'
-                                            }`}>
-                                            {user.role === 'ADMIN' && <Shield className="w-3.5 h-3.5" />}
-                                            {user.role === 'ADMIN' ? 'Admin' : 'Member'}
+                                        <span
+                                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                                                member.role === 'ADMIN'
+                                                    ? 'bg-amber-100 text-amber-800'
+                                                    : 'bg-stone-100 text-stone-700'
+                                            }`}
+                                        >
+                                            {member.role === 'ADMIN' && <Shield className="w-3.5 h-3.5" />}
+                                            {member.role === 'ADMIN' ? 'Admin' : 'Member'}
                                         </span>
                                     </td>
 
                                     {/* 加入时间 */}
                                     <td className="py-4 px-6 text-sm text-stone-600">
-                                        {user.joinedDate}
+                                        {member.joinedDate}
                                     </td>
 
                                     {/* 活跃度 (RSVPs) */}
@@ -186,11 +248,11 @@ export default function AdminDashboard() {
                                         <div className="flex flex-col gap-1 text-sm">
                                             <span className="flex items-center gap-1.5 text-stone-700">
                                                 <Film className="w-4 h-4 text-stone-400" />
-                                                {user.rsvps.attended} Attended
+                                                {member.rsvps.attended} Attended
                                             </span>
                                             <span className="flex items-center gap-1.5 text-stone-500">
                                                 <CalendarClock className="w-4 h-4 text-stone-400" />
-                                                {user.rsvps.upcoming} Upcoming
+                                                {member.rsvps.upcoming} Upcoming
                                             </span>
                                         </div>
                                     </td>
@@ -198,35 +260,36 @@ export default function AdminDashboard() {
                                     {/* 操作按钮组 */}
                                     <td className="py-4 px-6">
                                         <div className="flex items-center justify-end gap-2">
-                                            {user.role === 'ADMIN' ? (
-                                                user.id === CURRENT_USER_ID ? (
-                                                    // 🌟 5. 绑定新的 handleResign 事件
+                                            {member.role === 'ADMIN' ? (
+                                                member.id === CURRENT_USER_ID ? (
                                                     <button
-                                                        onClick={() => handleResign(user.id)}
+                                                        onClick={() => handleResign(member.id)}
                                                         className="text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors"
                                                     >
                                                         Resign (Remove my Admin)
                                                     </button>
                                                 ) : (
-                                                    <span className="text-xs text-stone-400 italic px-3 py-1.5">Cannot edit co-admin</span>
+                                                    <span className="text-xs text-stone-400 italic px-3 py-1.5">
+                                                        Cannot edit co-admin
+                                                    </span>
                                                 )
                                             ) : (
                                                 <>
                                                     <button
-                                                        onClick={() => handleMakeAdmin(user.id)}
+                                                        onClick={() => handleMakeAdmin(member.id)}
                                                         className="text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
                                                     >
                                                         Make Admin
                                                     </button>
                                                     <button
-                                                        onClick={() => handleBan(user.id)}
+                                                        onClick={() => handleBan(member.id)}
                                                         className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                         title="Ban User"
                                                     >
                                                         <Ban className="w-5 h-5" />
                                                     </button>
                                                     <button
-                                                        onClick={() => handleRemove(user.id)}
+                                                        onClick={() => handleRemove(member.id)}
                                                         className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                         title="Remove User"
                                                     >
@@ -236,7 +299,6 @@ export default function AdminDashboard() {
                                             )}
                                         </div>
                                     </td>
-
                                 </tr>
                             ))}
                         </tbody>

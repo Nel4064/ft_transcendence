@@ -186,7 +186,7 @@ export class UsersService {
         id: user.id,
         username: user.displayName || user.username,
         handle: `@${user.username.toLowerCase()}`,
-        avatar: user.avatarUrl || 'https://i.pravatar.cc/150', // 给个默认头像防空指针
+        avatar: user.avatarUrl,
         role: user.role,
         joinedDate: joinedDate,
         rsvps: {
