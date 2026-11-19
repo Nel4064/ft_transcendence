@@ -46,7 +46,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchMembers = async () => {
             try {
-                const response = await fetch('/api/users/admin/manage-members', {
+                const response = await fetch('/api/admin/manage-members', {
                     headers: getAuthHeaders(),
                 });
                 if (!response.ok) {
@@ -68,7 +68,7 @@ export default function AdminDashboard() {
         if (!window.confirm('Are you sure you want to promote this user to Admin?')) return;
 
         try {
-            const response = await fetch(`/api/users/admin/${id}/role`, {
+            const response = await fetch(`/api/admin/${id}/role`, {
                 method: 'PATCH',
                 headers: getAuthHeaders(true),
                 body: JSON.stringify({ role: 'ADMIN' }),
@@ -85,7 +85,7 @@ export default function AdminDashboard() {
         if (!window.confirm('Are you sure you want to permanently remove this user from the club?')) return;
 
         try {
-            const response = await fetch(`/api/users/admin/${id}`, {
+            const response = await fetch(`/api/admin/${id}`, {
                 method: 'DELETE',
                 headers: getAuthHeaders(),
             });
@@ -101,7 +101,7 @@ export default function AdminDashboard() {
         if (!window.confirm('Are you sure you want to ban this user?')) return;
 
         try {
-            const response = await fetch(`/api/users/admin/${id}/ban`, {
+            const response = await fetch(`/api/admin/${id}/ban`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
             });
@@ -117,7 +117,7 @@ export default function AdminDashboard() {
         if (!window.confirm('Are you sure you want to unban this user?')) return;
 
         try {
-            const response = await fetch(`/api/users/admin/${id}/unban`, {
+            const response = await fetch(`/api/admin/${id}/unban`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
             });
@@ -141,7 +141,7 @@ export default function AdminDashboard() {
         if (!window.confirm('Are you sure you want to remove your own Admin rights? You will lose access to this dashboard.')) return;
 
         try {
-            const response = await fetch(`/api/users/admin/${id}/resign`, {
+            const response = await fetch(`/api/admin/${id}/resign`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
             });
@@ -193,7 +193,7 @@ export default function AdminDashboard() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
                     <input
                         type="text"
-                        placeholder="Search user by name or handle..."
+                        placeholder="Search user by name..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400 bg-white"
@@ -217,8 +217,8 @@ export default function AdminDashboard() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-stone-100/50 border-b border-stone-200 text-sm text-stone-500">
-                                <th className="py-4 px-6 font-medium">USER INFO</th>
-                                <th className="py-4 px-6 font-medium">STATUS / ROLE</th>
+                                <th className="py-4 px-6 font-medium">USERS</th>
+                                <th className="py-4 px-6 font-medium">ROLE</th>
                                 <th className="py-4 px-6 font-medium">JOINED DATE</th>
                                 <th className="py-4 px-6 font-medium">ACTIVITY (RSVPs)</th>
                                 <th className="py-4 px-6 font-medium text-right">ACTIONS</th>
