@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Delete,
   Req,
   UseGuards,
   UseFilters,
@@ -113,6 +114,16 @@ export class UsersController {
     @Req() req: any,
   ) {
     return this.usersService.updateUserRole(req.user.id, targetUserId, role);
+  }
+
+  @Delete('admin/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async removeMember(
+    @Param('id') targetUserId: string,
+    @Req() req: any,
+  ) {
+    return this.usersService.removeMember(req.user.id, targetUserId);
   }
 
 }

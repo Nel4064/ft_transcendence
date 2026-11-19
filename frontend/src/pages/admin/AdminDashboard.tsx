@@ -191,7 +191,7 @@ export default function AdminDashboard() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-stone-100/50 border-b border-stone-200 text-sm text-stone-500">
-                                <th className="py-4 px-6 font-medium">USER INFO</th>
+                                <th className="py-4 px-6 font-medium">USERS</th>
                                 <th className="py-4 px-6 font-medium">ROLE</th>
                                 <th className="py-4 px-6 font-medium">JOINED DATE</th>
                                 <th className="py-4 px-6 font-medium">ACTIVITY (RSVPs)</th>

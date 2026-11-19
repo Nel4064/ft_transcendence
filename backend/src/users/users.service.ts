@@ -238,4 +238,34 @@ export class UsersService {
       },
     });
   }
+
+  async removeMember(currentAdminId: string, targetUserId: string) {
+    // 1. 防止管理员删除自己
+    if (currentAdminId === targetUserId) {
+      throw new BadRequestException('You cannot remove yourself');
+    }
+
+    // 2. 检查目标用户是否存在
+    const targetUser = await this.prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: { id: true, role: true },
+    });
+
+    if (!targetUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    // 3. 保护同级管理员不被删除
+    if (targetUser.role === 'ADMIN') {
+      throw new ForbiddenException('Cannot remove another admin');
+    }
+
+    // 4. 从数据库删除该用户
+    await this.prisma.user.delete({
+      where: { id: targetUserId },
+    });
+
+    return { message: 'User removed successfully', id: targetUserId };
+  }
+
 }
