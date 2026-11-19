@@ -1,16 +1,16 @@
-import { 
-  Body, 
-  Controller, 
-  Get, 
-  Param, 
-  Patch, 
-  Post, 
-  Req, 
-  UseGuards, 
-  UseFilters, 
-  UseInterceptors, 
-  UploadedFile, 
-  BadRequestException 
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+  UseFilters,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException
 } from '@nestjs/common';
 import type { AuthenticatedRequest } from '../auth/authenticated-request';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -98,10 +98,21 @@ export class UsersController {
     return this.usersService.getUserPublicProfile(id);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard) 
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN) // 只有 Admin 才能访问
   @Get('admin/manage-members')
   async getAdminDashboardMembers() {
     return this.usersService.getAllMembersForAdmin();
   }
+  @Patch('admin/:id/role')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async updateMemberRole(
+    @Param('id') targetUserId: string,
+    @Body('role') role: 'ADMIN' | 'MEMBER',
+    @Req() req: any,
+  ) {
+    return this.usersService.updateUserRole(req.user.id, targetUserId, role);
+  }
+
 }

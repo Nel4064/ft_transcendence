@@ -1,6 +1,6 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfileDto } from '../auth/dto/auth.dto';
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { ChangePasswordDto } from '../auth/dto/auth.dto'
 import * as fs from 'fs';
@@ -197,4 +197,45 @@ export class UsersService {
     });
   }
 
+  async updateUserRole(
+    currentAdminId: string,
+    targetUserId: string,
+    newRole: 'ADMIN' | 'MEMBER',
+  ) {
+    // 1. 校验角色值是否合法
+    if (newRole !== 'ADMIN' && newRole !== 'MEMBER') {
+      throw new BadRequestException('Invalid role value');
+    }
+
+    // 2. 防止管理员通过此接口修改自己的角色（降级统一走 /resign 接口）
+    if (currentAdminId === targetUserId) {
+      throw new BadRequestException('Use the resign endpoint to change your own role');
+    }
+
+    // 3. 检查目标用户是否存在
+    const targetUser = await this.prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: { id: true, role: true },
+    });
+
+    if (!targetUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    // 4. 保护同级管理员不被修改
+    if (targetUser.role === 'ADMIN') {
+      throw new ForbiddenException('Cannot modify another admin');
+    }
+
+    // 5. 更新数据库角色
+    return this.prisma.user.update({
+      where: { id: targetUserId },
+      data: { role: newRole === 'MEMBER' ? 'USER' : 'ADMIN' },
+      select: {
+        id: true,
+        username: true,
+        role: true,
+      },
+    });
+  }
 }
