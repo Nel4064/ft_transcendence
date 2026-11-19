@@ -1,8 +1,27 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Shield, Ban, Film, CalendarClock, Trash2, ShieldAlert, RotateCcw } from 'lucide-react';
+import {
+    Search,
+    Shield,
+    Ban,
+    Film,
+    CalendarClock,
+    Trash2,
+    ShieldAlert,
+    RotateCcw,
+    ChevronLeft,
+    ChevronRight,
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Avatar from '../../components/Avatar/Avatar';
+import {
+    getAdminMembers,
+    updateMemberRole,
+    removeMember,
+    resignAdmin,
+    banMember,
+    unbanMember,
+} from '../../api/admin'; // 如果你的文件名是 admin.ts，请改为 '../../api/admin'
 
 // --- 类型定义（与 Prisma Schema 对齐） ---
 type Role = 'ADMIN' | 'USER';
@@ -28,31 +47,18 @@ export default function AdminDashboard() {
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState<'ALL' | Role | 'BANNED'>('ALL');
 
-    const { user } = useAuth();
-    const CURRENT_USER_ID = user?.id;
+    // 分页状态
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
-    // 统一请求头辅助函数
-    const getAuthHeaders = (includeJson = false) => {
-        const headers: Record<string, string> = {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-        };
-        if (includeJson) {
-            headers['Content-Type'] = 'application/json';
-        }
-        return headers;
-    };
+    const { user, apiFetch } = useAuth();
+    const CURRENT_USER_ID = user?.id;
 
     // 拉取成员列表
     useEffect(() => {
         const fetchMembers = async () => {
             try {
-                const response = await fetch('/api/admin/manage-members', {
-                    headers: getAuthHeaders(),
-                });
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
+                const data = await getAdminMembers(apiFetch);
                 setUsers(data);
             } catch (error) {
                 console.error('Failed to fetch members', error);
@@ -61,19 +67,19 @@ export default function AdminDashboard() {
             }
         };
         fetchMembers();
-    }, []);
+    }, [apiFetch]);
+
+    // 搜索条件、筛选角色或每页数量变化时，重置回第一页
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, roleFilter, pageSize]);
 
     // --- 操作函数 ---
     const handleMakeAdmin = async (id: string) => {
         if (!window.confirm('Are you sure you want to promote this user to Admin?')) return;
 
         try {
-            const response = await fetch(`/api/admin/${id}/role`, {
-                method: 'PATCH',
-                headers: getAuthHeaders(true),
-                body: JSON.stringify({ role: 'ADMIN' }),
-            });
-            if (!response.ok) throw new Error('Failed to promote user');
+            await updateMemberRole(apiFetch, id, 'ADMIN');
             setUsers(users.map(u => (u.id === id ? { ...u, role: 'ADMIN' } : u)));
         } catch (error) {
             console.error(error);
@@ -85,11 +91,7 @@ export default function AdminDashboard() {
         if (!window.confirm('Are you sure you want to permanently remove this user from the club?')) return;
 
         try {
-            const response = await fetch(`/api/admin/${id}`, {
-                method: 'DELETE',
-                headers: getAuthHeaders(),
-            });
-            if (!response.ok) throw new Error('Failed to remove user');
+            await removeMember(apiFetch, id);
             setUsers(users.filter(u => u.id !== id));
         } catch (error) {
             console.error(error);
@@ -101,11 +103,7 @@ export default function AdminDashboard() {
         if (!window.confirm('Are you sure you want to ban this user?')) return;
 
         try {
-            const response = await fetch(`/api/admin/${id}/ban`, {
-                method: 'POST',
-                headers: getAuthHeaders(),
-            });
-            if (!response.ok) throw new Error('Failed to ban user');
+            await banMember(apiFetch, id);
             setUsers(users.map(u => (u.id === id ? { ...u, isBanned: true } : u)));
         } catch (error) {
             console.error(error);
@@ -117,11 +115,7 @@ export default function AdminDashboard() {
         if (!window.confirm('Are you sure you want to unban this user?')) return;
 
         try {
-            const response = await fetch(`/api/admin/${id}/unban`, {
-                method: 'POST',
-                headers: getAuthHeaders(),
-            });
-            if (!response.ok) throw new Error('Failed to unban user');
+            await unbanMember(apiFetch, id);
             setUsers(users.map(u => (u.id === id ? { ...u, isBanned: false } : u)));
         } catch (error) {
             console.error(error);
@@ -141,11 +135,7 @@ export default function AdminDashboard() {
         if (!window.confirm('Are you sure you want to remove your own Admin rights? You will lose access to this dashboard.')) return;
 
         try {
-            const response = await fetch(`/api/admin/${id}/resign`, {
-                method: 'POST',
-                headers: getAuthHeaders(),
-            });
-            if (!response.ok) throw new Error('Failed to resign');
+            await resignAdmin(apiFetch, id);
             setUsers(users.map(u => (u.id === id ? { ...u, role: 'USER' } : u)));
             navigate('/');
         } catch (error) {
@@ -169,6 +159,28 @@ export default function AdminDashboard() {
 
         return matchesSearch && matchesFilter;
     });
+
+    // --- 分页计算逻辑 ---
+    const totalItems = filteredUsers.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+    const safeCurrentPage = Math.min(currentPage, totalPages);
+    const startIndex = (safeCurrentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, totalItems);
+    const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+
+    // 生成页码按钮列表（页数较多时自动折叠为省略号）
+    const getPageNumbers = (): (number | '...')[] => {
+        if (totalPages <= 7) {
+            return Array.from({ length: totalPages }, (_, i) => i + 1);
+        }
+        if (safeCurrentPage <= 3) {
+            return [1, 2, 3, 4, '...', totalPages];
+        }
+        if (safeCurrentPage >= totalPages - 2) {
+            return [1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+        }
+        return [1, '...', safeCurrentPage - 1, safeCurrentPage, safeCurrentPage + 1, '...', totalPages];
+    };
 
     if (isLoading) {
         return <div className="min-h-screen flex items-center justify-center text-stone-500">Loading members...</div>;
@@ -225,7 +237,7 @@ export default function AdminDashboard() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-stone-100">
-                            {filteredUsers.map((member) => (
+                            {paginatedUsers.map((member) => (
                                 <tr
                                     key={member.id}
                                     className={
@@ -364,12 +376,77 @@ export default function AdminDashboard() {
                     </table>
 
                     {/* 空状态处理 */}
-                    {filteredUsers.length === 0 && (
+                    {totalItems === 0 && (
                         <div className="text-center py-12 text-stone-500">
                             No users found matching your criteria.
                         </div>
                     )}
                 </div>
+
+                {/* 底部分页栏 */}
+                {totalItems > 0 && (
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 bg-stone-50/70 border-t border-stone-200 text-sm text-stone-600">
+                        {/* 左侧：数据统计 + 每页条数切换 */}
+                        <div className="flex items-center gap-3">
+                            <span>
+                                Showing <strong className="font-semibold text-stone-900">{startIndex + 1}</strong> to{' '}
+                                <strong className="font-semibold text-stone-900">{endIndex}</strong> of{' '}
+                                <strong className="font-semibold text-stone-900">{totalItems}</strong> users
+                            </span>
+                            <select
+                                value={pageSize}
+                                onChange={(e) => setPageSize(Number(e.target.value))}
+                                className="py-1 px-2 border border-stone-200 rounded-md bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-stone-400"
+                                aria-label="Rows per page"
+                            >
+                                <option value={5}>5 / page</option>
+                                <option value={10}>10 / page</option>
+                                <option value={20}>20 / page</option>
+                            </select>
+                        </div>
+
+                        {/* 右侧：翻页控件 */}
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                disabled={safeCurrentPage === 1}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-stone-200 bg-white text-stone-700 hover:bg-stone-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                                Prev
+                            </button>
+
+                            {getPageNumbers().map((page, index) =>
+                                page === '...' ? (
+                                    <span key={`ellipsis-${index}`} className="px-2 py-1 text-stone-400">
+                                        ...
+                                    </span>
+                                ) : (
+                                    <button
+                                        key={page}
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`min-w-[34px] px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                                            safeCurrentPage === page
+                                                ? 'bg-stone-800 text-white'
+                                                : 'border border-stone-200 bg-white text-stone-700 hover:bg-stone-100'
+                                        }`}
+                                    >
+                                        {page}
+                                    </button>
+                                ),
+                            )}
+
+                            <button
+                                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                                disabled={safeCurrentPage === totalPages}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-stone-200 bg-white text-stone-700 hover:bg-stone-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            >
+                                Next
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
