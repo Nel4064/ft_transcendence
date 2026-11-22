@@ -9,6 +9,10 @@ services:
     networks:
       - app-net
 
+  backup:
+    container_name: development-backup
+    networks:
+      - app-net
   backend:
     container_name: development-backend
     build:
