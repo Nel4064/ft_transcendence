@@ -3,7 +3,7 @@ set -eu
 
 PGPASSWORD="$(cat /run/secrets/postgres_backend_user_pw)"
 export PGPASSWORD
-: "${BACKUP_INTERVAL:= 86400}"
+: "${BACKUP_INTERVAL:=86400}"
 : "${BACKUP_KEEP:=7}"
 
 while true; do
@@ -15,6 +15,6 @@ while true; do
 		rm -f "$file.tmp"
 		echo "backup FAILED" >&2
 	fi
-	ls -1t /backups/*.dump 2>/dev/null | tail -n +$((BACKUP_KEEP + 1)) | xargs -r rm --
+	ls -1t /backups/${POSTGRES_DB}_*.dump 2>/dev/null | tail -n +$((BACKUP_KEEP + 1)) | xargs -r rm --
 	sleep "$BACKUP_INTERVAL"
 done

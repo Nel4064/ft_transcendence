@@ -13,6 +13,7 @@ services:
     container_name: development-backup
     networks:
       - app-net
+
   backend:
     container_name: development-backend
     build:

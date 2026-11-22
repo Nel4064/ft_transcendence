@@ -15,7 +15,7 @@
 Check that backups are running:
 
 ```bash
-podman logs development-backup   # one "backup: ok …" line per backup
+podman logs development-backup   # one "backup ok: …" line per backup
 ls -lh backups/
 ```
 

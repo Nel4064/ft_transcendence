@@ -60,7 +60,7 @@ restore:
 	podman restart development-proxy; \
 	if [ $$status -eq 0 ]; then echo "✅ Restored $(FILE)"; else echo "❌ Restore failed, data unchanged"; fi; \
 	exit $$status
-	
+
 # restart the app containers, and the proxy so nginx picks up their new IP addresses
 restart:
 	podman restart development-backend development-frontend development-proxy
