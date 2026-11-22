@@ -16,7 +16,7 @@ function HomePage() {
 						<Heading level="section">Upcoming Screenings...</Heading>
 					</div>
 
-					<ScreeningsList />
+					<ScreeningsList upcomingOnly/>
 				</section>
 			</main>
 		</>
