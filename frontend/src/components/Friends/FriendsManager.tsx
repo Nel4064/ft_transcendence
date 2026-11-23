@@ -4,8 +4,9 @@ import EmptyState from '../EmptyState/EmptyState';
 import Loader from '../Loader/Loader';
 import FriendsCard from './FriendsCard';
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
-import { io } from 'socket.io-client'; // ✨ 引入 socket.io-client
+import { io } from 'socket.io-client';
 import {
     getFriends,
     getPendingRequests,
@@ -32,8 +33,8 @@ interface FriendRequest {
 }
 
 export default function FriendsManager() {
-    // ✨ 从 useAuth 提取 user
-    const { apiFetch, user } = useAuth(); 
+    const { t } = useTranslation();
+    const { apiFetch, user } = useAuth();
 
     const [activeTab, setActiveTab] = useState<'friends' | 'requests' | 'search'>(() => {
         return (sessionStorage.getItem('friends_activeTab') as any) || 'friends';
@@ -48,8 +49,8 @@ export default function FriendsManager() {
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
     const [loading, setLoading] = useState(true);
-	const [friendsError, setFriendsError] = useState<string | null>(null);
-	const [requestsError, setRequestsError] = useState<string | null>(null);
+    const [friendsError, setFriendsError] = useState<string | null>(null);
+    const [requestsError, setRequestsError] = useState<string | null>(null);
 
     useEffect(() => {
         sessionStorage.setItem('friends_activeTab', activeTab);
@@ -59,10 +60,10 @@ export default function FriendsManager() {
         try {
             const data = await getFriends(apiFetch);
             setFriends(data);
-			setFriendsError(null);
+            setFriendsError(null);
         } catch (err) {
             console.error('Failed to fetch friends list', err);
-			setFriendsError('Could not load your friends. Please try again later.');
+            setFriendsError(t('friends.errors.loadFriends'));
         }
     };
 
@@ -70,17 +71,16 @@ export default function FriendsManager() {
         try {
             const data = await getPendingRequests(apiFetch);
             setPendingRequests(data);
-			setRequestsError(null);
+            setRequestsError(null);
         } catch (err) {
             console.error('Failed to fetch friend requests', err);
-			setRequestsError('Could not load your friend requests. Please try again later.');
+            setRequestsError(t('friends.errors.loadRequests'));
         }
     };
 
-    // 初始拉取数据
     useEffect(() => {
-		Promise.all([fetchFriends(), fetchPendingRequests()])
-			.finally(() => setLoading(false));
+        Promise.all([fetchFriends(), fetchPendingRequests()])
+            .finally(() => setLoading(false));
     }, [apiFetch]);
 
     const showNotification = (text: string, type: 'success' | 'error') => {
@@ -88,32 +88,26 @@ export default function FriendsManager() {
         setTimeout(() => setMessage(null), 3000);
     };
 
-    // ✨✨✨ WebSocket 监听：实时同步收到的请求和被接受的请求 ✨✨✨
     useEffect(() => {
-        if (!user) return; 
+        if (!user) return;
 
         const socket = io('/notifications', { transports: ['websocket'] });
 
         socket.on('notification', (n: { type: string; payload: Record<string, string>; createdAt: string }) => {
-            
-            // 场景 1: 别人发给我好友请求 -> 刷新待处理列表
             if (n.type === 'FRIEND_REQUEST' && n.payload.receiverId === user.id) {
-                console.log('收到新的好友请求，刷新列表...');
-                fetchPendingRequests(); 
+                fetchPendingRequests();
             }
 
-            // 场景 2: 我发出的请求被别人接受了 -> 刷新我的好友列表 (人数自动 +1)
             if (n.type === 'FRIEND_ACCEPTED' && n.payload.receiverId === user.id) {
-                console.log('对方通过了你的好友请求！刷新好友列表...');
-                fetchFriends(); 
-                showNotification('Someone accepted your friend request!', 'success'); 
+                fetchFriends();
+                showNotification(t('friends.notifications.requestAcceptedByOther'), 'success');
             }
         });
 
         return () => {
             socket.disconnect();
         };
-    }, [user]);
+    }, [user, t]);
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -123,16 +117,16 @@ export default function FriendsManager() {
             setSearchResults(data);
         } catch (err) {
             console.error('Failed to search users', err);
-			showNotification('Search failed, please try again', 'error');
+            showNotification(t('friends.errors.searchFailed'), 'error');
         }
     };
 
     const sendRequest = async (receiverId: string) => {
         try {
             await apiSendRequest(apiFetch, receiverId);
-            showNotification('Friend request sent successfully!', 'success');
+            showNotification(t('friends.notifications.requestSent'), 'success');
         } catch (err: any) {
-            showNotification(err.message || 'Failed to send request', 'error');
+            showNotification(err.message || t('friends.errors.sendFailed'), 'error');
         }
     };
 
@@ -143,27 +137,30 @@ export default function FriendsManager() {
             } else {
                 await rejectRequest(apiFetch, requestId);
             }
-            showNotification(action === 'accept' ? 'Friend request accepted' : 'Friend request rejected', 'success');
-            
+            showNotification(
+                action === 'accept'
+                    ? t('friends.notifications.requestAccepted')
+                    : t('friends.notifications.requestRejected'),
+                'success'
+            );
+
             fetchPendingRequests();
             fetchFriends();
-            
-            // ✨ 通知 Navbar 刷新红点
+
             window.dispatchEvent(new CustomEvent('update_navbar'));
-            
         } catch (err: any) {
-            showNotification(err.message || 'Operation failed', 'error');
+            showNotification(err.message || t('friends.errors.operationFailed'), 'error');
         }
     };
 
     const handleRemoveFriend = async (friendId: string, friendName: string) => {
-        if (!confirm(`Are you sure you want to remove ${friendName} from your friends?`)) return;
+        if (!confirm(t('friends.confirmRemove', { name: friendName }))) return;
         try {
             await removeFriend(apiFetch, friendId);
-            showNotification('Friend removed successfully', 'success');
+            showNotification(t('friends.notifications.friendRemoved'), 'success');
             fetchFriends();
         } catch (err: any) {
-            showNotification(err.message || 'Failed to remove friend', 'error');
+            showNotification(err.message || t('friends.errors.removeFailed'), 'error');
         }
     };
 
@@ -182,14 +179,14 @@ export default function FriendsManager() {
                     className={`pb-3 px-4 font-medium transition-colors border-b-2 ${activeTab === 'friends' ? 'border-brand text-brand' : 'border-transparent text-text-muted hover:text-text'
                         }`}
                 >
-                    My Friends ({friends.length})
+                    {t('friends.tabs.myFriends')} ({friends.length})
                 </button>
                 <button
                     onClick={() => setActiveTab('requests')}
                     className={`pb-3 px-4 font-medium transition-colors border-b-2 relative ${activeTab === 'requests' ? 'border-brand text-brand' : 'border-transparent text-text-muted hover:text-text'
                         }`}
                 >
-                    Friend Requests
+                    {t('friends.tabs.requests')}
                     {pendingRequests.length > 0 && (
                         <span className="ml-2 bg-danger text-xs px-2 py-0.5 rounded-full">
                             {pendingRequests.length}
@@ -201,7 +198,7 @@ export default function FriendsManager() {
                     className={`pb-3 px-4 font-medium transition-colors border-b-2 ${activeTab === 'search' ? 'border-brand text-brand' : 'border-transparent text-text-muted hover:text-text'
                         }`}
                 >
-                    Add Friends
+                    {t('friends.tabs.addFriends')}
                 </button>
             </div>
 
@@ -209,24 +206,24 @@ export default function FriendsManager() {
             {activeTab === 'friends' && (
                 <div className="space-y-3">
                     {loading ? (
-						<Loader text="Loading friends..." />
-					) : friendsError ? (
-						<p className="text-danger text-center py-8">{friendsError}</p>
-					) : friends.length === 0 ? (
-                        <EmptyState message="No friends yet, go add some!" />
+                        <Loader text={t('friends.loading.friends')} />
+                    ) : friendsError ? (
+                        <p className="text-danger text-center py-8">{friendsError}</p>
+                    ) : friends.length === 0 ? (
+                        <EmptyState message={t('friends.empty.friends')} />
                     ) : (
                         friends.map((friend) => (
-							<FriendsCard key={friend.id} user={friend} subtitle={`@${friend.username}`}>
-								<Button onClick={() => alert(`Redirecting to chat with ${friend.username}`)}>
-									Chat
-								</Button>
-								<Button
-									variant="danger"
-									onClick={() => handleRemoveFriend(friend.id, friend.displayName || friend.username)}
-								>
-									Remove
-								</Button>
-							</FriendsCard>
+                            <FriendsCard key={friend.id} user={friend} subtitle={`@${friend.username}`}>
+                                <Button onClick={() => alert(t('friends.notifications.redirectChat', { username: friend.username }))}>
+                                    {t('friends.actions.chat')}
+                                </Button>
+                                <Button
+                                    variant="danger"
+                                    onClick={() => handleRemoveFriend(friend.id, friend.displayName || friend.username)}
+                                >
+                                    {t('friends.actions.remove')}
+                                </Button>
+                            </FriendsCard>
                         ))
                     )}
                 </div>
@@ -235,22 +232,22 @@ export default function FriendsManager() {
             {/* Tab 2: Friend Requests */}
             {activeTab === 'requests' && (
                 <div className="space-y-3">
-					{loading ? (
-						<Loader text="Loading requests..." />
-					) : requestsError ? (
-						<p className="text-danger text-center py-8">{requestsError}</p>
-					) : pendingRequests.length === 0 ? (
-						<EmptyState message="No new friend requests" />
+                    {loading ? (
+                        <Loader text={t('friends.loading.requests')} />
+                    ) : requestsError ? (
+                        <p className="text-danger text-center py-8">{requestsError}</p>
+                    ) : pendingRequests.length === 0 ? (
+                        <EmptyState message={t('friends.empty.requests')} />
                     ) : (
-						pendingRequests.map((req) => (
-							<FriendsCard key={req.id} user={req.sender} subtitle="Wants to add you as a friend">
-								<Button onClick={() => handleRequestAction(req.id, 'accept')}>
-									Accept
-								</Button>
-								<Button variant="secondary" onClick={() => handleRequestAction(req.id, 'reject')}>
-									Reject
-								</Button>
-							</FriendsCard>
+                        pendingRequests.map((req) => (
+                            <FriendsCard key={req.id} user={req.sender} subtitle={t('friends.requestSubtitle')}>
+                                <Button onClick={() => handleRequestAction(req.id, 'accept')}>
+                                    {t('friends.actions.accept')}
+                                </Button>
+                                <Button variant="secondary" onClick={() => handleRequestAction(req.id, 'reject')}>
+                                    {t('friends.actions.reject')}
+                                </Button>
+                            </FriendsCard>
                         ))
                     )}
                 </div>
@@ -271,30 +268,32 @@ export default function FriendsManager() {
                                     setSearchResults([]);
                                 }
                             }}
-                            placeholder="Enter username or display name..."
+                            placeholder={t('friends.search.placeholder')}
                             className="flex-1"
                         />
-                        <Button type="submit" size="lg">Search</Button>
+                        <Button type="submit" size="lg">{t('friends.search.button')}</Button>
                     </form>
 
                     <div className="space-y-3">
                         {searchResults.length === 0 ? (
                             <p className="text-text-muted text-center py-4 text-sm">
-                                {searchKeyword.trim() ? 'No matching users found' : 'Enter keywords to start searching'}
+                                {searchKeyword.trim() ? t('friends.search.noResults') : t('friends.search.enterKeywords')}
                             </p>
                         ) : (
                             searchResults.map((user) => (
-								<FriendsCard key={user.id} user={user} subtitle={`@${user.username}`}>
-									<Button onClick={() => sendRequest(user.id)}>Add Friend</Button>
-									<button
-										type="button"
-										onClick={() => setSearchResults(searchResults.filter((u) => u.id !== user.id))}
-										className="w-8 h-8 flex items-center justify-center text-text-muted hover:text-text hover:bg-bg rounded-lg transition-colors"
-										title="Hide this result"
-									>
-										✕
-									</button>
-								</FriendsCard> 
+                                <FriendsCard key={user.id} user={user} subtitle={`@${user.username}`}>
+                                    <Button onClick={() => sendRequest(user.id)}>
+                                        {t('friends.actions.addFriend')}
+                                    </Button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSearchResults(searchResults.filter((u) => u.id !== user.id))}
+                                        className="w-8 h-8 flex items-center justify-center text-text-muted hover:text-text hover:bg-bg rounded-lg transition-colors"
+                                        title={t('friends.actions.hideResult')}
+                                    >
+                                        ✕
+                                    </button>
+                                </FriendsCard>
                             ))
                         )}
                     </div>

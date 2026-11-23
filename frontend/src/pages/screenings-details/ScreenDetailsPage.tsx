@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import defaultMovie from '../../assets/default-movie.jpg'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/button/Button'
@@ -14,6 +15,12 @@ const posterClass = "w-64 shrink-0 self-start rounded-md shadow-card"
 const synopsisClass = "text-body text-text-muted"
 const boxClass = "p-4 bg-surface border border-border rounded-lg shadow-card"
 
+const LOCALE_MAP: Record<string, string> = {
+    en: 'en-GB',
+    fr: 'fr-FR',
+    zh: 'zh-CN',
+}
+
 // 118 -> "1h58"
 function formatRuntime(minutes: number) {
     const h = Math.floor(minutes / 60)
@@ -22,12 +29,15 @@ function formatRuntime(minutes: number) {
 }
 
 function ScreenDetailsPage() {
+    const { t, i18n } = useTranslation()
     const { id } = useParams()
     const navigate = useNavigate()
 
     const { user, apiFetch } = useAuth()
     const [screening, setScreening] = useState<Screening | null>(null)
     const [isLoading, setIsLoading] = useState(true)
+
+    const dateLocale = LOCALE_MAP[i18n.language?.slice(0, 2)] || 'en-GB'
 
     useEffect(() => {
         if (!id) return;
@@ -75,12 +85,12 @@ function ScreenDetailsPage() {
             const isBadRequest = error?.status === 400 || errText.includes('passée');
 
             if (isNotFound) {
-                alert("Sorry, this session has been canceled or is no longer available.");
+                alert(t('screeningDetails.errors.notFound'));
                 navigate('/screenings');
             } else if (isBadRequest) {
-                alert("You cannot modify the RSVP for a past session.");
+                alert(t('screeningDetails.errors.pastSession'));
             } else {
-                alert("An error occurred while saving your RSVP.");
+                alert(t('screeningDetails.errors.saveFailed'));
             }
         }
     };
@@ -90,13 +100,15 @@ function ScreenDetailsPage() {
         await removeScreening(apiFetch, screening.externalCinemaId, screening.externalShowId)
         navigate('/screenings')
     }
+
     const formatICSDate = (date: Date) => {
         return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     };
+
     const handleIcsDownload = () => {
         if (!screening) return;
         const startDate = new Date(screening.startsAt);
-        const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // 默认 2 小时时长
+        const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
 
         const icsContent = [
             "BEGIN:VCALENDAR",
@@ -106,12 +118,12 @@ function ScreenDetailsPage() {
             `DTSTART:${formatICSDate(startDate)}`,
             `DTEND:${formatICSDate(endDate)}`,
             `SUMMARY:🎬 ${screening.filmTitle}`,
-            `DESCRIPTION:${screening.synopsis || 'Movie screening session.'}`,
+            `DESCRIPTION:${screening.synopsis || t('screeningDetails.calendar.defaultDescription')}`,
             `LOCATION:${screening.cinemaName}, ${screening.cinemaAddress}, ${screening.cinemaCity}`,
             "BEGIN:VALARM",
             "TRIGGER:-PT1H",
             "ACTION:DISPLAY",
-            "DESCRIPTION:Reminder",
+            `DESCRIPTION:${t('screeningDetails.calendar.reminder')}`,
             "END:VALARM",
             "END:VEVENT",
             "END:VCALENDAR"
@@ -130,29 +142,35 @@ function ScreenDetailsPage() {
         const startDate = new Date(screening.startsAt);
         const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
         const title = encodeURIComponent(`🎬 ${screening.filmTitle}`);
-        const details = encodeURIComponent(screening.synopsis || 'Movie screening session.');
+        const details = encodeURIComponent(screening.synopsis || t('screeningDetails.calendar.defaultDescription'));
         const location = encodeURIComponent(`${screening.cinemaName}, ${screening.cinemaAddress}, ${screening.cinemaCity}`);
         const dates = `${formatICSDate(startDate)}/${formatICSDate(endDate)}`;
 
         const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=${location}`;
         window.open(url, '_blank');
     };
+
     if (isLoading) {
         return <main className="py-12 px-10"><Loader /></main>
     }
+
     if (!screening) {
         return (
             <main className="py-12 px-10 flex flex-col items-center justify-center text-center">
-                <h2 className="text-xl font-bold text-text mb-2">Screening Unavailable</h2>
-                <p className="text-text-muted mb-4">This screening no longer exists or has been removed.</p>
-                <Button variant="primary" onClick={() => navigate('/screenings')}>Back to Screenings</Button>
+                <h2 className="text-xl font-bold text-text mb-2">{t('screeningDetails.unavailable.heading')}</h2>
+                <p className="text-text-muted mb-4">{t('screeningDetails.unavailable.message')}</p>
+                <Button variant="primary" onClick={() => navigate('/screenings')}>
+                    {t('screeningDetails.unavailable.backButton')}
+                </Button>
             </main>
         )
     }
+
     const start = new Date(screening.startsAt)
-    const date = start.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
-    const time = start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+    const date = start.toLocaleDateString(dateLocale, { weekday: 'long', day: 'numeric', month: 'long' })
+    const time = start.toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' })
     const friendsList = screening.friendsGoing || [];
+
     return (
         <main className="max-w-[1000px] mx-auto py-12 px-10">
             <section className="flex flex-col md:flex-row gap-8 mb-12">
@@ -161,32 +179,41 @@ function ScreenDetailsPage() {
                     <Heading className="mb-4">{screening.filmTitle}</Heading>
                     <dl className="mb-4 flex flex-col gap-1 text-body">
                         {screening.director && (
-                            <div><dt className="inline font-bold text-text">Director: </dt><dd className="inline text-text-muted">{screening.director}</dd></div>
+                            <div>
+                                <dt className="inline font-bold text-text">{t('screeningDetails.director')} </dt>
+                                <dd className="inline text-text-muted">{screening.director}</dd>
+                            </div>
                         )}
                         {screening.cast && (
-                            <div><dt className="inline font-bold text-text">Cast: </dt><dd className="inline text-text-muted">{screening.cast}</dd></div>
+                            <div>
+                                <dt className="inline font-bold text-text">{t('screeningDetails.cast')} </dt>
+                                <dd className="inline text-text-muted">{screening.cast}</dd>
+                            </div>
                         )}
                         {screening.runtimeMinutes && (
-                            <div><dt className="inline font-bold text-text">Duration: </dt><dd className="inline text-text-muted">{formatRuntime(screening.runtimeMinutes)}</dd></div>
+                            <div>
+                                <dt className="inline font-bold text-text">{t('screeningDetails.duration')} </dt>
+                                <dd className="inline text-text-muted">{formatRuntime(screening.runtimeMinutes)}</dd>
+                            </div>
                         )}
                     </dl>
-                    <p className={synopsisClass}>{screening.synopsis ?? 'No synopsis available.'}</p>
+                    <p className={synopsisClass}>{screening.synopsis ?? t('screeningDetails.noSynopsis')}</p>
                     {screening.trailerUrl && (
                         <section className="mt-6">
-                            <Heading level="section" className="mb-4">Trailer</Heading>
+                            <Heading level="section" className="mb-4">{t('screeningDetails.trailer')}</Heading>
                             <div className={boxClass}>
                                 <video src={screening.trailerUrl} controls className="w-full rounded-md" />
                             </div>
                         </section>
                     )}
                 </div>
-            </section>        
+            </section>
             <ul className="flex flex-col gap-4 mt-6">
                 <li key={screening.id} className="flex items-center justify-between p-4 bg-surface border border-border rounded-lg text-body text-text-muted">
                     <div>
                         <p className="flex gap-2 items-center text-body text-text font-medium">
                             <Icon name="calendar-event" />
-                            {date} at {time}{screening.version && ` · ${screening.version}`}
+                            {t('screeningDetails.dateAtTime', { date, time })}{screening.version && ` · ${screening.version}`}
                         </p>
                         <p className="flex gap-2 items-center text-body text-text-muted mt-1 mb-3">
                             <Icon name="map-pin" />
@@ -194,22 +221,24 @@ function ScreenDetailsPage() {
                         </p>
                         {screening.isGoing && new Date(screening.startsAt) >= new Date() && (
                             <div className="flex gap-3 ml-6 mb-2">
-                                <button 
+                                <button
                                     onClick={handleGoogleCalendar}
                                     className="text-[12px] font-medium text-brand hover:text-brand/80 transition-colors border border-brand/30 rounded px-2 py-1 flex items-center gap-1 bg-brand/5"
                                 >
-                                    + Google Calendar
+                                    {t('screeningDetails.calendar.google')}
                                 </button>
-                                <button 
+                                <button
                                     onClick={handleIcsDownload}
                                     className="text-[12px] font-medium text-brand hover:text-brand/80 transition-colors border border-brand/30 rounded px-2 py-1 flex items-center gap-1 bg-brand/5"
                                 >
-                                    + Apple/Outlook (.ics)
+                                    {t('screeningDetails.calendar.ics')}
                                 </button>
                             </div>
                         )}
 
-                        <p className="text-sm text-gray-400 mt-1 ml-6">{(screening.totalGoingCount || 0)} going</p>
+                        <p className="text-sm text-gray-400 mt-1 ml-6">
+                            {t('screeningDetails.goingCount', { count: screening.totalGoingCount || 0 })}
+                        </p>
                     </div>
                     <button
                         onClick={handleRsvpClick}
@@ -221,14 +250,16 @@ function ScreenDetailsPage() {
                                 : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
                             }`}
                     >
-                        {screening.isGoing ? 'Going ✓' : 'RSVP'}
+                        {screening.isGoing ? t('screeningDetails.actions.going') : t('screeningDetails.actions.rsvp')}
                     </button>
                 </li>
-                
+
                 <li className="flex items-center justify-between p-4 bg-surface border border-border rounded-lg text-body text-text-muted ">
                     <div>
                         <p className="text-body text-text font-medium">
-                            {friendsList.length > 0 ? `${friendsList.length} friends going:` : 'No friends going yet'}
+                            {friendsList.length > 0
+                                ? t('screeningDetails.friendsGoing', { count: friendsList.length })
+                                : t('screeningDetails.noFriendsGoing')}
                         </p>
                         <ul className="flex flex-wrap gap-2 mt-3">
                             {friendsList.map((friend) => (
@@ -250,10 +281,10 @@ function ScreenDetailsPage() {
                 </li>
 
                 <div className={boxClass}>
-                    Add chat here
+                    {t('screeningDetails.chatPlaceholder')}
                 </div>
             </ul>
-            
+
             {user?.role === 'ADMIN' && (
                 <div className="flex justify-end mt-4">
                     <Button
@@ -263,11 +294,12 @@ function ScreenDetailsPage() {
                         disabled={new Date(screening.startsAt) < new Date()}
                         className={new Date(screening.startsAt) < new Date() ? 'opacity-50 cursor-not-allowed' : ''}
                     >
-                        Remove Event
+                        {t('screeningDetails.actions.removeEvent')}
                     </Button>
                 </div>
             )}
         </main>
     )
 }
+
 export default ScreenDetailsPage

@@ -48,5 +48,139 @@
     "titleLine2": "Rencontrez des passionnés",
     "subtitle": "Créez des séances, rejoignez des discussions et connectez-vous avec des cinéphiles.",
     "upcomingScreenings": "Prochaines séances..."
+  },
+  "selectMovies": {
+    "heading": "Choisir des séances pour le club",
+    "searchPlaceholder": "Rechercher un film",
+    "filter": {
+      "title": "Titre",
+      "cinema": "Cinéma",
+      "date": "Date"
+    },
+    "searchButton": "Rechercher"
+  },
+  "myScreenings": {
+    "heading": "Mes séances",
+    "subtitle": "Gérez vos prochaines séances du ciné-club et consultez votre historique.",
+    "tabs": {
+      "upcoming": "À venir",
+      "history": "Historique"
+    },
+    "loading": "Chargement des séances...",
+    "empty": {
+      "upcoming": "Aucune séance à venir pour le moment.",
+      "history": "Vous n'avez encore assisté à aucune séance."
+    },
+    "dateTbd": "Date à confirmer",
+    "unknownTitle": "Titre inconnu",
+    "unknownCinema": "Cinéma inconnu",
+    "pagination": {
+      "previous": "Précédent",
+      "next": "Suivant"
+    },
+    "errors": {
+      "notFound": "Désolé, cette séance a été annulée ou n'est plus disponible.",
+      "pastSession": "Vous ne pouvez pas modifier votre participation pour une séance passée.",
+      "saveFailed": "Une erreur est survenue lors de l'enregistrement de votre participation."
+    }
+  },
+  "calendar": {
+    "loading": "Chargement de votre calendrier...",
+    "heading": "Mon calendrier de séances",
+    "subtitle": "Consultez vos séances passées et les prochains événements du ciné-club.",
+    "prev": "Préc.",
+    "next": "Suiv.",
+    "weekdays": {
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mer",
+      "thu": "Jeu",
+      "fri": "Ven",
+      "sat": "Sam",
+      "sun": "Dim"
+    },
+    "eventTooltip": "{{title}} à {{time}}"
+  },
+  "friends": {
+    "tabs": {
+      "myFriends": "Mes amis",
+      "requests": "Demandes d'ami",
+      "addFriends": "Ajouter des amis"
+    },
+    "loading": {
+      "friends": "Chargement des amis...",
+      "requests": "Chargement des demandes..."
+    },
+    "empty": {
+      "friends": "Aucun ami pour le moment, allez en ajouter !",
+      "requests": "Aucune nouvelle demande d'ami"
+    },
+    "requestSubtitle": "Souhaite vous ajouter en ami",
+    "actions": {
+      "chat": "Discuter",
+      "remove": "Supprimer",
+      "accept": "Accepter",
+      "reject": "Refuser",
+      "addFriend": "Ajouter",
+      "hideResult": "Masquer ce résultat"
+    },
+    "search": {
+      "placeholder": "Entrez un nom d'utilisateur ou un pseudo...",
+      "button": "Rechercher",
+      "noResults": "Aucun utilisateur trouvé",
+      "enterKeywords": "Entrez des mots-clés pour lancer la recherche"
+    },
+    "confirmRemove": "Voulez-vous vraiment retirer {{name}} de vos amis ?",
+    "notifications": {
+      "requestAcceptedByOther": "Quelqu'un a accepté votre demande d'ami !",
+      "requestSent": "Demande d'ami envoyée avec succès !",
+      "requestAccepted": "Demande d'ami acceptée",
+      "requestRejected": "Demande d'ami refusée",
+      "friendRemoved": "Ami retiré avec succès",
+      "redirectChat": "Redirection vers la discussion avec {{username}}"
+    },
+    "errors": {
+      "loadFriends": "Impossible de charger vos amis. Veuillez réessayer plus tard.",
+      "loadRequests": "Impossible de charger vos demandes d'ami. Veuillez réessayer plus tard.",
+      "searchFailed": "Échec de la recherche, veuillez réessayer",
+      "sendFailed": "Échec de l'envoi de la demande",
+      "operationFailed": "L'opération a échoué",
+      "removeFailed": "Impossible de retirer cet ami"
+    },
+     "pageTitle": "Amis"
+  },
+  "screeningDetails": {
+    "unavailable": {
+      "heading": "Séance indisponible",
+      "message": "Cette séance n'existe plus ou a été supprimée.",
+      "backButton": "Retour aux séances"
+    },
+    "director": "Réalisateur :",
+    "cast": "Casting :",
+    "duration": "Durée :",
+    "noSynopsis": "Aucun synopsis disponible.",
+    "trailer": "Bande-annonce",
+    "dateAtTime": "{{date}} à {{time}}",
+    "goingCount": "{{count}} participants",
+    "friendsGoing": "{{count}} amis participent :",
+    "noFriendsGoing": "Aucun ami ne participe pour le moment",
+    "chatPlaceholder": "Ajouter le chat ici",
+    "actions": {
+      "going": "J'y vais ✓",
+      "rsvp": "Participer",
+      "removeEvent": "Supprimer la séance"
+    },
+    "calendar": {
+      "google": "+ Google Agenda",
+      "ics": "+ Apple/Outlook (.ics)",
+      "defaultDescription": "Séance de cinéma du club.",
+      "reminder": "Rappel"
+    },
+    "errors": {
+      "notFound": "Désolé, cette séance a été annulée ou n'est plus disponible.",
+      "pastSession": "Vous ne pouvez pas modifier votre participation pour une séance passée.",
+      "saveFailed": "Une erreur est survenue lors de l'enregistrement de votre participation."
+    }
   }
+ 
 }

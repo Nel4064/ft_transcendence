@@ -48,5 +48,139 @@
     "titleLine2": "Meet people",
     "subtitle": "Create movie events, join discussions, and connect with movie lovers.",
     "upcomingScreenings": "Upcoming Screenings..."
+  },
+  "selectMovies": {
+    "heading": "Pick screening(s) for the club",
+    "searchPlaceholder": "Search for a movie",
+    "filter": {
+      "title": "Title",
+      "cinema": "Cinema",
+      "date": "Date"
+    },
+    "searchButton": "Search"
+  },
+  "myScreenings": {
+    "heading": "My Screenings",
+    "subtitle": "Manage your upcoming movie club sessions and view your past attendances.",
+    "tabs": {
+      "upcoming": "Upcoming",
+      "history": "History"
+    },
+    "loading": "Loading screenings...",
+    "empty": {
+      "upcoming": "No upcoming screenings yet.",
+      "history": "You haven't attended any screenings in the past."
+    },
+    "dateTbd": "Date TBD",
+    "unknownTitle": "Unknown Title",
+    "unknownCinema": "Unknown Cinema",
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "errors": {
+      "notFound": "Sorry, this session has been canceled or is no longer available.",
+      "pastSession": "You cannot change the RSVP for a past session.",
+      "saveFailed": "An error occurred while saving your RSVP."
+    }
+  },
+  "calendar": {
+    "loading": "Loading your calendar...",
+    "heading": "My Screening Calendar",
+    "subtitle": "Review past sessions and see upcoming movie club events.",
+    "prev": "Prev",
+    "next": "Next",
+    "weekdays": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "eventTooltip": "{{title}} at {{time}}"
+  },
+  "friends": {
+    "tabs": {
+      "myFriends": "My Friends",
+      "requests": "Friend Requests",
+      "addFriends": "Add Friends"
+    },
+    "loading": {
+      "friends": "Loading friends...",
+      "requests": "Loading requests..."
+    },
+    "empty": {
+      "friends": "No friends yet, go add some!",
+      "requests": "No new friend requests"
+    },
+    "requestSubtitle": "Wants to add you as a friend",
+    "actions": {
+      "chat": "Chat",
+      "remove": "Remove",
+      "accept": "Accept",
+      "reject": "Reject",
+      "addFriend": "Add Friend",
+      "hideResult": "Hide this result"
+    },
+    "search": {
+      "placeholder": "Enter username or display name...",
+      "button": "Search",
+      "noResults": "No matching users found",
+      "enterKeywords": "Enter keywords to start searching"
+    },
+    "confirmRemove": "Are you sure you want to remove {{name}} from your friends?",
+    "notifications": {
+      "requestAcceptedByOther": "Someone accepted your friend request!",
+      "requestSent": "Friend request sent successfully!",
+      "requestAccepted": "Friend request accepted",
+      "requestRejected": "Friend request rejected",
+      "friendRemoved": "Friend removed successfully",
+      "redirectChat": "Redirecting to chat with {{username}}"
+    },
+    "errors": {
+      "loadFriends": "Could not load your friends. Please try again later.",
+      "loadRequests": "Could not load your friend requests. Please try again later.",
+      "searchFailed": "Search failed, please try again",
+      "sendFailed": "Failed to send request",
+      "operationFailed": "Operation failed",
+      "removeFailed": "Failed to remove friend"
+    },
+    "pageTitle": "Friends"
+  },
+  "screeningDetails": {
+    "unavailable": {
+      "heading": "Screening Unavailable",
+      "message": "This screening no longer exists or has been removed.",
+      "backButton": "Back to Screenings"
+    },
+    "director": "Director:",
+    "cast": "Cast:",
+    "duration": "Duration:",
+    "noSynopsis": "No synopsis available.",
+    "trailer": "Trailer",
+    "dateAtTime": "{{date}} at {{time}}",
+    "goingCount": "{{count}} going",
+    "friendsGoing": "{{count}} friends going:",
+    "noFriendsGoing": "No friends going yet",
+    "chatPlaceholder": "Add chat here",
+    "actions": {
+      "going": "Going ✓",
+      "rsvp": "RSVP",
+      "removeEvent": "Remove Event"
+    },
+    "calendar": {
+      "google": "+ Google Calendar",
+      "ics": "+ Apple/Outlook (.ics)",
+      "defaultDescription": "Movie screening session.",
+      "reminder": "Reminder"
+    },
+    "errors": {
+      "notFound": "Sorry, this session has been canceled or is no longer available.",
+      "pastSession": "You cannot modify the RSVP for a past session.",
+      "saveFailed": "An error occurred while saving your RSVP."
+    }
   }
+  
 }

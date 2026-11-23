@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import MoviesList from '../../components/movies/MoviesList'
 import Button from '../../components/button/Button'
 import Input from '../../components/Input/Input'
@@ -8,6 +9,7 @@ const boxClass = "flex flex-col sm:flex-row items-stretch sm:items-center gap-3 
 const selectClass = "w-full sm:w-auto py-3.5 sm:py-4 px-4 sm:px-5 border border-border rounded-md text-control bg-surface cursor-pointer"
 
 function SelectMoviesPage() {
+	const { t } = useTranslation()
 	const [searchTerm, setSearchTerm] = useState('')
 	const [filter, setFilter] = useState('title')
 	const [appliedTerm, setAppliedTerm] = useState('')
@@ -15,7 +17,7 @@ function SelectMoviesPage() {
 	return (
 		<main className="w-full max-w-[1600px] mx-auto py-8 px-4 sm:py-10 sm:px-6 lg:py-12 lg:px-10">
 			<Heading level="section" as="h1" className="mb-6 text-center sm:text-left">
-				Pick screening(s) for the club
+				{t('selectMovies.heading')}
 			</Heading>
 
 			<section className={boxClass}>
@@ -24,7 +26,7 @@ function SelectMoviesPage() {
 					size="xl"
 					type={filter === 'date' ? 'date' : 'text'}
 					value={searchTerm}
-					placeholder="Search for a movie"
+					placeholder={t('selectMovies.searchPlaceholder')}
 					onChange={(e) => setSearchTerm(e.target.value)}
 					className="w-full sm:flex-1"
 				/>
@@ -33,9 +35,9 @@ function SelectMoviesPage() {
 					onChange={(e) => { setFilter(e.target.value); setSearchTerm('') }}
 					className={selectClass}
 				>
-					<option value="title">Title</option>
-					<option value="cinema">Cinema</option>
-					<option value="date">Date</option>
+					<option value="title">{t('selectMovies.filter.title')}</option>
+					<option value="cinema">{t('selectMovies.filter.cinema')}</option>
+					<option value="date">{t('selectMovies.filter.date')}</option>
 				</select>
 				<Button
 					variant="admin"
@@ -43,7 +45,7 @@ function SelectMoviesPage() {
 					onClick={() => setAppliedTerm(searchTerm)}
 					className="w-full sm:w-auto justify-center"
 				>
-					Search
+					{t('selectMovies.searchButton')}
 				</Button>
 			</section>
 
