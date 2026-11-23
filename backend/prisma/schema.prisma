@@ -82,18 +82,14 @@ model User {
   friendOf               Friendship[]    @relation("FriendFriendships")
 
   // Relations
-<<<<<<< HEAD
-  notificationsRecv Notification[] @relation("NotificationRecipient") // received by this user
-  notificationsSent Notification[] @relation("NotificationActor") // caused by this user
-  sentMessages      Message[]      @relation("SentMessages")
-  receivedMessages  Message[]      @relation("ReceivedMessages")
-=======
   notificationsRecv  Notification[] @relation("NotificationRecipient")  // received by this user
   notificationsSent  Notification[] @relation("NotificationActor")     // caused by this user
   
   //admin ban
   isBanned Boolean @default(false)
->>>>>>> origin/dev
+
+  sentMessages      Message[]      @relation("SentMessages")
+  receivedMessages  Message[]      @relation("ReceivedMessages")
 
   rsvps         Rsvp[]
   @@map("users") // Maps the model to a lowercase "users" table in the database
