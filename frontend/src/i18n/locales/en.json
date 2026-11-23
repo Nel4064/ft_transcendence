@@ -42,5 +42,11 @@
       "uploadSuccess": "Avatar uploaded successfully! Refreshing...",
       "uploadFailed": "Failed to upload avatar"
     }
+  },
+  "home": {
+    "titleLine1": "Discover movies",
+    "titleLine2": "Meet people",
+    "subtitle": "Create movie events, join discussions, and connect with movie lovers.",
+    "upcomingScreenings": "Upcoming Screenings..."
   }
 }

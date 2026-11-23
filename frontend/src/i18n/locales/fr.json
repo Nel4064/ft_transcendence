@@ -42,5 +42,11 @@
       "uploadSuccess": "Avatar mis à jour ! Actualisation...",
       "uploadFailed": "Échec de l'envoi de l'avatar"
     }
+  },
+  "home": {
+    "titleLine1": "Découvrez des films",
+    "titleLine2": "Rencontrez des passionnés",
+    "subtitle": "Créez des séances, rejoignez des discussions et connectez-vous avec des cinéphiles.",
+    "upcomingScreenings": "Prochaines séances..."
   }
 }

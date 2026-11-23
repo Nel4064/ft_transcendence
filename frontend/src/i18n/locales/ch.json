@@ -42,5 +42,11 @@
       "uploadSuccess": "头像上传成功！正在刷新...",
       "uploadFailed": "上传头像失败"
     }
+  },
+  "home": {
+    "titleLine1": "发现好电影",
+    "titleLine2": "结识新朋友",
+    "subtitle": "创建观影活动，加入讨论，与电影爱好者建立联系。",
+    "upcomingScreenings": "即将上映的场次..."
   }
 }
