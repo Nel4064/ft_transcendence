@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChatType } from '../generated/prisma/client.js';
 import { SendMessageDto } from './dto/chat.dto';
@@ -7,6 +7,22 @@ import { SendMessageDto } from './dto/chat.dto';
 export class ChatService 
 {
 	constructor(private readonly prisma: PrismaService) {}
+
+	async assertUserCanChat(
+		userId: string,
+		bannedMessage = 'Your account has been banned.',
+	): Promise<void> {
+		const user = await this.prisma.user.findUnique({
+			where: { id: userId },
+			select: { isBanned: true },
+		});
+
+		if (!user)
+			throw new UnauthorizedException('User not found');
+		if (user.isBanned)
+			throw new ForbiddenException(bannedMessage);
+	}
+
 	private async checkFriendship(senderId: string, receiverId: string): Promise<boolean>{
 		const friendship = await this.prisma.friendship.findUnique({
 			where: {
@@ -29,12 +45,16 @@ export class ChatService
 		const { receiverId, content } = dto;
 		const cleanContent = content.trim();
 
+		await this.assertUserCanChat(senderId);
+
 		if (receiverId === senderId)
 			throw new BadRequestException('Message cannot be sent to yourself');
 		
 		const isFriend = await this.checkFriendship(senderId, receiverId);
 		if (!isFriend)
 			throw new ForbiddenException('You are not friends yet');
+
+		await this.assertUserCanChat(receiverId, 'This user is unavailable for messaging.');
 		
 		return this.prisma.message.create({
 			data:{

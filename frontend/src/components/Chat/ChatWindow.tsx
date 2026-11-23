@@ -57,6 +57,14 @@ function shouldGroupMessage(previousMessage: Message | undefined, message: Messa
 	return elapsed >= 0 && elapsed <= 5 * 60 * 1000;
 }
 
+function getErrorMessage(error: unknown): string {
+	return error instanceof Error ? error.message : '';
+}
+
+function isConversationMissing(error: unknown): boolean {
+	return /validation failed \(uuid is expected\)|invalid uuid|not found|404/i.test(getErrorMessage(error));
+}
+
 function mergeMessages(currentMessages: Message[], incomingMessages: Message[]): Message[] {
 	const messagesById = new Map<string, Message>();
 	for (const message of currentMessages) {
@@ -104,31 +112,41 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 		setFriendUser(null);
 
 		const fetchData = async () => {
-			try {
-				const [historyData, userData] = await Promise.all([
-					getDirectHistory(apiFetch, friendId),
-					apiFetch(`/users/${friendId}`),
-				]);
-				if (!isCancelled) {
-					setMessages((currentMessages) => mergeMessages(currentMessages, historyData));
-					setFriendUser(userData);
-				}
-			} catch (err: any) {
-				if (!isCancelled)
-				{
-					const errorText = err.message || 'Failed to load history';
-					if (errorText.toLowerCase().includes('not friends') || errorText.includes('403')){
-						setIsFriend(false);
-					}
-					else {
-						setError(errorText);
-					}
-				}
-			} finally {
-				if (!isCancelled) setLoading(false);
+			const [historyResult, profileResult] = await Promise.allSettled([
+				getDirectHistory(apiFetch, friendId),
+				apiFetch(`/users/${friendId}`),
+			]);
+			if (isCancelled) return;
+
+			if (profileResult.status === 'fulfilled') {
+				setFriendUser(profileResult.value);
 			}
+
+			if (profileResult.status === 'rejected') {
+				setError(
+					isConversationMissing(profileResult.reason)
+						|| (historyResult.status === 'rejected' && isConversationMissing(historyResult.reason))
+						? "This conversation doesn't exist."
+						: 'Unable to load this conversation. Please try again.',
+				);
+			} else if (historyResult.status === 'fulfilled') {
+				setMessages((currentMessages) => mergeMessages(currentMessages, historyResult.value));
+			} else {
+				const errorText = getErrorMessage(historyResult.reason);
+				if (errorText.toLowerCase().includes('not friends') || errorText.includes('403')) {
+					setIsFriend(false);
+				} else {
+					setError(
+						isConversationMissing(historyResult.reason)
+							? "This conversation doesn't exist."
+							: 'Unable to load this conversation. Please try again.',
+					);
+				}
+			}
+
+			setLoading(false);
 		};
-		fetchData();
+		void fetchData();
 		return () => { isCancelled = true; };
 	}, [friendId, apiFetch]);
 
@@ -199,17 +217,21 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 				{/* avatar & friend name */}
 				<div
 					className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
-					onClick={() => friendId && navigate(`/users/${friendId}`)}
+					onClick={() => friendUser && navigate(`/users/${friendUser.id}`)}
 					title="Click to view profile"
 				>
-					<Avatar
-						src={friendUser?.avatarUrl}
-						name={friendUser?.displayName || friendUser?.username}
-						size={42}
-					/>
+					{friendUser && (
+						<Avatar
+							src={friendUser.avatarUrl}
+							name={friendUser.displayName || friendUser.username}
+							size={42}
+						/>
+					)}
 					<div className="flex flex-col">
 						<h2 className="font-bold text-text text-base leading-snug">
-							{friendUser?.displayName || friendUser?.username || 'Loading...'}
+							{friendUser
+								? friendUser.displayName || friendUser.username
+								: error ? 'Conversation unavailable' : 'Loading...'}
 						</h2>
 						{friendUser?.username && (
 							<p className="text-xs text-text-muted">@{friendUser.username}</p>
@@ -228,7 +250,14 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 
 				{/* error */}
 				{!loading && error && (
-					<p className="text-center text-rose-500 text-sm py-8">{error}</p>
+					<div className="flex flex-col items-center gap-3 py-8 text-center">
+						<p role="alert" className="py-2 px-3 rounded-md bg-danger/10 text-danger text-body font-bold text-center">
+							{error}
+						</p>
+						<Button variant="secondary" onClick={() => navigate('/friends')}>
+							Back to Friends
+						</Button>
+					</div>
 				)}
 
 				{/* empty */}
@@ -274,12 +303,11 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 							) : (
 								<div className="flex items-start gap-2">
 									{!isGrouped ? (
-										<div className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-300 text-xs font-bold text-slate-700">
-											{msg.sender.avatarUrl
-												? <img src={msg.sender.avatarUrl} alt={msg.sender.displayName} className="h-full w-full object-cover" />
-												: (msg.sender.displayName || msg.sender.username).slice(0, 2).toUpperCase()
-											}
-										</div>
+										<Avatar
+											src={msg.sender.avatarUrl}
+											name={msg.sender.displayName || msg.sender.username}
+											size={32}
+										/>
 									) : (
 										<div aria-hidden="true" className="w-8 flex-shrink-0" />
 									)}
@@ -310,11 +338,11 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 
 			{/* INPUT FORM */}
 			{sendError && (
-				<p role="alert" className="px-4 pt-3 text-center text-sm text-rose-500">
+				<p role="alert" className="mx-4 mt-3 py-2 px-3 rounded-md bg-danger/10 text-danger text-body font-bold text-center">
 					{sendError}
 				</p>
 			)}
-			{isFriend? (
+			{error ? null : isFriend? (
 				<form
 					onSubmit={(e) => {
 						e.preventDefault();

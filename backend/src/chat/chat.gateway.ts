@@ -10,7 +10,7 @@ import {
   WsException 
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
-import { Logger, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ForbiddenException, Logger, UnauthorizedException, UsePipes, ValidationPipe } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ChatService } from './chat.service';
 import { SendMessageDto } from './dto/chat.dto';
@@ -31,20 +31,38 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   async handleConnection(client: Socket){
-    let userId;
+    let userId: string;
     try{
       const token = client.handshake.auth?.token || client.handshake.headers?.authorization;
+      if (typeof token !== 'string')
+        throw new Error('Missing token');
       const rawToken = token.startsWith('Bearer ') ? token.slice(7) : token;
       const payload = this.jwtService.verify(rawToken);
+      if (typeof payload.sub !== 'string' || !payload.sub)
+        throw new Error('Missing user id');
       userId = payload.sub;
-      if (!userId)
-        throw new Error();
     }
     catch{
       this.logger.warn(`Connection rejected`);
       client.disconnect(true);
       return ;
     }
+
+    try {
+      await this.chatService.assertUserCanChat(userId);
+    } catch (error) {
+      if (error instanceof ForbiddenException || error instanceof UnauthorizedException) {
+        this.logger.warn(`Connection rejected for user ${userId}: ${error.message}`);
+      } else {
+        this.logger.error(
+          `Failed to verify chat access for user ${userId}`,
+          error instanceof Error ? error.stack : String(error),
+        );
+      }
+      client.disconnect(true);
+      return;
+    }
+
     client.data.userId = userId;
     await client.join(`user_${userId}`);
     this.logger.log(`User ${userId} connected`);

@@ -4,6 +4,7 @@ import EmptyState from '../EmptyState/EmptyState';
 import Loader from '../Loader/Loader';
 import FriendsCard from './FriendsCard';
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { io } from 'socket.io-client'; // ✨ 引入 socket.io-client
 import {
@@ -34,6 +35,7 @@ interface FriendRequest {
 export default function FriendsManager() {
     // ✨ 从 useAuth 提取 user
     const { apiFetch, user } = useAuth(); 
+    const navigate = useNavigate();
 
     const [activeTab, setActiveTab] = useState<'friends' | 'requests' | 'search'>(() => {
         return (sessionStorage.getItem('friends_activeTab') as any) || 'friends';
@@ -217,7 +219,7 @@ export default function FriendsManager() {
                     ) : (
                         friends.map((friend) => (
 							<FriendsCard key={friend.id} user={friend} subtitle={`@${friend.username}`}>
-								<Button onClick={() => alert(`Redirecting to chat with ${friend.username}`)}>
+								<Button onClick={() => navigate(`/chat/${friend.id}`)}>
 									Chat
 								</Button>
 								<Button
