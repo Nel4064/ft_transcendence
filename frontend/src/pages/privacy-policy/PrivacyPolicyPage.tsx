@@ -1,30 +1,28 @@
-
+import { useTranslation } from 'react-i18next'
 import Heading from '../../components/Heading/Heading'
+
 const textClass = "my-4 text-body text-text"
 
-
-
 function PrivacyPolicyPage() {
+	const { t } = useTranslation()
+
 	return (
 		<main className="max-w-[1200px] mx-auto py-12 px-10">
 			<section>
-				<Heading>Privacy Policy</Heading>
-				<p className={textClass}>CineClub is a scheduling and social platform for members of a local 
-					independent-cinema club. This page explains what personal data we collect, 
-					why, and what control members have over it.</p>
-				<Heading level="subtitle">What we collect</Heading>
-				<p className={textClass}>Account data (email, display name, avatar, bio), activity data (RSVPs, 
-					friend connections, chat messages), 
-					and — if used — your 42 Intra login or two-factor authentication secret.</p>
-				<Heading level="subtitle">Why we collect it</Heading>
-				<p className={textClass}>To operate the club's shared screening schedule, 
-					let members recognise and message each other, 
-					generate your personal calendar export, and secure your account.</p>
-				<Heading level="subtitle">Third parties</Heading>
-				<p className={textClass}>Screening times come from the public datacinesindes.fr feed.
-					We do not sell or share your data with advertisers.</p>
-				<Heading level="subtitle">Your rights</Heading>
-				<p className={textClass}>You can export a copy of everything we hold about your account, or request permanent deletion, at any time from your profile settings.</p>
+				<Heading>{t('privacyPolicy.heading')}</Heading>
+				<p className={textClass}>{t('privacyPolicy.intro')}</p>
+
+				<Heading level="subtitle">{t('privacyPolicy.sections.collect.title')}</Heading>
+				<p className={textClass}>{t('privacyPolicy.sections.collect.body')}</p>
+
+				<Heading level="subtitle">{t('privacyPolicy.sections.purpose.title')}</Heading>
+				<p className={textClass}>{t('privacyPolicy.sections.purpose.body')}</p>
+
+				<Heading level="subtitle">{t('privacyPolicy.sections.thirdParties.title')}</Heading>
+				<p className={textClass}>{t('privacyPolicy.sections.thirdParties.body')}</p>
+
+				<Heading level="subtitle">{t('privacyPolicy.sections.rights.title')}</Heading>
+				<p className={textClass}>{t('privacyPolicy.sections.rights.body')}</p>
 			</section>
 		</main>
 	)

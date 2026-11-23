@@ -286,5 +286,49 @@
     "errors": {
       "updateFailed": "Impossible de mettre à jour la séance : {{message}}"
     }
+  },
+  "privacyPolicy": {
+    "heading": "Politique de confidentialité",
+    "intro": "CineClub est une plateforme de planification et d'échange social pour les membres d'un club de cinéma indépendant local. Cette page explique quelles données personnelles nous collectons, pourquoi, et quel contrôle les membres ont dessus.",
+    "sections": {
+      "collect": {
+        "title": "Ce que nous collectons",
+        "body": "Les données de compte (e-mail, nom d'affichage, avatar, bio), les données d'activité (inscriptions aux séances, amis, messages de chat), ainsi que — si utilisés — votre identifiant 42 Intra ou votre clé secrète d'authentification à deux facteurs."
+      },
+      "purpose": {
+        "title": "Pourquoi nous les collectons",
+        "body": "Pour faire fonctionner le calendrier partagé des séances du club, permettre aux membres de se reconnaître et d'échanger des messages, générer votre export de calendrier personnel et sécuriser votre compte."
+      },
+      "thirdParties": {
+        "title": "Tiers",
+        "body": "Les horaires des séances proviennent du flux public datacinesindes.fr. Nous ne vendons ni ne partageons vos données avec des annonceurs."
+      },
+      "rights": {
+        "title": "Vos droits",
+        "body": "Vous pouvez exporter une copie de toutes les données que nous détenons sur votre compte, ou demander leur suppression définitive, à tout moment depuis les paramètres de votre profil."
+      }
+    }
+  },
+  "termsOfService": {
+    "heading": "Conditions d'utilisation",
+    "intro": "Ces conditions régissent votre utilisation de CineClub, une plateforme de planification et d'échange social pour les membres d'un club de cinéma indépendant local. En créant un compte, vous les acceptez.",
+    "sections": {
+      "membership": {
+        "title": "Adhésion",
+        "body": "Les comptes sont réservés aux membres individuels du club. Vous êtes responsable de la confidentialité de vos identifiants de connexion ainsi que de toute activité effectuée depuis votre compte."
+      },
+      "acceptableUse": {
+        "title": "Utilisation acceptable",
+        "body": "Restez respectueux dans le chat, inscrivez-vous aux séances de bonne foi, et n'essayez pas d'accéder au compte d'un autre membre ni de détourner le calendrier."
+      },
+      "screeningData": {
+        "title": "Données des séances",
+        "body": "Les horaires des séances proviennent du flux public datacinesindes.fr et peuvent occasionnellement être inexacts ou modifiés sans préavis par le cinéma — vérifiez toujours avant de vous déplacer."
+      },
+      "termination": {
+        "title": "Résiliation",
+        "body": "Vous pouvez supprimer votre compte à tout moment. Nous nous réservons le droit de suspendre les comptes qui enfreignent ces conditions."
+      }
+    }
   }
 }

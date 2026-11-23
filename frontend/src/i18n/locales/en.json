@@ -286,5 +286,49 @@
     "errors": {
       "updateFailed": "Could not update event: {{message}}"
     }
+  },
+  "privacyPolicy": {
+    "heading": "Privacy Policy",
+    "intro": "CineClub is a scheduling and social platform for members of a local independent-cinema club. This page explains what personal data we collect, why, and what control members have over it.",
+    "sections": {
+      "collect": {
+        "title": "What we collect",
+        "body": "Account data (email, display name, avatar, bio), activity data (RSVPs, friend connections, chat messages), and — if used — your 42 Intra login or two-factor authentication secret."
+      },
+      "purpose": {
+        "title": "Why we collect it",
+        "body": "To operate the club's shared screening schedule, let members recognise and message each other, generate your personal calendar export, and secure your account."
+      },
+      "thirdParties": {
+        "title": "Third parties",
+        "body": "Screening times come from the public datacinesindes.fr feed. We do not sell or share your data with advertisers."
+      },
+      "rights": {
+        "title": "Your rights",
+        "body": "You can export a copy of everything we hold about your account, or request permanent deletion, at any time from your profile settings."
+      }
+    },
+    "termsOfService": {
+    "heading": "Terms of Service",
+    "intro": "These terms govern your use of CineClub, a scheduling and social platform for the members of a local independent-cinema club. By creating an account, you agree to them.",
+    "sections": {
+      "membership": {
+        "title": "Membership",
+        "body": "Accounts are for individual club members. You're responsible for keeping your login credentials confidential and for activity under your account."
+      },
+      "acceptableUse": {
+        "title": "Acceptable use",
+        "body": "Be respectful in chat, RSVP honestly, and don't attempt to access another member's account or misuse the schedule."
+      },
+      "screeningData": {
+        "title": "Screening data",
+        "body": "Screening times are pulled from the public datacinesindes.fr feed and may occasionally be inaccurate or change without notice on the cinema's side — always double-check before travelling."
+      },
+      "termination": {
+        "title": "Termination",
+        "body": "You may delete your account at any time. We may suspend accounts that violate these terms."
+      }
+    }
+  }
   }
 }
