@@ -147,7 +147,7 @@
       "operationFailed": "L'opération a échoué",
       "removeFailed": "Impossible de retirer cet ami"
     },
-     "pageTitle": "Amis"
+    "pageTitle": "Amis"
   },
   "screeningDetails": {
     "unavailable": {
@@ -181,6 +181,68 @@
       "pastSession": "Vous ne pouvez pas modifier votre participation pour une séance passée.",
       "saveFailed": "Une erreur est survenue lors de l'enregistrement de votre participation."
     }
+  },
+  "admin": {
+    "loading": "Chargement des membres...",
+    "heading": "Administration du club",
+    "badge": "Admin uniquement",
+    "searchPlaceholder": "Rechercher un utilisateur par nom...",
+    "filters": {
+      "all": "Tous les utilisateurs",
+      "admins": "Admins uniquement",
+      "members": "Membres uniquement",
+      "banned": "Bannis uniquement"
+    },
+    "table": {
+      "users": "UTILISATEURS",
+      "role": "RÔLE",
+      "joinedDate": "DATE D'INSCRIPTION",
+      "activity": "ACTIVITÉ (RSVPs)",
+      "actions": "ACTIONS"
+    },
+    "roles": {
+      "banned": "Banni",
+      "admin": "Admin",
+      "member": "Membre"
+    },
+    "activity": {
+      "attended": "{{count}} participées",
+      "upcoming": "{{count}} à venir"
+    },
+    "actions": {
+      "resign": "Démissionner (Retirer mon rôle Admin)",
+      "cannotEditCoAdmin": "Impossible de modifier un co-admin",
+      "unban": "Débannir",
+      "makeAdmin": "Nommer Admin"
+    },
+    "tooltips": {
+      "viewProfile": "Cliquer pour voir le profil",
+      "permanentlyRemove": "Supprimer définitivement l'utilisateur",
+      "banUser": "Bannir l'utilisateur",
+      "removeUser": "Supprimer l'utilisateur"
+    },
+    "empty": "Aucun utilisateur ne correspond à vos critères.",
+    "pagination": {
+      "showing": "Affichage de {{start}} à {{end}} sur {{total}} utilisateurs",
+      "rowsPerPage": "Lignes par page",
+      "perPage": "{{count}} / page",
+      "prev": "Préc.",
+      "next": "Suiv."
+    },
+    "confirm": {
+      "makeAdmin": "Voulez-vous vraiment promouvoir cet utilisateur en tant qu'Admin ?",
+      "remove": "Voulez-vous vraiment supprimer définitivement cet utilisateur du club ?",
+      "ban": "Voulez-vous vraiment bannir cet utilisateur ?",
+      "unban": "Voulez-vous vraiment débannir cet utilisateur ?",
+      "resign": "Voulez-vous vraiment retirer vos droits d'Admin ? Vous perdrez l'accès à ce tableau de bord."
+    },
+    "errors": {
+      "makeAdmin": "Échec de la promotion en tant qu'Admin.",
+      "remove": "Échec de la suppression de l'utilisateur.",
+      "ban": "Échec du bannissement de l'utilisateur.",
+      "unban": "Échec du débannissement de l'utilisateur.",
+      "lastAdmin": "⚠️ Vous êtes le dernier admin du club ! Veuillez promouvoir un autre membre avant de démissionner.",
+      "resign": "Échec de la démission."
+    }
   }
- 
 }

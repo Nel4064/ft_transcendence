@@ -181,5 +181,68 @@
       "pastSession": "无法修改已结束场次的报名状态。",
       "saveFailed": "保存报名状态时发生错误。"
     }
+  },
+  "admin": {
+    "loading": "正在加载成员列表...",
+    "heading": "俱乐部管理",
+    "badge": "仅限管理员",
+    "searchPlaceholder": "按名称搜索用户...",
+    "filters": {
+      "all": "全部用户",
+      "admins": "仅管理员",
+      "members": "仅普通成员",
+      "banned": "仅已封禁"
+    },
+    "table": {
+      "users": "用户",
+      "role": "角色",
+      "joinedDate": "加入日期",
+      "activity": "活跃度 (报名记录)",
+      "actions": "操作"
+    },
+    "roles": {
+      "banned": "已封禁",
+      "admin": "管理员",
+      "member": "成员"
+    },
+    "activity": {
+      "attended": "已参加 {{count}} 场",
+      "upcoming": "即将参加 {{count}} 场"
+    },
+    "actions": {
+      "resign": "卸任（取消我的管理员权限）",
+      "cannotEditCoAdmin": "无法编辑其他管理员",
+      "unban": "解封",
+      "makeAdmin": "设为管理员"
+    },
+    "tooltips": {
+      "viewProfile": "点击查看资料",
+      "permanentlyRemove": "永久移除用户",
+      "banUser": "封禁用户",
+      "removeUser": "移除用户"
+    },
+    "empty": "未找到符合条件的用户。",
+    "pagination": {
+      "showing": "显示第 {{start}} 至 {{end}} 条，共 {{total}} 位用户",
+      "rowsPerPage": "每页行数",
+      "perPage": "{{count}} 条 / 页",
+      "prev": "上一页",
+      "next": "下一页"
+    },
+    "confirm": {
+      "makeAdmin": "确定要将该用户提升为管理员吗？",
+      "remove": "确定要将该用户永久移出俱乐部吗？",
+      "ban": "确定要封禁该用户吗？",
+      "unban": "确定要解封该用户吗？",
+      "resign": "确定要取消自己的管理员权限吗？之后你将无法访问此管理面板。"
+    },
+    "errors": {
+      "makeAdmin": "提升管理员失败。",
+      "remove": "移除用户失败。",
+      "ban": "封禁用户失败。",
+      "unban": "解封用户失败。",
+      "lastAdmin": "⚠️ 你是俱乐部最后一名管理员！请先将其他成员设为管理员后再卸任。",
+      "resign": "卸任失败。"
+    }
   }
 }

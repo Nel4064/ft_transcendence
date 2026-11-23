@@ -181,6 +181,69 @@
       "pastSession": "You cannot modify the RSVP for a past session.",
       "saveFailed": "An error occurred while saving your RSVP."
     }
+  },
+  "admin": {
+    "loading": "Loading members...",
+    "heading": "Club Administration",
+    "badge": "Admin Only",
+    "searchPlaceholder": "Search user by name...",
+    "filters": {
+      "all": "All Users",
+      "admins": "Admins Only",
+      "members": "Members Only",
+      "banned": "Banned Only"
+    },
+    "table": {
+      "users": "USERS",
+      "role": "ROLE",
+      "joinedDate": "JOINED DATE",
+      "activity": "ACTIVITY (RSVPs)",
+      "actions": "ACTIONS"
+    },
+    "roles": {
+      "banned": "Banned",
+      "admin": "Admin",
+      "member": "Member"
+    },
+    "activity": {
+      "attended": "{{count}} Attended",
+      "upcoming": "{{count}} Upcoming"
+    },
+    "actions": {
+      "resign": "Resign (Remove my Admin)",
+      "cannotEditCoAdmin": "Cannot edit co-admin",
+      "unban": "Unban",
+      "makeAdmin": "Make Admin"
+    },
+    "tooltips": {
+      "viewProfile": "Click to view profile",
+      "permanentlyRemove": "Permanently Remove User",
+      "banUser": "Ban User",
+      "removeUser": "Remove User"
+    },
+    "empty": "No users found matching your criteria.",
+    "pagination": {
+      "showing": "Showing {{start}} to {{end}} of {{total}} users",
+      "rowsPerPage": "Rows per page",
+      "perPage": "{{count}} / page",
+      "prev": "Prev",
+      "next": "Next"
+    },
+    "confirm": {
+      "makeAdmin": "Are you sure you want to promote this user to Admin?",
+      "remove": "Are you sure you want to permanently remove this user from the club?",
+      "ban": "Are you sure you want to ban this user?",
+      "unban": "Are you sure you want to unban this user?",
+      "resign": "Are you sure you want to remove your own Admin rights? You will lose access to this dashboard."
+    },
+    "errors": {
+      "makeAdmin": "Failed to promote user to Admin.",
+      "remove": "Failed to remove user.",
+      "ban": "Failed to ban user.",
+      "unban": "Failed to unban user.",
+      "lastAdmin": "⚠️ You are the last admin in the club! Please promote another member to Admin before resigning.",
+      "resign": "Failed to resign."
+    }
   }
   
 }
