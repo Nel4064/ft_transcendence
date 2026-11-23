@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Shield, Globe, MessageCircle, Check } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import Loader from '../../components/Loader/Loader';
+import Heading from '../../components/Heading/Heading';
 
 interface UserProfile {
   id: string;
@@ -8,22 +11,48 @@ interface UserProfile {
   displayName: string;
   avatarUrl?: string;
   bio?: string;
+  role?: 'ADMIN' | 'USER';
+  language?: 'EN' | 'FR' | 'ES';
+  isFriend?: boolean;
 }
+
+const LANGUAGE_LABELS: Record<string, string> = {
+  EN: 'English',
+  FR: 'Français',
+  ES: 'Español',
+};
 
 export default function UserProfilePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { apiFetch } = useAuth();
-  
+  const { apiFetch, user } = useAuth();
+
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isFriend, setIsFriend] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const [sendingRequest, setSendingRequest] = useState(false);
+  const [requestSent, setRequestSent] = useState(false);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const data = await apiFetch(`/api/users/${id}`);
+        const data: UserProfile = await apiFetch(`/api/users/${id}`);
         setProfile(data);
+
+        if (typeof data.isFriend === 'boolean') {
+          setIsFriend(data.isFriend);
+        } else if (user?.id !== id) {
+          try {
+            const friendsList = await apiFetch('/api/friends');
+            if (Array.isArray(friendsList)) {
+              setIsFriend(friendsList.some((f: any) => f.id === id));
+            }
+          } catch {
+            setIsFriend(false);
+          }
+        }
       } catch (err: any) {
         setError(err.message || 'Failed to load user profile');
       } finally {
@@ -34,23 +63,51 @@ export default function UserProfilePage() {
     if (id) {
       fetchUserProfile();
     }
-  }, [id, apiFetch]);
+  }, [id, apiFetch, user?.id]);
 
-  // Helper function: get the first letters of the first two words in the profile name and uppercase them
+  const handleGoToChat = async () => {
+    if (!profile) return;
+
+    // 1. 已经是好友，直接进入聊天
+    if (isFriend) {
+      navigate(`/chat/${profile.id}`);
+      return;
+    }
+
+    // 2. 还不是好友，弹窗确认后直接发送好友申请
+    const shouldSendRequest = window.confirm(
+      `You need to be friends with ${profile.displayName || profile.username} before chatting. Send a friend request now?`
+    );
+    if (!shouldSendRequest) return;
+
+    setSendingRequest(true);
+    try {
+      await apiFetch('/api/friends/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receiverId: profile.id }),
+      });
+      setRequestSent(true);
+      alert('Friend request sent!');
+    } catch (err: any) {
+      alert(err.message || 'Failed to send friend request');
+    } finally {
+      setSendingRequest(false);
+    }
+  };
+
   const getInitials = (name?: string) => {
     if (!name) return 'U';
     const words = name.trim().split(/\s+/);
     if (words.length >= 2) {
-      // Take the first letters of the first two words
       return (words[0][0] + words[1][0]).toUpperCase();
     } else {
-      // If there is only one word, take the first two letters capitalized
       return name.slice(0, 2).toUpperCase();
     }
   };
 
   if (loading) {
-    return <div className="text-center py-20 text-text-muted">Loading...</div>;
+    return <Loader />;
   }
 
   if (error || !profile) {
@@ -80,22 +137,45 @@ export default function UserProfilePage() {
 
         {/* User profile display card */}
         <div className="flex flex-col items-center gap-4 p-8 bg-surface border border-border rounded-md shadow-card text-center">
-          {/* Custom avatar rendering: display image if avatarUrl exists, otherwise display profile initials */}
+          {/* Custom avatar rendering */}
           <div className="w-[100px] h-[100px] bg-brand/20 text-brand rounded-full flex items-center justify-center text-2xl font-bold overflow-hidden shadow-inner">
             {profile.avatarUrl ? (
-              <img 
-                src={profile.avatarUrl} 
-                alt={profile.displayName || profile.username} 
-                className="w-full h-full object-cover" 
+              <img
+                src={profile.avatarUrl}
+                alt={profile.displayName || profile.username}
+                className="w-full h-full object-cover"
               />
             ) : (
-              getInitials(profile.displayName)
+              getInitials(profile.displayName || profile.username)
             )}
           </div>
-          
+
           <div>
-            <h1 className="font-serif text-2xl text-text font-bold">{profile.displayName || profile.username}</h1>
+            <Heading level="section" as="h1">{profile.displayName || profile.username}</Heading>
             <p className="text-text-muted text-sm">@{profile.username}</p>
+
+            {/* Role & Language Badges */}
+            <div className="flex items-center justify-center gap-2 mt-3">
+              {profile.role && (
+                <span
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
+                    profile.role === 'ADMIN'
+                      ? 'bg-amber-100 text-amber-800'
+                      : 'bg-stone-100 text-stone-700'
+                  }`}
+                >
+                  {profile.role === 'ADMIN' && <Shield className="w-3.5 h-3.5" />}
+                  {profile.role === 'ADMIN' ? 'Admin' : 'Member'}
+                </span>
+              )}
+
+              {profile.language && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-stone-100 text-stone-700">
+                  <Globe className="w-3.5 h-3.5 text-stone-500" />
+                  {LANGUAGE_LABELS[profile.language] || profile.language}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Bio section */}
@@ -107,14 +187,31 @@ export default function UserProfilePage() {
           </div>
 
           {/* Action buttons */}
-          <div className="flex gap-3 w-full mt-2">
-            <button
-              onClick={() => alert(`Redirecting to chat with ${profile.username}`)}
-              className="flex-1 py-2 px-4 rounded-md bg-brand hover:bg-brand-hover text-white text-sm font-bold cursor-pointer transition-colors"
-            >
-              go to chat
-            </button>
-          </div>
+          {user?.id !== profile.id && (
+            <div className="flex gap-3 w-full mt-2">
+              <button
+                onClick={handleGoToChat}
+                disabled={sendingRequest || requestSent}
+                className={`flex-1 py-2 px-4 rounded-md text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors ${
+                  requestSent
+                    ? 'bg-stone-400 cursor-not-allowed'
+                    : 'bg-brand hover:bg-brand-hover cursor-pointer'
+                }`}
+              >
+                {requestSent ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Friend Request Sent
+                  </>
+                ) : (
+                  <>
+                    <MessageCircle className="w-4 h-4" />
+                    {sendingRequest ? 'Sending Request...' : 'Go to Chat'}
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </main>

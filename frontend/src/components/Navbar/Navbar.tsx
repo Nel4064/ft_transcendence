@@ -16,8 +16,8 @@ function Navbar() {
     const { user, apiFetch } = useAuth();
     const [pendingCount, setPendingCount] = useState(0);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    // ✨ 拆分 1：负责拉取数据的普通函数（不再用 useCallback 绕来绕去）
     const fetchCounts = async () => {
         if (!user?.id) return;
         try {
@@ -32,78 +32,140 @@ function Navbar() {
         }
     };
 
-    // ✨ 拆分 2：只负责【初始加载】和【本地接受/拒绝点击】的更新
     useEffect(() => {
         if (!user?.id) return;
-        
-        fetchCounts(); // 初始加载
+
+        fetchCounts();
 
         const handleLocalUpdate = () => {
-            console.log('🔄 Navbar 监听到本地数据变化，正在刷新红点...');
             fetchCounts();
         };
-        
+
         window.addEventListener('update_navbar', handleLocalUpdate);
         return () => window.removeEventListener('update_navbar', handleLocalUpdate);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.id]); // ⚠️ 故意不写 fetchCount 和 apiFetch，防止死循环
+    }, [user?.id]);
 
-    // ✨ 拆分 3：只负责【WebSocket】监听
     useEffect(() => {
         if (!user?.id) return;
-
-        console.log('🔌 Navbar 正在连接 WebSocket...');
         const socket = io('/notifications', { transports: ['websocket'] });
 
         socket.on('connect', () => {
-            console.log('✅ Navbar WebSocket 连接成功! ID:', socket.id);
+            console.log('✅ Navbar WebSocket connection success! ID:', socket.id);
         });
 
         socket.on('notification', () => {
             fetchCounts();
         });
 
-
         return () => {
-            console.log('❌ Navbar WebSocket 断开连接');
+            console.log('❌ Navbar WebSocket disconnect');
             socket.disconnect();
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.id]); // ⚠️ 绝对不能把 apiFetch 放进这里，否则会无限断开重连！
+    }, [user?.id]);
+
+    const closeMenu = () => setIsMobileMenuOpen(false);
+    const hasAnyAlert = pendingCount > 0 || unreadCount > 0;
 
     return (
-        <nav className="flex items-center py-[18px] px-10 bg-surface border-b border-border shadow-card">
-            <div className="mr-auto">
-                <Logo />
-            </div>
-            {user && (
-                <div className="flex gap-10">
-                    {user.role === 'ADMIN' && (
-                        <NavLink to="/select-movies" className={linkClassAdmin}>Select Movies</NavLink>
-                    )}
-                    {user.role === 'ADMIN' && (
-                        <NavLink to="/manage-members" className={linkClassAdmin}>Manage Members</NavLink>
-                    )}
-                    <NavLink to="/screenings" className={linkClass}>Screenings</NavLink>
-                    <NavLink to="/calendar" className={linkClass}>Calendar</NavLink>
+        <nav className="relative bg-surface border-b border-border shadow-card">
+            <div className="flex items-center justify-between py-3 sm:py-[18px] px-4 sm:px-6 lg:px-10">
+                <div className="mr-auto" onClick={closeMenu}>
+                    <Logo />
+                </div>
 
-                    <NavLink to="/friends" className={`${linkClass} relative`}>
-                        Friends
-                        <Alert show={pendingCount > 0} />
+                {/* desktop */}
+                {user && (
+                    <div className="hidden lg:flex items-center gap-6 xl:gap-10">
+                        {user.role === 'ADMIN' && (
+                            <NavLink to="/select-movies" className={linkClassAdmin}>Select Movies</NavLink>
+                        )}
+                        {user.role === 'ADMIN' && (
+                            <NavLink to="/admin" className={linkClassAdmin}>Manage Members</NavLink>
+                        )}
+                        <NavLink to="/screenings" className={linkClass}>Screenings</NavLink>
+                        <NavLink to="/calendar" className={linkClass}>Calendar</NavLink>
+
+                        <NavLink to="/friends" className={`${linkClass} relative`}>
+                            Friends
+                            <Alert show={pendingCount > 0} />
+                        </NavLink>
+                        <NavLink to="/notifications" className={`${linkClass} relative`}>
+                            Notifications
+                            <Alert show={unreadCount > 0} />
+                        </NavLink>
+                    </div>
+                )}
+
+                {/* Right actions: mobile hamburger button + avatar / login button */}
+                <div className="flex items-center gap-3 sm:gap-5 lg:ml-7">
+                    {user && (
+                        <button
+                            type="button"
+                            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                            aria-label="Toggle navigation menu"
+                            aria-expanded={isMobileMenuOpen}
+                            className="lg:hidden relative p-2 rounded-md text-text-muted hover:text-text hover:bg-bg transition-colors"
+                        >
+                            {isMobileMenuOpen ? (
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            ) : (
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                            )}
+                            {/* When the menu is collapsed, show a red dot on the top-right corner of the hamburger icon if there are unread messages or friend requests */}
+                            {!isMobileMenuOpen && <Alert show={hasAnyAlert} />}
+                        </button>
+                    )}
+
+                    {user ? (
+                        <NavLink to="/profile" onClick={closeMenu} className="shrink-0">
+                            <Avatar src={user?.avatarUrl ? user.avatarUrl : undefined} size={56} />
+                        </NavLink>
+                    ) : (
+                        <NavLink to="/signin" className={buttonClass("primary", "md")}>Login</NavLink>
+                    )}
+                </div>
+            </div>
+
+            {/* Collapsible menu for mobile / tablet */}
+            {user && isMobileMenuOpen && (
+                <div className="lg:hidden flex flex-col gap-4 px-4 sm:px-6 pt-3 pb-5 bg-surface border-t border-border">
+                    {user.role === 'ADMIN' && (
+                        <NavLink to="/select-movies" onClick={closeMenu} className={`${linkClassAdmin} py-1`}>
+                            Select Movies
+                        </NavLink>
+                    )}
+                    {user.role === 'ADMIN' && (
+                        <NavLink to="/admin" onClick={closeMenu} className={`${linkClassAdmin} py-1`}>
+                            Manage Members
+                        </NavLink>
+                    )}
+                    <NavLink to="/screenings" onClick={closeMenu} className={`${linkClass} py-1`}>
+                        Screenings
                     </NavLink>
-                    <NavLink to="/notifications" className={`${linkClass} relative`}>
-                        Notifications
-                        <Alert show={unreadCount > 0} />
+                    <NavLink to="/calendar" onClick={closeMenu} className={`${linkClass} py-1`}>
+                        Calendar
+                    </NavLink>
+                    <NavLink to="/friends" onClick={closeMenu} className={`${linkClass} py-1 flex items-center justify-between`}>
+                        <span>Friends</span>
+                        {pendingCount > 0 && (
+                            <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-red-500 text-white">
+                                {pendingCount}
+                            </span>
+                        )}
+                    </NavLink>
+                    <NavLink to="/notifications" onClick={closeMenu} className={`${linkClass} py-1 flex items-center justify-between`}>
+                        <span>Notifications</span>
+                        {unreadCount > 0 && (
+                            <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-red-500 text-white">
+                                {unreadCount}
+                            </span>
+                        )}
                     </NavLink>
                 </div>
-            )}
-
-            {user ? (
-                <NavLink to="/profile" className="ml-7 shrink-0">
-                    <Avatar src={user?.avatarUrl ? user.avatarUrl : undefined} size={70} />
-                </NavLink>
-            ) : (
-                <NavLink to="/signin" className={buttonClass("primary", "md", "ml-7")}>Login</NavLink>
             )}
         </nav>
     );

@@ -20,6 +20,7 @@ import UserProfilePage from './pages/profile/UserProfilePage'
 import ScreeningsList from './pages/screenings/ScreeningsList'
 import CalendarPage from './pages/calendar/CalendarPage'
 import ChatPage from './pages/chat/ChatPage'
+import AdminDashboard from './pages/admin/AdminDashboard'
 
 
 function App() {
@@ -53,6 +54,7 @@ function App() {
 				<Route element={<ProtectedRoute adminOnly />}>
 					<Route path="/select-movies" element={<SelectMoviesPage />} />
 					<Route path="/manage-members" element={<ManageMembersPage />} />
+					<Route path="/admin" element={<AdminDashboard />} />
 				</Route>
 
 					<Route path="*" element={

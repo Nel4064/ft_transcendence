@@ -1,7 +1,9 @@
 import Button from '../button/Button';
-import Avatar from '../Avatar/Avatar';
+import Input from '../Input/Input';
+import EmptyState from '../EmptyState/EmptyState';
+import Loader from '../Loader/Loader';
+import FriendsCard from './FriendsCard';
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { io } from 'socket.io-client'; // ✨ 引入 socket.io-client
 import {
@@ -45,7 +47,9 @@ export default function FriendsManager() {
 
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
-    const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+	const [friendsError, setFriendsError] = useState<string | null>(null);
+	const [requestsError, setRequestsError] = useState<string | null>(null);
 
     useEffect(() => {
         sessionStorage.setItem('friends_activeTab', activeTab);
@@ -55,8 +59,10 @@ export default function FriendsManager() {
         try {
             const data = await getFriends(apiFetch);
             setFriends(data);
+			setFriendsError(null);
         } catch (err) {
             console.error('Failed to fetch friends list', err);
+			setFriendsError('Could not load your friends. Please try again later.');
         }
     };
 
@@ -64,15 +70,17 @@ export default function FriendsManager() {
         try {
             const data = await getPendingRequests(apiFetch);
             setPendingRequests(data);
+			setRequestsError(null);
         } catch (err) {
             console.error('Failed to fetch friend requests', err);
+			setRequestsError('Could not load your friend requests. Please try again later.');
         }
     };
 
     // 初始拉取数据
     useEffect(() => {
-        fetchFriends();
-        fetchPendingRequests();
+		Promise.all([fetchFriends(), fetchPendingRequests()])
+			.finally(() => setLoading(false));
     }, [apiFetch]);
 
     const showNotification = (text: string, type: 'success' | 'error') => {
@@ -115,6 +123,7 @@ export default function FriendsManager() {
             setSearchResults(data);
         } catch (err) {
             console.error('Failed to search users', err);
+			showNotification('Search failed, please try again', 'error');
         }
     };
 
@@ -159,27 +168,12 @@ export default function FriendsManager() {
     };
 
     return (
-        <div className="max-w-2xl mx-auto my-12 p-6 bg-surface border border-border text-text rounded-lg shadow-card relative">
+        <div className="text-text">
             {message && (
-                <div className={`mb-4 p-3 rounded-lg text-sm ${message.type === 'success' ? 'bg-admin' : 'bg-danger'}`}>
+                <div className={`mb-4 p-3 rounded-lg text-sm ${message.type === 'success' ? 'bg-success' : 'bg-danger'}`}>
                     {message.text}
                 </div>
             )}
-
-            {/* Top Header & Close Button */}
-            <div className="flex items-center justify-between mb-6">
-                <h2 className="font-serif font-bold text-section text-text">Friends Center</h2>
-                <button
-                    onClick={() => {
-                        sessionStorage.removeItem('friends_activeTab');
-                        navigate('/');
-                    }}
-                    className="w-8 h-8 flex items-center justify-center text-text-muted hover:text-text hover:bg-bg rounded-lg transition-colors"
-                    title="Close / Back to Home"
-                >
-                    ✕
-                </button>
-            </div>
 
             {/* Navigation Tabs */}
             <div className="flex border-b border-border mb-6">
@@ -214,37 +208,25 @@ export default function FriendsManager() {
             {/* Tab 1: Friends List */}
             {activeTab === 'friends' && (
                 <div className="space-y-3">
-                    {friends.length === 0 ? (
-                        <p className="text-text-muted text-center py-8">No friends yet, go add some!</p>
+                    {loading ? (
+						<Loader text="Loading friends..." />
+					) : friendsError ? (
+						<p className="text-danger text-center py-8">{friendsError}</p>
+					) : friends.length === 0 ? (
+                        <EmptyState message="No friends yet, go add some!" />
                     ) : (
                         friends.map((friend) => (
-                            <div key={friend.id} className="flex items-center justify-between p-3 bg-bg border border-border rounded-md">
-                                <div className="flex items-center space-x-3">
-                                    <div
-                                        onClick={() => navigate(`/users/${friend.id}`)}
-                                        className="cursor-pointer hover:opacity-80 transition-opacity"
-                                        title="Click to view profile"
-                                    >
-										<Avatar src={friend.avatarUrl} name={friend.displayName || friend.username} size={40} />
-                                    </div>
-                                    <div>
-                                        <div className="font-semibold">{friend.displayName || friend.username}</div>
-                                        <div className="text-xs text-text-muted">@{friend.username}</div>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center space-x-2">
-                                    <Button onClick={() => navigate(`/chat/${friend.id}`)}>
-                                        Chat
-                                    </Button>
-                                    <Button
-										variant="danger"
-                                        onClick={() => handleRemoveFriend(friend.id, friend.displayName || friend.username)}
-									>
-                                        Remove
-                                    </Button>
-                                </div>
-                            </div>
+							<FriendsCard key={friend.id} user={friend} subtitle={`@${friend.username}`}>
+								<Button onClick={() => alert(`Redirecting to chat with ${friend.username}`)}>
+									Chat
+								</Button>
+								<Button
+									variant="danger"
+									onClick={() => handleRemoveFriend(friend.id, friend.displayName || friend.username)}
+								>
+									Remove
+								</Button>
+							</FriendsCard>
                         ))
                     )}
                 </div>
@@ -253,35 +235,22 @@ export default function FriendsManager() {
             {/* Tab 2: Friend Requests */}
             {activeTab === 'requests' && (
                 <div className="space-y-3">
-                    {pendingRequests.length === 0 ? (
-                        <p className="text-text-muted text-center py-8">No new friend requests</p>
+					{loading ? (
+						<Loader text="Loading requests..." />
+					) : requestsError ? (
+						<p className="text-danger text-center py-8">{requestsError}</p>
+					) : pendingRequests.length === 0 ? (
+						<EmptyState message="No new friend requests" />
                     ) : (
-                        pendingRequests.map((req) => (
-                            <div key={req.id} className="flex items-center justify-between p-3 bg-bg border border-border rounded-md">
-                                <div className="flex items-center space-x-3">
-                                    <div
-                                        onClick={() => navigate(`/users/${req.sender.id}`)}
-                                        className="cursor-pointer hover:opacity-80 transition-opacity"
-                                        title="Click to view profile"
-                                    >
-										<Avatar src={req.sender.avatarUrl} name={req.sender.displayName || req.sender.username} size={40} />
-                                    </div>
-                                    <div>
-                                        <div className="font-semibold">{req.sender.displayName || req.sender.username}</div>
-                                        <div className="text-xs text-text-muted">Wants to add you as a friend</div>
-                                    </div>
-                                </div>
-                                <div className="flex space-x-2">
-                                    <Button
-                                        onClick={() => handleRequestAction(req.id, 'accept')}>Accept
-                                    </Button>
-                                    <Button
-										variant="secondary"
-                                        onClick={() => handleRequestAction(req.id, 'reject')}>
-                                        Reject
-                                    </Button>
-                                </div>
-                            </div>
+						pendingRequests.map((req) => (
+							<FriendsCard key={req.id} user={req.sender} subtitle="Wants to add you as a friend">
+								<Button onClick={() => handleRequestAction(req.id, 'accept')}>
+									Accept
+								</Button>
+								<Button variant="secondary" onClick={() => handleRequestAction(req.id, 'reject')}>
+									Reject
+								</Button>
+							</FriendsCard>
                         ))
                     )}
                 </div>
@@ -291,7 +260,8 @@ export default function FriendsManager() {
             {activeTab === 'search' && (
                 <div>
                     <form onSubmit={handleSearch} className="flex space-x-2 mb-6">
-                        <input
+                        <Input
+                            size="md"
                             type="text"
                             value={searchKeyword}
                             onChange={(e) => {
@@ -302,7 +272,7 @@ export default function FriendsManager() {
                                 }
                             }}
                             placeholder="Enter username or display name..."
-                            className="flex-1 bg-surface border border-border rounded-md px-4 py-2 text-text placeholder-text-light focus:outline-none focus:border-brand"
+                            className="flex-1"
                         />
                         <Button type="submit" size="lg">Search</Button>
                     </form>
@@ -314,31 +284,17 @@ export default function FriendsManager() {
                             </p>
                         ) : (
                             searchResults.map((user) => (
-                                <div key={user.id} className="flex items-center justify-between p-3 bg-bg border border-border rounded-md">
-                                    <div className="flex items-center space-x-3">
-                                        <div
-                                            onClick={() => navigate(`/users/${user.id}`)}
-                                            className="cursor-pointer hover:opacity-80 transition-opacity"
-                                            title="Click to view profile"
-                                        >
-											<Avatar src={user.avatarUrl} name={user.displayName || user.username} size={40} />
-                                        </div>
-                                        <div>
-                                            <div className="font-semibold">{user.displayName || user.username}</div>
-                                            <div className="text-xs text-text-muted">@{user.username}</div>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <Button onClick={() => sendRequest(user.id)}>Add Friend</Button>
-                                        <button
-                                            onClick={() => setSearchResults(searchResults.filter((u) => u.id !== user.id))}
-                                            className="w-8 h-8 flex items-center justify-center text-text-muted hover:text-text hover:bg-bg rounded-lg transition-colors"
-                                            title="Close"
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
-                                </div>
+								<FriendsCard key={user.id} user={user} subtitle={`@${user.username}`}>
+									<Button onClick={() => sendRequest(user.id)}>Add Friend</Button>
+									<button
+										type="button"
+										onClick={() => setSearchResults(searchResults.filter((u) => u.id !== user.id))}
+										className="w-8 h-8 flex items-center justify-center text-text-muted hover:text-text hover:bg-bg rounded-lg transition-colors"
+										title="Hide this result"
+									>
+										✕
+									</button>
+								</FriendsCard> 
                             ))
                         )}
                     </div>

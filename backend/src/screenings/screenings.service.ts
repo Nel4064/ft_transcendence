@@ -64,12 +64,12 @@ export class ScreeningsService {
   }
 
   async pick(cineid: number, showid: string, actorId: string) {
-    const res = await fetch(`${FEED}?cineid_eq=${cineid}&showid_eq=${encodeURIComponent(showid)}`);
+    const res = await fetch(`${FEED}?showid_eq=${encodeURIComponent(showid)}`);
     const r = (await res.json()).results?.[0];
     if (!r) throw new NotFoundException('Screening not in feed');
     const minutes = Math.round(r.filmduration / 60);
     const data = {
-      externalCinemaId: r.cineid,
+      externalCinemaId: r.cineid ?? (cineid || 0),
       externalShowId: r.showid,
       filmTitle: r.filmtitle,
       director: clean(r.filmdirector),
@@ -93,19 +93,26 @@ export class ScreeningsService {
       cinemaLongitude: r['_coords.lon'] ?? null,
     };
     const key = { externalCinemaId: data.externalCinemaId, externalShowId: data.externalShowId };
-    const screening = await this.prisma.screening.upsert({ where: { externalCinemaId_externalShowId: key }, create: data, update: data });
+    const screening = await this.prisma.screening.upsert({
+      where: { externalCinemaId_externalShowId: key },
+      create: data,
+      update: data
+    });
     await this.notifications.notifyAllUsers('CLUB_PICK', {
       screeningId: screening.id,
       filmTitle: screening.filmTitle,
       cinemaName: screening.cinemaName,
       startsAt: screening.startsAt.toISOString(),
     }, actorId);
+
     return screening;
   }
 
   async unpick(cineid: number, showid: string, actorId: string) {
-    const key = { externalCinemaId: cineid, externalShowId: showid };
-    const screening = await this.prisma.screening.delete({ where: { externalCinemaId_externalShowId: key } });
+    const key = { externalCinemaId: cineid || 0, externalShowId: showid };
+    const screening = await this.prisma.screening.delete({
+      where: { externalCinemaId_externalShowId: key }
+    });
     await this.notifications.notifyAllUsers('CLUB_PICK_REMOVED', {
       screeningId: screening.id,
       filmTitle: screening.filmTitle,
@@ -156,7 +163,7 @@ export class ScreeningsService {
   async addRsvp(userId: string, screeningId: string) {
     const screening = await this.prisma.screening.findUnique({
       where: { id: screeningId },
-      select: { startsAt: true }
+      select: { startsAt: true, filmTitle: true }
     });
     if (!screening) {
       throw new NotFoundException("La séance n'est plus disponible.");
@@ -165,16 +172,29 @@ export class ScreeningsService {
       throw new BadRequestException("Vous ne pouvez pas RSVP pour une séance passée.");
     }
 
-    await this.prisma.rsvp.upsert({
-      where: {
-        userId_screeningId: { userId, screeningId }
-      },
-      update: {},
-      create: {
-        userId,
-        screeningId
-      }
+    const { count } = await this.prisma.rsvp.createMany({
+      data: [{ userId, screeningId }],
+      skipDuplicates: true,
     });
+    if (count === 0) return { isGoing: true };   // already going: nothing new, nobody to notify
+
+    const friendships = await this.prisma.friendship.findMany({
+      where: { userId },
+      select: { friendId: true },
+    });
+    const friendIds = friendships.map(f => f.friendId);
+
+    await this.notifications.notifyUsers(
+      'FRIEND_RSVP',
+      {
+        screeningId,
+        filmTitle: screening.filmTitle,
+        startsAt: screening.startsAt.toISOString(),
+      },
+      userId,
+      friendIds
+    );
+
     return { isGoing: true };
   }
 

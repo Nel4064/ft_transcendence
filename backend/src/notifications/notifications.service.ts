@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { NotificationsGateway } from './notifications.gateway';
 
-type NotificationKind = 'CLUB_PICK' | 'CLUB_PICK_REMOVED';
+type NotificationKind = 'CLUB_PICK' | 'CLUB_PICK_REMOVED' | 'FRIEND_REQUEST' | 'FRIEND_ACCEPTED' | 'FRIEND_RSVP';
 
 @Injectable()
 export class NotificationsService {
@@ -14,11 +14,18 @@ export class NotificationsService {
   // Saves one notification per user except the actor, then pushes it live to connected browsers
   async notifyAllUsers(type: NotificationKind, payload: Record<string, string>, actorId: string) {
     const users = await this.prisma.user.findMany({
-      where: { id: { not: actorId } },
       select: { id: true },
     });
+    await this.notifyUsers(type, payload, actorId, users.map((u) => u.id));
+  }
+
+// Saves one notification par recipient(never the actor), then pushes over the socket
+  async notifyUsers(type: NotificationKind, payload: Record<string, string>, actorId: string, recipientIds: string[]) {
+    const ids = [...new Set(recipientIds)].filter((id) => id !== actorId);
+    if (ids.length === 0) return;
+
     await this.prisma.notification.createMany({
-      data: users.map((u) => ({ userId: u.id, type, payload, actorId })),
+      data: ids.map((userId) => ({ userId, type, payload, actorId })),
     });
     this.gateway.sendNotification({ type, payload, createdAt: new Date().toISOString() });
   }

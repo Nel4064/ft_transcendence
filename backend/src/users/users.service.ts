@@ -1,10 +1,11 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfileDto } from '../auth/dto/auth.dto';
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { ChangePasswordDto } from '../auth/dto/auth.dto'
 import * as fs from 'fs';
 import * as path from 'path';
+import { Role } from '@generated/prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -144,5 +145,7 @@ export class UsersService {
 
     return { message: 'Password changed successfully' };
   }
+
+  
 
 }

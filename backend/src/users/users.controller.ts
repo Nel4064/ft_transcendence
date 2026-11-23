@@ -1,16 +1,17 @@
-import { 
-  Body, 
-  Controller, 
-  Get, 
-  Param, 
-  Patch, 
-  Post, 
-  Req, 
-  UseGuards, 
-  UseFilters, 
-  UseInterceptors, 
-  UploadedFile, 
-  BadRequestException 
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Delete,
+  Req,
+  UseGuards,
+  UseFilters,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException
 } from '@nestjs/common';
 import type { AuthenticatedRequest } from '../auth/authenticated-request';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -20,6 +21,9 @@ import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UpdateProfileDto, ChangePasswordDto } from '../auth/dto/auth.dto';
 import { MulterErrorFilter } from './multer-error.filter';
+import { Roles } from '../auth/roles.decorator';
+import { RolesGuard } from '../auth/roles.guard';
+import { Role } from '@generated/prisma/client';
 
 @Controller('users')
 export class UsersController {
@@ -94,4 +98,5 @@ export class UsersController {
   async getUserPublicProfile(@Param('id') id: string) {
     return this.usersService.getUserPublicProfile(id);
   }
+
 }

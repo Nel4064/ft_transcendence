@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import MoviesList from '../../components/movies/MoviesList'
 import Button from '../../components/button/Button'
+import Input from '../../components/Input/Input'
+import Heading from '../../components/Heading/Heading'
 
-const titleClass = "mb-6 font-serif font-bold text-section text-text"
-const boxClass = "flex items-center gap-4 max-w-[1000px] mx-auto mb-[100px] p-8 bg-surface border border-border rounded-lg shadow-card"
-const inputClass = "flex-1 py-4 px-5 border border-border rounded-md text-control"
-const selectClass = "py-4 px-5 border border-border rounded-md text-control bg-surface cursor-pointer"
+const boxClass = "flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full max-w-[1000px] mx-auto mb-10 sm:mb-16 lg:mb-24 p-4 sm:p-6 lg:p-8 bg-surface border border-border rounded-lg shadow-card"
+const selectClass = "w-full sm:w-auto py-3.5 sm:py-4 px-4 sm:px-5 border border-border rounded-md text-control bg-surface cursor-pointer"
 
 function SelectMoviesPage() {
 	const [searchTerm, setSearchTerm] = useState('')
@@ -13,16 +13,20 @@ function SelectMoviesPage() {
 	const [appliedTerm, setAppliedTerm] = useState('')
 
 	return (
-		<main className="py-12 px-10">
-			<h1 className={titleClass}>Pick screening(s) for the club</h1>
+		<main className="w-full max-w-[1600px] mx-auto py-8 px-4 sm:py-10 sm:px-6 lg:py-12 lg:px-10">
+			<Heading level="section" as="h1" className="mb-6 text-center sm:text-left">
+				Pick screening(s) for the club
+			</Heading>
+
 			<section className={boxClass}>
-				<input
+				<Input
 					id="search"
+					size="xl"
 					type={filter === 'date' ? 'date' : 'text'}
 					value={searchTerm}
 					placeholder="Search for a movie"
 					onChange={(e) => setSearchTerm(e.target.value)}
-					className={inputClass}
+					className="w-full sm:flex-1"
 				/>
 				<select
 					value={filter}
@@ -33,9 +37,17 @@ function SelectMoviesPage() {
 					<option value="cinema">Cinema</option>
 					<option value="date">Date</option>
 				</select>
-				<Button variant="admin" size="xl" onClick={() => setAppliedTerm(searchTerm)}>Search</Button>
+				<Button
+					variant="admin"
+					size="xl"
+					onClick={() => setAppliedTerm(searchTerm)}
+					className="w-full sm:w-auto justify-center"
+				>
+					Search
+				</Button>
 			</section>
-			<section className="grid grid-cols-4 gap-5 max-w-[2000px] mx-auto my-[50px]">
+
+			<section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 max-w-[1600px] mx-auto my-8 sm:my-12 justify-items-center">
 				<MoviesList searchTerm={appliedTerm} filter={filter} perPage={20} />
 			</section>
 		</main>
