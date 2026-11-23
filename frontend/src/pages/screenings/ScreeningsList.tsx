@@ -13,7 +13,7 @@ const ITEMS_PER_PAGE = 5
 const LOCALE_MAP: Record<string, string> = {
     en: 'en-GB',
     fr: 'fr-FR',
-    zh: 'zh-CN',
+    ch: 'zh-CN',
 }
 
 export default function ScreeningsList() {
@@ -24,7 +24,8 @@ export default function ScreeningsList() {
     const [currentPage, setCurrentPage] = useState(1)
     const { apiFetch } = useAuth()
 
-    const dateLocale = LOCALE_MAP[i18n.language?.slice(0, 2)] || 'en-GB'
+    // 👇 加上 .toLowerCase()，兼容大写（如 CN / ZH）
+    const dateLocale = LOCALE_MAP[i18n.language?.toLowerCase().slice(0, 2)] || 'en-GB'
 
     useEffect(() => {
         setIsLoading(true)

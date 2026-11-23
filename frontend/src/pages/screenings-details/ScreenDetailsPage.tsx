@@ -18,7 +18,7 @@ const boxClass = "p-4 bg-surface border border-border rounded-lg shadow-card"
 const LOCALE_MAP: Record<string, string> = {
     en: 'en-GB',
     fr: 'fr-FR',
-    zh: 'zh-CN',
+    ch: 'zh-CN',
 }
 
 // 118 -> "1h58"
