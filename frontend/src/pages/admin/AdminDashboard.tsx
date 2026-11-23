@@ -331,10 +331,13 @@ export default function AdminDashboard() {
                                                     </button>
                                                     <button
                                                         onClick={() => handleRemove(member.id)}
-                                                        className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        title={t('admin.tooltips.permanentlyRemove')}
+                                                        aria-label={t('admin.tooltips.permanentlyRemove')}
+                                                        className="relative group p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                     >
                                                         <Trash2 className="w-5 h-5" />
+                                                        <span className="pointer-events-none absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-md bg-stone-800 px-2.5 py-1 text-xs font-medium text-white opacity-0 shadow-md transition-opacity duration-150 group-hover:opacity-100 z-10">
+                                                            {t('admin.tooltips.permanentlyRemove')}
+                                                        </span>
                                                     </button>
                                                 </>
                                             ) : (
@@ -347,17 +350,23 @@ export default function AdminDashboard() {
                                                     </button>
                                                     <button
                                                         onClick={() => handleBan(member.id)}
-                                                        className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        title={t('admin.tooltips.banUser')}
+                                                        aria-label={t('admin.tooltips.banUser')}
+                                                        className="relative group p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                     >
                                                         <Ban className="w-5 h-5" />
+                                                        <span className="pointer-events-none absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-md bg-stone-800 px-2.5 py-1 text-xs font-medium text-white opacity-0 shadow-md transition-opacity duration-150 group-hover:opacity-100 z-10">
+                                                            {t('admin.tooltips.banUser')}
+                                                        </span>
                                                     </button>
                                                     <button
                                                         onClick={() => handleRemove(member.id)}
-                                                        className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        title={t('admin.tooltips.removeUser')}
+                                                        aria-label={t('admin.tooltips.removeUser')}
+                                                        className="relative group p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                     >
                                                         <Trash2 className="w-5 h-5" />
+                                                        <span className="pointer-events-none absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-md bg-stone-800 px-2.5 py-1 text-xs font-medium text-white opacity-0 shadow-md transition-opacity duration-150 group-hover:opacity-100 z-10">
+                                                            {t('admin.tooltips.removeUser')}
+                                                        </span>
                                                     </button>
                                                 </>
                                             )}
