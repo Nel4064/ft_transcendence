@@ -247,7 +247,15 @@
   },
   "notifications": {
     "heading": "Notifications",
-    "empty": "Aucune notification pour le moment."
+    "empty": "Aucune notification pour le moment.",
+    "types": {
+      "clubPick": "<b>{{actor}}</b> a sélectionné <b>{{film}}</b> ({{date}})",
+      "clubPickRemoved": "<b>{{actor}}</b> a retiré <b>{{film}}</b> ({{date}})",
+      "friendRequest": "<b>{{actor}}</b> vous a envoyé une demande d'ami",
+      "friendAccepted": "<b>{{actor}}</b> a accepté votre demande d'ami",
+      "friendRsvp": "<b>{{actor}}</b> participe à <b>{{film}}</b> ({{date}})",
+      "unknown": "Nouvelle notification inconnue"
+    }
   },
   "movieDetails": {
     "director": "Réalisateur :",

@@ -8,6 +8,7 @@ import { describeNotification } from '../../utils/describeNotification'
 import { formatRelativeTime } from '../../utils/formatRelativeTime'
 import Loader from '../Loader/Loader'
 import EmptyState from '../EmptyState/EmptyState'
+import i18n from '../../i18n'
 
 const listClass = "flex flex-col gap-2.5"
 const errorClass = "text-body text-danger"
@@ -19,6 +20,7 @@ function NotificationsList() {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 	const [, setNow] = useState(Date.now())
+	
 
 	useEffect(() => {
 		const timer = setInterval(() => setNow(Date.now()), 60 * 1000)
@@ -62,7 +64,7 @@ function NotificationsList() {
 				<NotificationsCard
 					key={n.id}
 					message={describeNotification(n)}
-					time={formatRelativeTime(n.createdAt)}
+					time={formatRelativeTime(n.createdAt, i18n.language)}
 					actor={n.actor}
 					unread={n.readAt === null}
 				/>

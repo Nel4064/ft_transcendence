@@ -247,7 +247,15 @@
   },
   "notifications": {
     "heading": "通知",
-    "empty": "暂无通知。"
+    "empty": "暂无通知。",
+    "types": {
+      "clubPick": "<b>{{actor}}</b> 挑选了 <b>{{film}}</b> ({{date}})",
+      "clubPickRemoved": "<b>{{actor}}</b> 移除了 <b>{{film}}</b> ({{date}})",
+      "friendRequest": "<b>{{actor}}</b> 向你发送了好友请求",
+      "friendAccepted": "<b>{{actor}}</b> 接受了你的好友请求",
+      "friendRsvp": "<b>{{actor}}</b> 将参加 <b>{{film}}</b> ({{date}})",
+      "unknown": "新的未知通知"
+    }
   },
   "movieDetails": {
     "director": "导演：",

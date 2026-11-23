@@ -247,7 +247,15 @@
   },
   "notifications": {
     "heading": "Notifications",
-    "empty": "No notifications yet."
+    "empty": "No notifications yet.",
+    "types": {
+      "clubPick": "<b>{{actor}}</b> picked <b>{{film}}</b> ({{date}})",
+      "clubPickRemoved": "<b>{{actor}}</b> unpicked <b>{{film}}</b> ({{date}})",
+      "friendRequest": "<b>{{actor}}</b> sent you a friend request",
+      "friendAccepted": "<b>{{actor}}</b> accepted your friend request",
+      "friendRsvp": "<b>{{actor}}</b> is going to <b>{{film}}</b> ({{date}})",
+      "unknown": "New unknown notification"
+    }
   },
   "movieDetails": {
     "director": "Director:",
