@@ -10,7 +10,7 @@ export class MulterErrorFilter implements ExceptionFilter {
 
     let message = 'File upload error';
     if (exception.code === 'LIMIT_FILE_SIZE') {
-      message = 'The uploaded file is too large. Please keep it under 2MB!'; // 👈 Customize the file size limit message here
+      message = 'The uploaded file is too large.'; // 👈 Customize the file size limit message here
     }
 
     // Return a standardized JSON error so the frontend won't encounter Unexpected token '<' errors
