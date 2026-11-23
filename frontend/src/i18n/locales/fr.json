@@ -9,6 +9,54 @@
     "login": "Connexion",
     "toggleMenu": "Afficher le menu de navigation"
   },
+  "signUp": {
+    "heading": "Créer un compte",
+    "acceptTerms": "J'accepte les <terms>Conditions d'utilisation</terms> et la <privacy>Politique de confidentialité</privacy>",
+    "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "signIn": "Se connecter",
+    "placeholders": {
+      "username": "Votre nom d'utilisateur",
+      "email": "Votre e-mail",
+      "password": "Votre mot de passe",
+      "confirmPassword": "Confirmez votre mot de passe"
+    },
+    "buttons": {
+      "signUp": "S'inscrire",
+      "signInWith42": "Se connecter avec 42"
+    },
+    "errors": {
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "mustAcceptTerms": "Vous devez accepter les conditions d'utilisation",
+      "registrationFailed": "Échec de l'inscription"
+    }
+  },
+  "signIn": {
+    "twoFactorHeading": "Authentification à deux facteurs",
+    "twoFactorPrompt": "Saisissez le code à 6 chiffres de votre application d'authentification.",
+    "newUser": "Nouveau ?",
+    "createAccount": "Créer un compte",
+    "placeholders": {
+      "identifier": "E-mail ou nom d'utilisateur",
+      "password": "Mot de passe",
+      "twoFactorCode": "Code de vérification à 6 chiffres"
+    },
+    "buttons": {
+      "pleaseWait": "Veuillez patienter...",
+      "verifyCode": "Vérifier le code",
+      "signIn": "Se connecter",
+      "signInWith42": "Se connecter avec 42",
+      "backToSignIn": "Retour à la connexion"
+    },
+    "errors": {
+      "twoFactorEnabled": "La 2FA est activée. Veuillez saisir le code à 6 chiffres de votre application d'authentification.",
+      "oauthFailed": "Échec de la connexion 42 OAuth : {{error}}",
+      "enterCode": "Veuillez saisir le code à 6 chiffres",
+      "loginFailed": "Échec de la connexion",
+      "missingUserId": "Identifiant utilisateur manquant. Veuillez vous reconnecter.",
+      "invalidCode": "Veuillez saisir un code valide à 6 chiffres",
+      "twoFactorFailed": "Échec de la vérification 2FA"
+    }
+  },
   "profile": {
     "avatar": {
       "changeTitle": "Cliquez pour changer d'avatar",
