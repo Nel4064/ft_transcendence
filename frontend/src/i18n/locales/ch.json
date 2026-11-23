@@ -1,0 +1,46 @@
+{
+  "profile": {
+    "avatar": {
+      "changeTitle": "点击更换头像",
+      "uploading": "上传中...",
+      "change": "更换"
+    },
+    "edit": {
+      "heading": "编辑个人资料",
+      "displayNameLabel": "显示名称",
+      "displayNamePlaceholder": "输入你的显示名称",
+      "bioLabel": "个人简介",
+      "bioPlaceholder": "写点关于你自己的介绍...",
+      "languageLabel": "界面语言",
+      "saveButton": "保存修改"
+    },
+    "twoFactor": {
+      "heading": "双因素认证 (2FA)",
+      "statusLabel": "状态：",
+      "enabled": "已开启",
+      "disabled": "未开启",
+      "description": "使用身份验证器应用保护你的账号安全。",
+      "enableButton": "开启 2FA",
+      "disableButton": "关闭 2FA",
+      "step1Qr": "1. 使用 Google Authenticator 或 Authy 扫描此二维码：",
+      "qrAlt": "2FA 二维码",
+      "step2Code": "2. 输入验证器应用中的 6 位验证码以完成激活：",
+      "verifyButton": "验证并开启",
+      "disablePrompt": "输入验证器应用中的 6 位验证码以关闭 2FA：",
+      "confirmDisableButton": "确认关闭",
+      "cancelButton": "取消"
+    },
+    "logoutButton": "退出登录",
+    "messages": {
+      "init2faFailed": "初始化 2FA 失败",
+      "enable2faSuccess": "2FA 已成功开启！",
+      "invalidCode": "验证码无效",
+      "disable2faSuccess": "2FA 已关闭。",
+      "disable2faFailed": "关闭 2FA 失败",
+      "updateSuccess": "个人资料更新成功！",
+      "updateFailed": "更新个人资料失败",
+      "uploadSuccess": "头像上传成功！正在刷新...",
+      "uploadFailed": "上传头像失败"
+    }
+  }
+}

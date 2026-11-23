@@ -5,6 +5,8 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { useTranslation } from 'react-i18next'
+import i18n from '../i18n'
 
 export type User = {
   id: string
@@ -50,6 +52,22 @@ function normalizeApiPath(path: string): string {
   }
 
   return `/api${cleanPath}`
+}
+
+export function LanguageSync() {
+  const { user } = useAuth();
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    if (user?.language) {
+      const targetLng = user.language.toLowerCase(); // 'EN' -> 'en'
+      if (i18n.language !== targetLng) {
+        i18n.changeLanguage(targetLng);
+      }
+    }
+  }, [user?.language, i18n]);
+
+  return null;
 }
 
 export async function apiFetch(
@@ -119,8 +137,16 @@ export function AuthProvider({
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    let cancelled = false
+    if (user?.language) {
+      const targetLng = user.language.toLowerCase() // 'EN' -> 'en'
+      if (i18n.language !== targetLng) {
+        i18n.changeLanguage(targetLng)
+      }
+    }
+  }, [user?.language, i18n])
 
+  useEffect(() => {
+    let cancelled = false
     async function initializeAuth() {
       try {
         const params = new URLSearchParams(window.location.search)
@@ -172,8 +198,7 @@ export function AuthProvider({
     return () => {
       cancelled = true
     }
-  }, [])
-
+  }, []) // 👈 3. 这里一定要改回空数组 []，不要放 user?.language
   // Step 1: Standard account/password login
   async function login(
     identifier: string,

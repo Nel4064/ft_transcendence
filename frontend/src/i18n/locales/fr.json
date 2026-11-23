@@ -1,0 +1,46 @@
+{
+  "profile": {
+    "avatar": {
+      "changeTitle": "Cliquez pour changer d'avatar",
+      "uploading": "Envoi...",
+      "change": "Modifier"
+    },
+    "edit": {
+      "heading": "Modifier le profil",
+      "displayNameLabel": "Nom d'affichage",
+      "displayNamePlaceholder": "Entrez votre nom d'affichage",
+      "bioLabel": "Biographie",
+      "bioPlaceholder": "Écrivez quelque chose sur vous...",
+      "languageLabel": "Langue",
+      "saveButton": "Enregistrer les modifications"
+    },
+    "twoFactor": {
+      "heading": "Authentification à deux facteurs (2FA)",
+      "statusLabel": "Statut :",
+      "enabled": "Activée",
+      "disabled": "Désactivée",
+      "description": "Sécurisez votre compte à l'aide d'une application d'authentification.",
+      "enableButton": "Activer la 2FA",
+      "disableButton": "Désactiver la 2FA",
+      "step1Qr": "1. Scannez ce QR code avec Google Authenticator ou Authy :",
+      "qrAlt": "QR Code 2FA",
+      "step2Code": "2. Entrez le code à 6 chiffres de votre application pour activer :",
+      "verifyButton": "Vérifier et activer",
+      "disablePrompt": "Entrez le code à 6 chiffres de votre application pour désactiver la 2FA :",
+      "confirmDisableButton": "Confirmer et désactiver",
+      "cancelButton": "Annuler"
+    },
+    "logoutButton": "Se déconnecter",
+    "messages": {
+      "init2faFailed": "Échec de l'initialisation de la 2FA",
+      "enable2faSuccess": "2FA activée avec succès !",
+      "invalidCode": "Code de vérification invalide",
+      "disable2faSuccess": "La 2FA a été désactivée.",
+      "disable2faFailed": "Échec de la désactivation de la 2FA",
+      "updateSuccess": "Profil mis à jour avec succès !",
+      "updateFailed": "Échec de la mise à jour du profil",
+      "uploadSuccess": "Avatar mis à jour ! Actualisation...",
+      "uploadFailed": "Échec de l'envoi de l'avatar"
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../context/AuthContext'
 import Avatar from '../../components/Avatar/Avatar'
 import Button from '../../components/button/Button'
@@ -8,6 +9,7 @@ import { useState, useRef, useEffect } from 'react'
 
 function ProfilePage() {
     const { user, logout, apiFetch, disable2fa } = useAuth()
+    const { t, i18n } = useTranslation()
     const navigate = useNavigate()
 
     // 2FA related states
@@ -17,7 +19,7 @@ function ProfilePage() {
     const [setupStep, setSetupStep] = useState<'idle' | 'qr' | 'disable'>('idle')
     const [disableCode, setDisableCode] = useState('')
 
-    // Profile editing related states (initialized to current user content or empty string)
+    // Profile editing related states
     const [displayName, setDisplayName] = useState(user?.displayName || '')
     const [bio, setBio] = useState(user?.bio || '')
     const [language, setLanguage] = useState(user?.language || 'EN')
@@ -53,7 +55,7 @@ function ProfilePage() {
             setQrCodeUrl(data.qrCodeUrl || data)
             setSetupStep('qr')
         } catch (err: any) {
-            setError(err.message || 'Failed to initialize 2FA')
+            setError(err.message || t('profile.messages.init2faFailed'))
         }
     }
 
@@ -70,9 +72,9 @@ function ProfilePage() {
             setIs2faEnabled(true)
             setSetupStep('idle')
             setTotpCode('')
-            setSuccessMsg('2FA successfully enabled!')
+            setSuccessMsg(t('profile.messages.enable2faSuccess'))
         } catch (err: any) {
-            setError(err.message || 'Invalid verification code')
+            setError(err.message || t('profile.messages.invalidCode'))
         }
     }
 
@@ -82,14 +84,13 @@ function ProfilePage() {
         setError('')
         setSuccessMsg('')
         try {
-            // Call global disable2fa, passing the 6-digit verification code entered by the user
             await disable2fa('', disableCode)
             setIs2faEnabled(false)
             setSetupStep('idle')
             setDisableCode('')
-            setSuccessMsg('2FA has been disabled.')
+            setSuccessMsg(t('profile.messages.disable2faSuccess'))
         } catch (err: any) {
-            setError(err.message || 'Failed to disable 2FA')
+            setError(err.message || t('profile.messages.disable2faFailed'))
         }
     }
 
@@ -103,12 +104,14 @@ function ProfilePage() {
                 method: 'PATCH',
                 body: JSON.stringify({ displayName, bio, language }),
             })
-            setSuccessMsg('Profile updated successfully!')
+            // 立即切换前端 i18n 语言并写入 localStorage
+            await i18n.changeLanguage(language.toLowerCase())
+            setSuccessMsg(t('profile.messages.updateSuccess'))
             setTimeout(() => {
                 window.location.reload()
             }, 500)
         } catch (err: any) {
-            setError(err.message || 'Failed to update profile')
+            setError(err.message || t('profile.messages.updateFailed'))
         }
     }
 
@@ -135,15 +138,15 @@ function ProfilePage() {
             })
 
             const data = await res.json()
-            if (!res.ok) throw new Error(data.message || 'Failed to upload avatar')
+            if (!res.ok) throw new Error(data.message || t('profile.messages.uploadFailed'))
 
-            setSuccessMsg('Avatar uploaded successfully! Refreshing...')
+            setSuccessMsg(t('profile.messages.uploadSuccess'))
 
             setTimeout(() => {
                 window.location.reload()
             }, 500)
         } catch (err: any) {
-            setError(err.message || 'Failed to upload avatar')
+            setError(err.message || t('profile.messages.uploadFailed'))
         } finally {
             setUploading(false)
         }
@@ -156,19 +159,19 @@ function ProfilePage() {
                 {error && <p className="py-2 px-3 rounded-md bg-danger/10 text-danger text-small font-bold text-center">{error}</p>}
                 {successMsg && <p className="py-2 px-3 rounded-md bg-green-500/10 text-green-600 text-small font-bold text-center">{successMsg}</p>}
 
-                {/* User info card (includes avatar and basic display) */}
+                {/* User info card */}
                 <div className="flex items-center gap-5 p-5 bg-surface border border-border rounded-md shadow-card">
                     <div
                         className="relative cursor-pointer group"
                         onClick={() => fileInputRef.current?.click()}
-                        title="Click to change avatar"
+                        title={t('profile.avatar.changeTitle')}
                     >
                         <Avatar
-                            src={user?.avatarUrl ? (user.avatarUrl.startsWith('http') ? user.avatarUrl : user.avatarUrl) : undefined}
+                            src={user?.avatarUrl ? user.avatarUrl : undefined}
                             size={120}
                         />
                         <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-small font-bold">
-                            {uploading ? 'Uploading...' : 'Change'}
+                            {uploading ? t('profile.avatar.uploading') : t('profile.avatar.change')}
                         </div>
                     </div>
 
@@ -186,33 +189,33 @@ function ProfilePage() {
                     </div>
                 </div>
 
-                {/* ✏️ Profile edit card (Display Name, Bio, Language) */}
+                {/* Profile edit card (Display Name, Bio, Language) */}
                 <div className="p-5 bg-surface border border-border rounded-md shadow-card flex flex-col gap-4">
-                    <Heading level="card" as="h2">Edit Profile</Heading>
+                    <Heading level="card" as="h2">{t('profile.edit.heading')}</Heading>
 
                     <form onSubmit={handleUpdateProfile} className="flex flex-col gap-4">
                         <Input
                             id="displayName"
                             size="md"
-                            label="Display Name"
+                            label={t('profile.edit.displayNameLabel')}
                             type="text"
                             value={displayName}
                             onChange={(e) => setDisplayName(e.target.value)}
-                            placeholder="Enter your display name"
+                            placeholder={t('profile.edit.displayNamePlaceholder')}
                         />
 
                         <div className="flex flex-col gap-1">
-                            <label className="text-small font-medium text-text">Bio</label>
+                            <label className="text-small font-medium text-text">{t('profile.edit.bioLabel')}</label>
                             <textarea
                                 value={bio}
                                 onChange={(e) => setBio(e.target.value)}
-                                placeholder="Write something about yourself..."
+                                placeholder={t('profile.edit.bioPlaceholder')}
                                 className="py-2 px-3 border border-border rounded-md text-control bg-surface text-text h-[80px] resize-y focus:outline-none focus:border-brand"
                             />
                         </div>
 
                         <div className="flex flex-col gap-1">
-                            <label className="text-small font-medium text-text">Language</label>
+                            <label className="text-small font-medium text-text">{t('profile.edit.languageLabel')}</label>
                             <select
                                 value={language}
                                 onChange={(e) => setLanguage(e.target.value)}
@@ -220,53 +223,54 @@ function ProfilePage() {
                             >
                                 <option value="EN">English (EN)</option>
                                 <option value="FR">Français (FR)</option>
-                                <option value="ES">Español (ES)</option>
+                                <option value="CH">Chinese (CH)</option>
                             </select>
                         </div>
 
                         <Button type="submit" className="w-fit">
-                            Save Profile Changes
+                            {t('profile.edit.saveButton')}
                         </Button>
                     </form>
                 </div>
 
                 {/* 2FA management card */}
                 <div className="p-5 bg-surface border border-border rounded-md shadow-card flex flex-col gap-4">
-                    <Heading level="card" as="h2">Two-Factor Authentication (2FA)</Heading>
+                    <Heading level="card" as="h2">{t('profile.twoFactor.heading')}</Heading>
 
                     <div className="flex items-center justify-between flex-wrap gap-4">
                         <div>
                             <p className="text-text font-medium">
-                                Status: <span className={is2faEnabled ? "text-green-600 font-bold" : "text-text-muted"}>
-                                    {is2faEnabled ? "Enabled" : "Disabled"}
+                                {t('profile.twoFactor.statusLabel')}{' '}
+                                <span className={is2faEnabled ? "text-green-600 font-bold" : "text-text-muted"}>
+                                    {is2faEnabled ? t('profile.twoFactor.enabled') : t('profile.twoFactor.disabled')}
                                 </span>
                             </p>
-                            <p className="text-small text-text-muted">Secure your account using an authenticator app.</p>
+                            <p className="text-small text-text-muted">{t('profile.twoFactor.description')}</p>
                         </div>
 
                         {!is2faEnabled && setupStep === 'idle' && (
                             <Button onClick={handleStart2faSetup}>
-                                Enable 2FA
+                                {t('profile.twoFactor.enableButton')}
                             </Button>
                         )}
 
                         {is2faEnabled && setupStep === 'idle' && (
                             <Button variant="danger" onClick={() => setSetupStep('disable')}>
-                                Disable 2FA
+                                {t('profile.twoFactor.disableButton')}
                             </Button>
                         )}
                     </div>
 
-                    {/* QR code setup area for enabling 2FA */}
+                    {/* QR code setup area */}
                     {setupStep === 'qr' && (
                         <form onSubmit={handleVerify2fa} className="flex flex-col gap-3 mt-2 pt-4 border-t border-border">
-                            <p className="text-small text-text-muted">1. Scan this QR code with Google Authenticator or Authy:</p>
+                            <p className="text-small text-text-muted">{t('profile.twoFactor.step1Qr')}</p>
                             {qrCodeUrl && (
                                 <div className="flex justify-center bg-white p-3 rounded-md w-fit mx-auto border border-border">
-                                    <img src={qrCodeUrl} alt="2FA QR Code" className="w-[160px] h-[160px]" />
+                                    <img src={qrCodeUrl} alt={t('profile.twoFactor.qrAlt')} className="w-[160px] h-[160px]" />
                                 </div>
                             )}
-                            <p className="text-small text-text-muted">2. Enter the 6-digit code from your app to verify and activate:</p>
+                            <p className="text-small text-text-muted">{t('profile.twoFactor.step2Code')}</p>
                             <div className="flex gap-2">
                                 <Input
                                     size="md"
@@ -279,19 +283,19 @@ function ProfilePage() {
                                     required
                                 />
                                 <Button type="submit">
-                                    Verify & Turn On
+                                    {t('profile.twoFactor.verifyButton')}
                                 </Button>
                                 <Button variant="secondary" onClick={() => setSetupStep('idle')}>
-                                    Cancel
+                                    {t('profile.twoFactor.cancelButton')}
                                 </Button>
                             </div>
                         </form>
                     )}
 
-                    {/* Form requiring code input to disable 2FA */}
+                    {/* Disable 2FA form */}
                     {setupStep === 'disable' && (
                         <form onSubmit={handleDisable2fa} className="flex flex-col gap-3 mt-2 pt-4 border-t border-border">
-                            <p className="text-small text-text-muted">Enter the 6-digit code from your authenticator app to disable 2FA:</p>
+                            <p className="text-small text-text-muted">{t('profile.twoFactor.disablePrompt')}</p>
                             <div className="flex gap-2">
                                 <Input
                                     size="md"
@@ -304,10 +308,10 @@ function ProfilePage() {
                                     required
                                 />
                                 <Button type="submit" variant="danger">
-                                    Confirm & Disable
+                                    {t('profile.twoFactor.confirmDisableButton')}
                                 </Button>
                                 <Button variant="secondary" onClick={() => setSetupStep('idle')}>
-                                    Cancel
+                                    {t('profile.twoFactor.cancelButton')}
                                 </Button>
                             </div>
                         </form>
@@ -316,7 +320,7 @@ function ProfilePage() {
 
                 {/* Logout button */}
                 <Button variant="danger" className="self-end" onClick={handleLogout}>
-                    Logout
+                    {t('profile.logoutButton')}
                 </Button>
             </div>
         </main>

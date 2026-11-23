@@ -1,0 +1,46 @@
+{
+  "profile": {
+    "avatar": {
+      "changeTitle": "Click to change avatar",
+      "uploading": "Uploading...",
+      "change": "Change"
+    },
+    "edit": {
+      "heading": "Edit Profile",
+      "displayNameLabel": "Display Name",
+      "displayNamePlaceholder": "Enter your display name",
+      "bioLabel": "Bio",
+      "bioPlaceholder": "Write something about yourself...",
+      "languageLabel": "Language",
+      "saveButton": "Save Profile Changes"
+    },
+    "twoFactor": {
+      "heading": "Two-Factor Authentication (2FA)",
+      "statusLabel": "Status:",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "description": "Secure your account using an authenticator app.",
+      "enableButton": "Enable 2FA",
+      "disableButton": "Disable 2FA",
+      "step1Qr": "1. Scan this QR code with Google Authenticator or Authy:",
+      "qrAlt": "2FA QR Code",
+      "step2Code": "2. Enter the 6-digit code from your app to verify and activate:",
+      "verifyButton": "Verify & Turn On",
+      "disablePrompt": "Enter the 6-digit code from your authenticator app to disable 2FA:",
+      "confirmDisableButton": "Confirm & Disable",
+      "cancelButton": "Cancel"
+    },
+    "logoutButton": "Logout",
+    "messages": {
+      "init2faFailed": "Failed to initialize 2FA",
+      "enable2faSuccess": "2FA successfully enabled!",
+      "invalidCode": "Invalid verification code",
+      "disable2faSuccess": "2FA has been disabled.",
+      "disable2faFailed": "Failed to disable 2FA",
+      "updateSuccess": "Profile updated successfully!",
+      "updateFailed": "Failed to update profile",
+      "uploadSuccess": "Avatar uploaded successfully! Refreshing...",
+      "uploadFailed": "Failed to upload avatar"
+    }
+  }
+}
