@@ -244,5 +244,24 @@
       "lastAdmin": "⚠️ Vous êtes le dernier admin du club ! Veuillez promouvoir un autre membre avant de démissionner.",
       "resign": "Échec de la démission."
     }
+  },
+  "notifications": {
+    "heading": "Notifications",
+    "empty": "Aucune notification pour le moment."
+  },
+  "movieDetails": {
+    "director": "Réalisateur :",
+    "cast": "Casting :",
+    "duration": "Durée :",
+    "noSynopsis": "Aucun synopsis disponible.",
+    "trailer": "Bande-annonce",
+    "upcomingScreenings": "Prochaines séances",
+    "actions": {
+      "removeEvent": "Supprimer la séance",
+      "createEvent": "Créer la séance"
+    },
+    "errors": {
+      "updateFailed": "Impossible de mettre à jour la séance : {{message}}"
+    }
   }
 }

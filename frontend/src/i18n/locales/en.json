@@ -244,6 +244,24 @@
       "lastAdmin": "⚠️ You are the last admin in the club! Please promote another member to Admin before resigning.",
       "resign": "Failed to resign."
     }
+  },
+  "notifications": {
+    "heading": "Notifications",
+    "empty": "No notifications yet."
+  },
+  "movieDetails": {
+    "director": "Director:",
+    "cast": "Cast:",
+    "duration": "Duration:",
+    "noSynopsis": "No synopsis available.",
+    "trailer": "Trailer",
+    "upcomingScreenings": "Upcoming screenings",
+    "actions": {
+      "removeEvent": "Remove Event",
+      "createEvent": "Create Event"
+    },
+    "errors": {
+      "updateFailed": "Could not update event: {{message}}"
+    }
   }
-  
 }

@@ -244,5 +244,24 @@
       "lastAdmin": "⚠️ 你是俱乐部最后一名管理员！请先将其他成员设为管理员后再卸任。",
       "resign": "卸任失败。"
     }
+  },
+  "notifications": {
+    "heading": "通知",
+    "empty": "暂无通知。"
+  },
+  "movieDetails": {
+    "director": "导演：",
+    "cast": "主演：",
+    "duration": "片长：",
+    "noSynopsis": "暂无简介。",
+    "trailer": "预告片",
+    "upcomingScreenings": "即将上映的场次",
+    "actions": {
+      "removeEvent": "删除场次",
+      "createEvent": "创建场次"
+    },
+    "errors": {
+      "updateFailed": "无法更新场次：{{message}}"
+    }
   }
 }

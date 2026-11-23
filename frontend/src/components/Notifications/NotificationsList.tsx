@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { io } from 'socket.io-client'
 import NotificationsCard from './NotificationsCard'
 import { useAuth } from '../../context/AuthContext'
@@ -12,19 +13,19 @@ const listClass = "flex flex-col gap-2.5"
 const errorClass = "text-body text-danger"
 
 function NotificationsList() {
+	const { t } = useTranslation()
 	const { apiFetch } = useAuth()
 	const [notifications, setNotifications] = useState<NotificationItem[]>([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 	const [, setNow] = useState(Date.now())
+
 	useEffect(() => {
 		const timer = setInterval(() => setNow(Date.now()), 60 * 1000)
 		return () => clearInterval(timer)
 	}, [])
 
-	// Fetch on mount and on every pushed notification; show the list as received
 	useEffect(() => {
-
 		function markAllRead() {
 			markAllNotificationsRead(apiFetch)
 				.then(() => window.dispatchEvent(new Event('update_navbar')))
@@ -36,16 +37,15 @@ function NotificationsList() {
 				.then((list) => {
 					setNotifications(list)
 					if (list.some((n) => n.readAt === null)) markAllRead()
-					})
+				})
 				.catch((err: Error) => setError(err.message))
 				.finally(() => setLoading(false))
 		}
 
 		load()
-		const socket = io('/notifications')   // nginx forwards /socket.io/ to the backend
+		const socket = io('/notifications')
 		socket.on('notification', load)
 
-		// Cleanup: runs when the component leaves the screen
 		return () => { socket.disconnect() }
 	}, [apiFetch])
 
@@ -54,7 +54,7 @@ function NotificationsList() {
 	if (error)
 		return <p className={errorClass}>{error}</p>
 	if (notifications.length === 0)
-		return <EmptyState message="No notifications yet." />
+		return <EmptyState message={t('notifications.empty')} />
 
 	return (
 		<div className={listClass}>
