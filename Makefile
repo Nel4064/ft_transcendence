@@ -24,8 +24,11 @@ down:
 
 # also removes the volumes: database data and node_modules are lost
 clean:
-	$(COMPOSE) down -v
-
+	-$(COMPOSE) down -v
+	-podman rm -f development-proxy development-frontend development-backend development-db
+	-podman pod rm -f pod_development
+	-podman volume rm -f development_postgres_data development_frontend_node_modules development_backend_node_modules
+	
 re: clean all
 
 # rebuild images and refresh node_modules volumes (the database is kept)

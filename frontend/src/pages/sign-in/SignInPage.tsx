@@ -1,14 +1,20 @@
-import { useState, useEffect, type FormEvent } from 'react'
+import { useState, useEffect, type FormEvent, type ChangeEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/button/Button'
-import Logo from '../../components/Logo/Logo'
 import Input from '../../components/Input/Input'
 import Heading from '../../components/Heading/Heading'
-import { useTranslation } from 'react-i18next'
+import Logo from '../../components/Logo/Logo' // 如果你的 Logo 路径不同，保持原来的 import 即可
+
+const LANGUAGES = [
+  { code: 'en', label: 'English' },
+  { code: 'fr', label: 'Français' },
+  { code: 'ch', label: '中文' },
+]
 
 function SignInPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [code, setCode] = useState('')
@@ -21,13 +27,27 @@ function SignInPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
+  const currentLang = i18n.language?.split('-')[0] || 'en'
+
+  function handleLanguageChange(e: ChangeEvent<HTMLSelectElement>) {
+    const lang = e.target.value
+    i18n.changeLanguage(lang)
+    localStorage.setItem('i18nextLng', lang)
+  }
+
+  // 1. Core: Perfectly align with the parameter capturing logic of App-test.tsx
   useEffect(() => {
     const token = searchParams.get('token')
     const requiresTwoFactor = searchParams.get('requiresTwoFactor') === 'true'
     const callbackUserId = searchParams.get('userId')
     const oauthError = searchParams.get('error')
 
-    console.log('SignInPage detected URL parameters:', { token, requiresTwoFactor, callbackUserId, oauthError })
+    console.log('SignInPage detected URL parameters:', {
+      token,
+      requiresTwoFactor,
+      callbackUserId,
+      oauthError,
+    })
 
     if (token) {
       localStorage.setItem('token', token)
@@ -36,8 +56,12 @@ function SignInPage() {
       return
     }
 
+    // If 42 OAuth brings in 2FA parameters, forcefully activate the 2FA state machine
     if (requiresTwoFactor && callbackUserId) {
-      console.log('Successfully captured 42 OAuth 2FA challenge, preparing to show verification code input, userId:', callbackUserId)
+      console.log(
+        'Successfully captured 42 OAuth 2FA challenge, preparing to show verification code input, userId:',
+        callbackUserId,
+      )
       setUserId(callbackUserId)
       setRequires2FA(true)
       setError(t('signIn.errors.twoFactorEnabled'))
@@ -58,6 +82,7 @@ function SignInPage() {
     }
   }, [user, navigate])
 
+  // Step 1: Standard email/password login
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError('')
@@ -66,7 +91,12 @@ function SignInPage() {
     try {
       const result = await login(email, password)
 
-      if (result && typeof result === 'object' && 'twoFactorRequired' in result && result.twoFactorRequired) {
+      if (
+        result &&
+        typeof result === 'object' &&
+        'twoFactorRequired' in result &&
+        result.twoFactorRequired
+      ) {
         setUserId(result.userId)
         setRequires2FA(true)
         setCode('')
@@ -76,12 +106,15 @@ function SignInPage() {
 
       navigate('/', { replace: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('signIn.errors.loginFailed'))
+      setError(
+        err instanceof Error ? err.message : t('signIn.errors.loginFailed'),
+      )
     } finally {
       setSubmitting(false)
     }
   }
 
+  // Step 2: Submit 6-digit code and userId -> triggers /api/auth/2fa/authenticate
   async function handleVerify2FA(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError('')
@@ -104,7 +137,9 @@ function SignInPage() {
       navigate('/', { replace: true })
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : t('signIn.errors.twoFactorFailed'),
+        err instanceof Error
+          ? err.message
+          : t('signIn.errors.twoFactorFailed'),
       )
     } finally {
       setSubmitting(false)
@@ -207,7 +242,12 @@ function SignInPage() {
                 {t('signIn.buttons.signInWith42')}
               </Button>
             ) : (
-              <Button variant="secondary" size="lg" onClick={handleBackToLogin} disabled={submitting}>
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={handleBackToLogin}
+                disabled={submitting}
+              >
                 {t('signIn.buttons.backToSignIn')}
               </Button>
             )}
@@ -224,6 +264,21 @@ function SignInPage() {
               </a>
             </p>
           )}
+        </div>
+
+        <div className="flex justify-end mt-1">
+          <select
+            aria-label="Language"
+            value={currentLang}
+            onChange={handleLanguageChange}
+            className="px-3 py-1.5 text-small bg-surface text-text border border-border rounded-md shadow-card cursor-pointer focus:outline-none focus:border-brand"
+          >
+            {LANGUAGES.map((lang) => (
+              <option key={lang.code} value={lang.code}>
+                {lang.label}
+              </option>
+            ))}
+          </select>
         </div>
       </form>
     </main>

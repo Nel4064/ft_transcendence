@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type FormEvent, type ChangeEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
 import { apiFetch, useAuth } from '../../context/AuthContext'
@@ -6,10 +6,16 @@ import Button, { buttonClass } from '../../components/button/Button'
 import Input from '../../components/Input/Input'
 import Heading from '../../components/Heading/Heading'
 
-const linkClass = "text-brand hover:text-brand-hover"
+const linkClass = 'text-brand hover:text-brand-hover'
+
+const LANGUAGES = [
+	{ code: 'en', label: 'English' },
+	{ code: 'fr', label: 'Français' },
+	{ code: 'ch', label: '中文' },
+]
 
 function SignUpPage() {
-	const { t } = useTranslation()
+	const { t, i18n } = useTranslation()
 	const [username, setUsername] = useState('')
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
@@ -19,13 +25,21 @@ function SignUpPage() {
 	const { login, user } = useAuth()
 	const navigate = useNavigate()
 
+	const currentLang = i18n.language?.split('-')[0] || 'en'
+
+	function handleLanguageChange(e: ChangeEvent<HTMLSelectElement>) {
+		const lang = e.target.value
+		i18n.changeLanguage(lang)
+		localStorage.setItem('i18nextLng', lang)
+	}
+
 	useEffect(() => {
 		if (user) {
 			navigate('/', { replace: true })
 		}
 	}, [user, navigate])
 
-	async function handleSubmit(e: React.FormEvent) {
+	async function handleSubmit(e: FormEvent) {
 		e.preventDefault()
 		if (password !== confirmPassword) {
 			setError(t('signUp.errors.passwordMismatch'))
@@ -117,7 +131,7 @@ function SignUpPage() {
 						<Button type="submit" size="lg">{t('signUp.buttons.signUp')}</Button>
 						<a
 							href="/api/auth/oauth/42"
-							className={buttonClass("secondary", "lg")}
+							className={buttonClass('secondary', 'lg')}
 						>
 							{t('signUp.buttons.signInWith42')}
 						</a>
@@ -127,6 +141,21 @@ function SignUpPage() {
 							<a href="/signin" className={linkClass}>{t('signUp.signIn')}</a>
 						</p>
 					</div>
+				</div>
+
+				<div className="flex justify-end mt-1">
+					<select
+						aria-label="Language"
+						value={currentLang}
+						onChange={handleLanguageChange}
+						className="px-3 py-1.5 text-small bg-surface text-text border border-border rounded-md shadow-card cursor-pointer focus:outline-none focus:border-brand"
+					>
+						{LANGUAGES.map((lang) => (
+							<option key={lang.code} value={lang.code}>
+								{lang.label}
+							</option>
+						))}
+					</select>
 				</div>
 			</form>
 		</main>
