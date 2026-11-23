@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Logo from '../Logo/Logo';
 import { useAuth } from '../../context/AuthContext';
 import Avatar from '../Avatar/Avatar';
@@ -13,6 +14,7 @@ const linkClass = "text-nav font-bold text-text-muted hover:text-text [&.active]
 const linkClassAdmin = "text-nav font-bold text-text-admin-muted hover:text-admin [&.active]:text-admin transition-colors duration-300";
 
 function Navbar() {
+    const { t } = useTranslation();
     const { user, apiFetch } = useAuth();
     const [pendingCount, setPendingCount] = useState(0);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -77,20 +79,28 @@ function Navbar() {
                 {user && (
                     <div className="hidden lg:flex items-center gap-6 xl:gap-10">
                         {user.role === 'ADMIN' && (
-                            <NavLink to="/select-movies" className={linkClassAdmin}>Select Movies</NavLink>
+                            <NavLink to="/select-movies" className={linkClassAdmin}>
+                                {t('navbar.selectMovies')}
+                            </NavLink>
                         )}
                         {user.role === 'ADMIN' && (
-                            <NavLink to="/admin" className={linkClassAdmin}>Manage Members</NavLink>
+                            <NavLink to="/admin" className={linkClassAdmin}>
+                                {t('navbar.manageMembers')}
+                            </NavLink>
                         )}
-                        <NavLink to="/screenings" className={linkClass}>Screenings</NavLink>
-                        <NavLink to="/calendar" className={linkClass}>Calendar</NavLink>
+                        <NavLink to="/screenings" className={linkClass}>
+                            {t('navbar.screenings')}
+                        </NavLink>
+                        <NavLink to="/calendar" className={linkClass}>
+                            {t('navbar.calendar')}
+                        </NavLink>
 
                         <NavLink to="/friends" className={`${linkClass} relative`}>
-                            Friends
+                            {t('navbar.friends')}
                             <Alert show={pendingCount > 0} />
                         </NavLink>
                         <NavLink to="/notifications" className={`${linkClass} relative`}>
-                            Notifications
+                            {t('navbar.notifications')}
                             <Alert show={unreadCount > 0} />
                         </NavLink>
                     </div>
@@ -102,7 +112,7 @@ function Navbar() {
                         <button
                             type="button"
                             onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-                            aria-label="Toggle navigation menu"
+                            aria-label={t('navbar.toggleMenu')}
                             aria-expanded={isMobileMenuOpen}
                             className="lg:hidden relative p-2 rounded-md text-text-muted hover:text-text hover:bg-bg transition-colors"
                         >
@@ -115,7 +125,6 @@ function Navbar() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                                 </svg>
                             )}
-                            {/* When the menu is collapsed, show a red dot on the top-right corner of the hamburger icon if there are unread messages or friend requests */}
                             {!isMobileMenuOpen && <Alert show={hasAnyAlert} />}
                         </button>
                     )}
@@ -125,7 +134,9 @@ function Navbar() {
                             <Avatar src={user?.avatarUrl ? user.avatarUrl : undefined} size={56} />
                         </NavLink>
                     ) : (
-                        <NavLink to="/signin" className={buttonClass("primary", "md")}>Login</NavLink>
+                        <NavLink to="/signin" className={buttonClass("primary", "md")}>
+                            {t('navbar.login')}
+                        </NavLink>
                     )}
                 </div>
             </div>
@@ -135,22 +146,22 @@ function Navbar() {
                 <div className="lg:hidden flex flex-col gap-4 px-4 sm:px-6 pt-3 pb-5 bg-surface border-t border-border">
                     {user.role === 'ADMIN' && (
                         <NavLink to="/select-movies" onClick={closeMenu} className={`${linkClassAdmin} py-1`}>
-                            Select Movies
+                            {t('navbar.selectMovies')}
                         </NavLink>
                     )}
                     {user.role === 'ADMIN' && (
                         <NavLink to="/admin" onClick={closeMenu} className={`${linkClassAdmin} py-1`}>
-                            Manage Members
+                            {t('navbar.manageMembers')}
                         </NavLink>
                     )}
                     <NavLink to="/screenings" onClick={closeMenu} className={`${linkClass} py-1`}>
-                        Screenings
+                        {t('navbar.screenings')}
                     </NavLink>
                     <NavLink to="/calendar" onClick={closeMenu} className={`${linkClass} py-1`}>
-                        Calendar
+                        {t('navbar.calendar')}
                     </NavLink>
                     <NavLink to="/friends" onClick={closeMenu} className={`${linkClass} py-1 flex items-center justify-between`}>
-                        <span>Friends</span>
+                        <span>{t('navbar.friends')}</span>
                         {pendingCount > 0 && (
                             <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-red-500 text-white">
                                 {pendingCount}
@@ -158,7 +169,7 @@ function Navbar() {
                         )}
                     </NavLink>
                     <NavLink to="/notifications" onClick={closeMenu} className={`${linkClass} py-1 flex items-center justify-between`}>
-                        <span>Notifications</span>
+                        <span>{t('navbar.notifications')}</span>
                         {unreadCount > 0 && (
                             <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-red-500 text-white">
                                 {unreadCount}

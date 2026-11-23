@@ -1,4 +1,14 @@
 {
+  "navbar": {
+    "selectMovies": "Select Movies",
+    "manageMembers": "Manage Members",
+    "screenings": "Screenings",
+    "calendar": "Calendar",
+    "friends": "Friends",
+    "notifications": "Notifications",
+    "login": "Login",
+    "toggleMenu": "Toggle navigation menu"
+  },
   "profile": {
     "avatar": {
       "changeTitle": "Click to change avatar",
@@ -57,7 +67,12 @@
       "cinema": "Cinema",
       "date": "Date"
     },
-    "searchButton": "Search"
+    "searchButton": "Search",
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "pageInfo": "Page {{page}} / {{totalPages}}"
+    }
   },
   "myScreenings": {
     "heading": "My Screenings",
