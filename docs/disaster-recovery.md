@@ -37,7 +37,7 @@ The containers must be running (`make up` first): the command says so if they ar
 
 This stops the backend, replaces the content of the database with the dump (in a single transaction: if anything fails, the data is left unchanged), then starts the backend, waits until it is `healthy` (2 minutes at most) and restarts the proxy. It ends with `✅ Restored`, `❌ Restore failed, data unchanged`, or `⚠️ … the backend is not healthy` (then read `podman logs development-backend`).
 
-The objects of the dump are given to the backend user of the current `.env.dev` (`--no-owner --role=…`), so a dump can be restored even if `POSTGRES_BACKEND_USER` has a different name on the new machine.
+The objects of the dump are given to the backend user of the current `.env.dev` (`--no-owner --role=…`), and the access rights saved in the dump are skipped (`--no-privileges`: the database already has its own, created by `database/init.sh`). So a dump can be restored even if `POSTGRES_SUPERUSER` or `POSTGRES_BACKEND_USER` have different names on the new machine.
 
 ## What to do when…
 

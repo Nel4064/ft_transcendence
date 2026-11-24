@@ -10,6 +10,9 @@ BACKUP_KEEP="${BACKUP_KEEP:-7}"
 PGPASSWORD="$(cat "${PGPASSWORD_FILE:-/run/secrets/postgres_backend_user_pw}")"
 export PGPASSWORD
 
+# stop at once on `podman stop` (the postgres image sends SIGINT, compose may send SIGTERM)
+trap 'echo "backup: stopping"; kill $! 2>/dev/null; exit 0' INT TERM
+
 backup() {
 	file="${BACKUP_DIR}/auto_$(date -u +%Y%m%d_%H%M%S).dump"
 	if ! pg_dump -h "$DB_HOST" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc -f "$file.tmp"; then
