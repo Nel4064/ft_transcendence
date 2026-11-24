@@ -10,7 +10,7 @@ import {
   WsException 
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
-import { ForbiddenException, Logger, UnauthorizedException, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ForbiddenException, Logger, UnauthorizedException, UsePipes, ValidationPipe, HttpException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ChatService } from './chat.service';
 import { SendMessageDto } from './dto/chat.dto';
@@ -101,8 +101,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
     catch(error){
       const errorMessage = error instanceof Error ? error.message: 'Failed to send message';
+      const statusCode = error instanceof HttpException ? error.getStatus() : 500;
+
       client.emit('chatError', { message: errorMessage });
-      return { status: 'error', message: errorMessage };
+      return { status: 'error', code: statusCode, message: errorMessage };
     }
   }
 }

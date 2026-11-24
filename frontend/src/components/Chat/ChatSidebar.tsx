@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getFriends } from '../../api/friends';
 import Avatar from '../Avatar/Avatar';
+import ChatTabButton from './ChatTabButton';
 
 type Friend = {
     id: string;
@@ -51,30 +52,16 @@ export default function ChatSidebar({ activeTab, setActiveTab, activeFriendId, u
             </div>
 
             <div className="grid grid-cols-2 gap-2 p-3">
-                <button
-                    type="button"
-                    aria-pressed={activeTab === 'groups'}
+                <ChatTabButton
+                    label="Event Groups"
+                    isActive={activeTab === 'groups'}
                     onClick={() => setActiveTab('groups')}
-                    className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                        activeTab === 'groups'
-                            ? 'bg-brand text-white'
-                            : 'bg-bg text-text-muted hover:text-text'
-                    }`}
-                >
-                    Event Groups
-                </button>
-                <button
-                    type="button"
-                    aria-pressed={activeTab === 'friends'}
+                />
+                <ChatTabButton
+                    label="Friends DM"
+                    isActive={activeTab === 'friends'}
                     onClick={() => setActiveTab('friends')}
-                    className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                        activeTab === 'friends'
-                            ? 'bg-brand text-white'
-                            : 'bg-bg text-text-muted hover:text-text'
-                    }`}
-                >
-                    Friends DM
-                </button>
+                />
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto p-4">
