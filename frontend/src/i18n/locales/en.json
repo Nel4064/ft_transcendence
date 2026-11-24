@@ -378,5 +378,29 @@
         "body": "You may delete your account at any time. We may suspend accounts that violate these terms."
       }
     }
+  },
+  "userProfile": {
+    "aboutMe": "About Me",
+    "emptyBio": "This user is lazy and hasn’t written anything yet~",
+    "confirmFriendRequest": "You need to be friends with {{name}} before chatting. Send a friend request now?",
+    "roles": {
+      "admin": "Admin",
+      "member": "Member"
+    },
+    "buttons": {
+      "back": "← Back",
+      "goBack": "Go Back",
+      "goToChat": "Go to Chat",
+      "sendingRequest": "Sending Request...",
+      "requestSent": "Friend Request Sent"
+    },
+    "alerts": {
+      "requestSent": "Friend request sent!"
+    },
+    "errors": {
+      "loadFailed": "Failed to load user profile",
+      "notFound": "User not found",
+      "sendRequestFailed": "Failed to send friend request"
+    }
   }
 }

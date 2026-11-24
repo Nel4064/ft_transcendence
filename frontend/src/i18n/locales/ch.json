@@ -378,5 +378,29 @@
         "body": "你可以随时删除自己的账号。对于违反本条款的账号，我们有权予以停用。"
       }
     }
+  },
+  "userProfile": {
+    "aboutMe": "关于我",
+    "emptyBio": "这个人很懒，什么都没写~",
+    "confirmFriendRequest": "聊天前需要先成为 {{name}} 的好友，现在发送好友申请吗？",
+    "roles": {
+      "admin": "管理员",
+      "member": "成员"
+    },
+    "buttons": {
+      "back": "← 返回",
+      "goBack": "返回",
+      "goToChat": "开始聊天",
+      "sendingRequest": "发送中...",
+      "requestSent": "已发送好友申请"
+    },
+    "alerts": {
+      "requestSent": "好友申请已发送！"
+    },
+    "errors": {
+      "loadFailed": "加载用户资料失败",
+      "notFound": "未找到该用户",
+      "sendRequestFailed": "发送好友申请失败"
+    }
   }
 }

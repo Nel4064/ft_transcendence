@@ -378,5 +378,29 @@
         "body": "Vous pouvez supprimer votre compte à tout moment. Nous nous réservons le droit de suspendre les comptes qui enfreignent ces conditions."
       }
     }
+  },
+  "userProfile": {
+    "aboutMe": "À propos",
+    "emptyBio": "Cet utilisateur n'a encore rien écrit~",
+    "confirmFriendRequest": "Vous devez être ami avec {{name}} avant de discuter. Envoyer une demande d'ami maintenant ?",
+    "roles": {
+      "admin": "Admin",
+      "member": "Membre"
+    },
+    "buttons": {
+      "back": "← Retour",
+      "goBack": "Retour",
+      "goToChat": "Aller au chat",
+      "sendingRequest": "Envoi en cours...",
+      "requestSent": "Demande d'ami envoyée"
+    },
+    "alerts": {
+      "requestSent": "Demande d'ami envoyée !"
+    },
+    "errors": {
+      "loadFailed": "Impossible de charger le profil utilisateur",
+      "notFound": "Utilisateur introuvable",
+      "sendRequestFailed": "Impossible d'envoyer la demande d'ami"
+    }
   }
 }

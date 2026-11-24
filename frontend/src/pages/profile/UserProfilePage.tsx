@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Shield, Globe, MessageCircle, Check } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Loader from '../../components/Loader/Loader';
@@ -12,17 +13,20 @@ interface UserProfile {
   avatarUrl?: string;
   bio?: string;
   role?: 'ADMIN' | 'USER';
-  language?: 'EN' | 'FR' | 'ES';
+  language?: 'EN' | 'FR' | 'ZH' | 'CH' | 'ES';
   isFriend?: boolean;
 }
 
 const LANGUAGE_LABELS: Record<string, string> = {
   EN: 'English',
   FR: 'Français',
+  ZH: '中文',
+  CH: '中文',
   ES: 'Español',
 };
 
 export default function UserProfilePage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { apiFetch, user } = useAuth();
@@ -54,7 +58,7 @@ export default function UserProfilePage() {
           }
         }
       } catch (err: any) {
-        setError(err.message || 'Failed to load user profile');
+        setError(err.message || t('userProfile.errors.loadFailed'));
       } finally {
         setLoading(false);
       }
@@ -63,7 +67,7 @@ export default function UserProfilePage() {
     if (id) {
       fetchUserProfile();
     }
-  }, [id, apiFetch, user?.id]);
+  }, [id, apiFetch, user?.id, t]);
 
   const handleGoToChat = async () => {
     if (!profile) return;
@@ -76,7 +80,9 @@ export default function UserProfilePage() {
 
     // 2. 还不是好友，弹窗确认后直接发送好友申请
     const shouldSendRequest = window.confirm(
-      `You need to be friends with ${profile.displayName || profile.username} before chatting. Send a friend request now?`
+      t('userProfile.confirmFriendRequest', {
+        name: profile.displayName || profile.username,
+      })
     );
     if (!shouldSendRequest) return;
 
@@ -88,9 +94,9 @@ export default function UserProfilePage() {
         body: JSON.stringify({ receiverId: profile.id }),
       });
       setRequestSent(true);
-      alert('Friend request sent!');
+      alert(t('userProfile.alerts.requestSent'));
     } catch (err: any) {
-      alert(err.message || 'Failed to send friend request');
+      alert(err.message || t('userProfile.errors.sendRequestFailed'));
     } finally {
       setSendingRequest(false);
     }
@@ -113,12 +119,14 @@ export default function UserProfilePage() {
   if (error || !profile) {
     return (
       <main className="max-w-[500px] mx-auto my-[120px] p-6 bg-surface border border-border rounded-md shadow-card text-center">
-        <p className="text-danger font-bold mb-4">{error || 'User not found'}</p>
+        <p className="text-danger font-bold mb-4">
+          {error || t('userProfile.errors.notFound')}
+        </p>
         <button
           onClick={() => navigate(-1)}
           className="py-2 px-4 rounded-md bg-brand text-white text-sm font-bold cursor-pointer"
         >
-          Go Back
+          {t('userProfile.buttons.goBack')}
         </button>
       </main>
     );
@@ -132,7 +140,7 @@ export default function UserProfilePage() {
           onClick={() => navigate(-1)}
           className="w-fit py-1.5 px-3 rounded-md border border-border text-text-muted hover:text-text hover:bg-surface text-sm cursor-pointer transition-colors"
         >
-          ← Back
+          {t('userProfile.buttons.back')}
         </button>
 
         {/* User profile display card */}
@@ -151,7 +159,9 @@ export default function UserProfilePage() {
           </div>
 
           <div>
-            <Heading level="section" as="h1">{profile.displayName || profile.username}</Heading>
+            <Heading level="section" as="h1">
+              {profile.displayName || profile.username}
+            </Heading>
             <p className="text-text-muted text-sm">@{profile.username}</p>
 
             {/* Role & Language Badges */}
@@ -165,7 +175,9 @@ export default function UserProfilePage() {
                   }`}
                 >
                   {profile.role === 'ADMIN' && <Shield className="w-3.5 h-3.5" />}
-                  {profile.role === 'ADMIN' ? 'Admin' : 'Member'}
+                  {profile.role === 'ADMIN'
+                    ? t('userProfile.roles.admin')
+                    : t('userProfile.roles.member')}
                 </span>
               )}
 
@@ -180,9 +192,11 @@ export default function UserProfilePage() {
 
           {/* Bio section */}
           <div className="w-full mt-4 p-4 bg-background border border-border rounded-md text-left">
-            <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-1">About Me</h3>
+            <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-1">
+              {t('userProfile.aboutMe')}
+            </h3>
             <p className="text-text text-sm whitespace-pre-wrap">
-              {profile.bio || 'This user is lazy and hasn’t written anything yet~'}
+              {profile.bio || t('userProfile.emptyBio')}
             </p>
           </div>
 
@@ -201,12 +215,14 @@ export default function UserProfilePage() {
                 {requestSent ? (
                   <>
                     <Check className="w-4 h-4" />
-                    Friend Request Sent
+                    {t('userProfile.buttons.requestSent')}
                   </>
                 ) : (
                   <>
                     <MessageCircle className="w-4 h-4" />
-                    {sendingRequest ? 'Sending Request...' : 'Go to Chat'}
+                    {sendingRequest
+                      ? t('userProfile.buttons.sendingRequest')
+                      : t('userProfile.buttons.goToChat')}
                   </>
                 )}
               </button>
