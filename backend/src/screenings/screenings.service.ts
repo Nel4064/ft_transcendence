@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { fetchMovieTranslations } from 'src/utils/tmdb';
 
 const FEED = 'https://datacinesindes.fr/data-fair/api/v1/datasets/programmation-cinemas/lines';
 const clean = (v?: string | null) => (v && v !== 'null' && v.trim()) || null;
@@ -67,14 +68,25 @@ export class ScreeningsService {
     const res = await fetch(`${FEED}?showid_eq=${encodeURIComponent(showid)}`);
     const r = (await res.json()).results?.[0];
     if (!r) throw new NotFoundException('Screening not in feed');
+
     const minutes = Math.round(r.filmduration / 60);
+    const synopsis = clean(r.filmstoryline);
+
+    // 拉取 TMDB 多语言翻译（失败时会自动回退到原片名和原简介，不会阻塞 pick）
+    const { titleTranslations, synopsisTranslations } = await fetchMovieTranslations(
+      r.filmtitle,
+      synopsis ?? '',
+    );
+
     const data = {
       externalCinemaId: r.cineid ?? (cineid || 0),
       externalShowId: r.showid,
       filmTitle: r.filmtitle,
+      titleTranslations,
       director: clean(r.filmdirector),
       cast: clean(r.filmcast),
-      synopsis: clean(r.filmstoryline),
+      synopsis,
+      synopsisTranslations,
       genres: clean(r.filmgenre)?.split(',').map((g: string) => g.trim()) ?? [],
       country: clean(r.filmcountry),
       runtimeMinutes: minutes > 0 && minutes < 600 ? minutes : null,
@@ -92,12 +104,14 @@ export class ScreeningsService {
       cinemaLatitude: r['_coords.lat'] ?? null,
       cinemaLongitude: r['_coords.lon'] ?? null,
     };
+
     const key = { externalCinemaId: data.externalCinemaId, externalShowId: data.externalShowId };
     const screening = await this.prisma.screening.upsert({
       where: { externalCinemaId_externalShowId: key },
       create: data,
-      update: data
+      update: data,
     });
+
     await this.notifications.notifyAllUsers('CLUB_PICK', {
       screeningId: screening.id,
       filmTitle: screening.filmTitle,

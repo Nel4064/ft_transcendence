@@ -15,6 +15,7 @@ const LOCALE_MAP: Record<string, string> = {
 	en: 'en-GB',
 	fr: 'fr-FR',
 	zh: 'zh-CN',
+	ch: 'zh-CN',
 }
 
 type Screening = {
@@ -32,6 +33,11 @@ type Screening = {
 	filmduration?: number   // en secondes
 }
 
+type MovieTranslations = {
+	titleTranslations?: Record<string, string> | null
+	synopsisTranslations?: Record<string, string> | null
+}
+
 const posterClass = "w-64 shrink-0 self-start rounded-md shadow-card"
 const synopsisClass = "text-body text-text-muted"
 const rowClass = "flex items-center justify-between gap-4 p-4 bg-surface border border-border rounded-lg shadow-card"
@@ -42,8 +48,10 @@ function MovieDetailsPage() {
 	const { title = '' } = useParams()
 	const [screenings, setScreenings] = useState<Screening[]>([])
 	const [created, setCreated] = useState<Set<string>>(new Set())
+	const [translations, setTranslations] = useState<MovieTranslations | null>(null)
 
-	const dateLocale = LOCALE_MAP[i18n.language?.slice(0, 2)] || 'en-GB'
+	const currentLang = i18n.language?.split('-')[0] || 'en'
+	const dateLocale = LOCALE_MAP[currentLang] || 'en-GB'
 
 	async function toggleEvent(s: Screening) {
 		const actualCineId = s.cineid || 0;
@@ -74,8 +82,8 @@ function MovieDetailsPage() {
 
 	useEffect(() => {
 		apiFetch('/screenings')
-			.then((list: { externalCinemaId: number, externalShowId: string }[]) =>
-				setCreated(new Set(list.map((e) => `${e.externalCinemaId}-${e.externalShowId}`)))
+			.then((list: { externalCinemaId?: number | null, externalShowId?: string | number }[]) =>
+				setCreated(new Set(list.map((e) => `${e.externalCinemaId ?? 0}-${String(e.externalShowId ?? '')}`)))
 			)
 			.catch(() => { })
 	}, [])
@@ -93,6 +101,22 @@ function MovieDetailsPage() {
 			)))
 	}, [title])
 
+	// 拿到电影信息后，向后端请求 TMDB 多语言翻译
+	useEffect(() => {
+		const first = screenings[0]
+		if (!first?.filmtitle) return
+
+		const rawSynopsis = first.filmstoryline && first.filmstoryline !== 'null' ? first.filmstoryline : ''
+		const params = new URLSearchParams({
+			title: first.filmtitle,
+			synopsis: rawSynopsis,
+		})
+
+		apiFetch(`/screenings/translate?${params.toString()}`)
+			.then((data: MovieTranslations) => setTranslations(data))
+			.catch(() => setTranslations(null))
+	}, [screenings])
+
 	function formatRuntime(minutes: number) {
 		const h = Math.floor(minutes / 60)
 		const m = String(minutes % 60).padStart(2, '0')
@@ -104,19 +128,25 @@ function MovieDetailsPage() {
 
 	const first = screenings[0]
 	const poster = first.filmposter?.startsWith('https://') ? first.filmposter : defaultMovie
-	const synopsis = first.filmstoryline && first.filmstoryline !== 'null' ? first.filmstoryline : null
+	const rawSynopsis = first.filmstoryline && first.filmstoryline !== 'null' ? first.filmstoryline : null
 	const trailer = first.filmtrailer?.startsWith('https://') ? first.filmtrailer : null
 	const clean = (v?: string) => (v && v !== 'null' ? v : null)
 	const director = clean(first.filmdirector)
 	const cast = clean(first.filmcast)
 	const minutes = first.filmduration ? Math.round(first.filmduration / 60) : 0
 
+	const pickLang = (map?: Record<string, string> | null) =>
+		map?.[currentLang] || (currentLang === 'ch' ? map?.zh : undefined)
+
+	const displayTitle = pickLang(translations?.titleTranslations) || first.filmtitle
+	const displaySynopsis = pickLang(translations?.synopsisTranslations) || rawSynopsis
+
 	return (
 		<main className="max-w-[1000px] mx-auto py-12 px-10">
 			<section className="flex flex-col md:flex-row gap-8 mb-12">
-				<img src={poster} alt={first.filmtitle} className={posterClass} />
+				<img src={poster} alt={displayTitle} className={posterClass} />
 				<div>
-					<Heading className="mb-4">{first.filmtitle}</Heading>
+					<Heading className="mb-4">{displayTitle}</Heading>
 					<dl className="mb-4 flex flex-col gap-1 text-body">
 						{director && (
 							<div>
@@ -138,7 +168,7 @@ function MovieDetailsPage() {
 						)}
 					</dl>
 
-					<p className={synopsisClass}>{synopsis ?? t('movieDetails.noSynopsis')}</p>
+					<p className={synopsisClass}>{displaySynopsis ?? t('movieDetails.noSynopsis')}</p>
 					{trailer && (
 						<section className="mt-6">
 							<Heading level="section" className="mb-4">{t('movieDetails.trailer')}</Heading>

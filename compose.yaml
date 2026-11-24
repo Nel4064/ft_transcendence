@@ -45,6 +45,7 @@ services:
       FRONTEND_OAUTH_URI: ${FRONTEND_OAUTH_URI}
       # --- 2FA (enable with two-factor module) ---
       TWO_FACTOR_URL: ${TWO_FACTOR_URL}
+      TMDB_ACCESS_KEY: ${TMDB_ACCESS_KEY}
     secrets:
       - postgres_backend_user_pw
       - jwt_secret

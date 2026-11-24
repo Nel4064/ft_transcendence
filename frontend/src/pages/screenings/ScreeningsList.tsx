@@ -14,6 +14,7 @@ const LOCALE_MAP: Record<string, string> = {
     en: 'en-GB',
     fr: 'fr-FR',
     ch: 'zh-CN',
+    zh: 'zh-CN',
 }
 
 export default function ScreeningsList() {
@@ -24,8 +25,15 @@ export default function ScreeningsList() {
     const [currentPage, setCurrentPage] = useState(1)
     const { apiFetch } = useAuth()
 
-    // 👇 加上 .toLowerCase()，兼容大写（如 CN / ZH）
-    const dateLocale = LOCALE_MAP[i18n.language?.toLowerCase().slice(0, 2)] || 'en-GB'
+    const currentLang = i18n.language?.toLowerCase().split('-')[0] || 'en'
+    const dateLocale = LOCALE_MAP[currentLang] || 'en-GB'
+
+    const getLocalizedTitle = (s: Screening) => {
+        const translated =
+            s.titleTranslations?.[currentLang] ||
+            (currentLang === 'ch' ? s.titleTranslations?.zh : undefined)
+        return translated || s.filmTitle || t('myScreenings.unknownTitle')
+    }
 
     useEffect(() => {
         setIsLoading(true)
@@ -148,7 +156,7 @@ export default function ScreeningsList() {
                                 <RsvpScreeningCard
                                     key={s.id}
                                     id={s.id}
-                                    movie={s.filmTitle || t('myScreenings.unknownTitle')}
+                                    movie={getLocalizedTitle(s)}
                                     image={s.posterUrl ?? defaultMovie}
                                     cinema={s.cinemaName || t('myScreenings.unknownCinema')}
                                     dateFormatted={formattedDate}

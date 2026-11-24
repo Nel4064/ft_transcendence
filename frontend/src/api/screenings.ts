@@ -26,6 +26,8 @@ export type Screening = {
     runtimeMinutes?: number | null;
     friendsGoingCount?: number;
     friendsGoing?: Friend[];
+    titleTranslations?: Record<string, string> | null;
+    synopsisTranslations?: Record<string, string> | null;
 };
 
 type ApiFetch = (endpoint: string, options?: RequestInit) => Promise<any>;

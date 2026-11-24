@@ -153,6 +153,10 @@ model Screening {
   //isCancelled      Boolean           @default(false)
   rsvps            Rsvp[]
 
+  // multi-language
+  titleTranslations    Json?   // { "fr": "...", "en": "...", "zh": "..." }
+  synopsisTranslations Json?   // { "fr": "...", "en": "...", "zh": "..." }
+
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 

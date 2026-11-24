@@ -1,10 +1,11 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Req, UseGuards, NotFoundException } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Query, Param, ParseIntPipe, Post, Put, Req, UseGuards, NotFoundException } from '@nestjs/common';
 import { ScreeningsService } from './screenings.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { AuthenticatedRequest } from '../auth/authenticated-request';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../generated/prisma/client.js';
+import { fetchMovieTranslations } from 'src/utils/tmdb';
 
 @Controller('screenings')
 export class ScreeningsController {
@@ -12,6 +13,15 @@ export class ScreeningsController {
 
   @Get()
   findAll() { return this.screenings.findAll(); }
+
+  @Get('translate')
+  async translate(
+    @Query('title') title: string,
+    @Query('synopsis') synopsis = '',
+  ) {
+    if (!title) return { titleTranslations: null, synopsisTranslations: null };
+    return fetchMovieTranslations(title, synopsis);
+  }
 
   @UseGuards(JwtAuthGuard)
   @Get('my-rsvps')

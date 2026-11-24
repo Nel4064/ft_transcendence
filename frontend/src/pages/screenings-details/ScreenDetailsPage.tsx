@@ -19,6 +19,7 @@ const LOCALE_MAP: Record<string, string> = {
     en: 'en-GB',
     fr: 'fr-FR',
     ch: 'zh-CN',
+    zh: 'zh-CN',
 }
 
 // 118 -> "1h58"
@@ -37,7 +38,18 @@ function ScreenDetailsPage() {
     const [screening, setScreening] = useState<Screening | null>(null)
     const [isLoading, setIsLoading] = useState(true)
 
-    const dateLocale = LOCALE_MAP[i18n.language?.slice(0, 2)] || 'en-GB'
+    const currentLang = i18n.language?.split('-')[0] || 'en'
+    const dateLocale = LOCALE_MAP[currentLang] || 'en-GB'
+
+    const pickLang = (map?: Record<string, string> | null) =>
+        map?.[currentLang] || (currentLang === 'ch' ? map?.zh : undefined)
+
+    const displayTitle = screening
+        ? (pickLang(screening.titleTranslations) || screening.filmTitle)
+        : ''
+    const displaySynopsis = screening
+        ? (pickLang(screening.synopsisTranslations) || screening.synopsis)
+        : null
 
     useEffect(() => {
         if (!id) return;
@@ -117,8 +129,8 @@ function ScreenDetailsPage() {
             "BEGIN:VEVENT",
             `DTSTART:${formatICSDate(startDate)}`,
             `DTEND:${formatICSDate(endDate)}`,
-            `SUMMARY:🎬 ${screening.filmTitle}`,
-            `DESCRIPTION:${screening.synopsis || t('screeningDetails.calendar.defaultDescription')}`,
+            `SUMMARY:🎬 ${displayTitle}`,
+            `DESCRIPTION:${displaySynopsis || t('screeningDetails.calendar.defaultDescription')}`,
             `LOCATION:${screening.cinemaName}, ${screening.cinemaAddress}, ${screening.cinemaCity}`,
             "BEGIN:VALARM",
             "TRIGGER:-PT1H",
@@ -131,7 +143,7 @@ function ScreenDetailsPage() {
         const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
         const link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
-        link.download = `${screening.filmTitle.replace(/\s+/g, '_')}_screening.ics`;
+        link.download = `${displayTitle.replace(/\s+/g, '_')}_screening.ics`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -141,8 +153,8 @@ function ScreenDetailsPage() {
         if (!screening) return;
         const startDate = new Date(screening.startsAt);
         const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
-        const title = encodeURIComponent(`🎬 ${screening.filmTitle}`);
-        const details = encodeURIComponent(screening.synopsis || t('screeningDetails.calendar.defaultDescription'));
+        const title = encodeURIComponent(`🎬 ${displayTitle}`);
+        const details = encodeURIComponent(displaySynopsis || t('screeningDetails.calendar.defaultDescription'));
         const location = encodeURIComponent(`${screening.cinemaName}, ${screening.cinemaAddress}, ${screening.cinemaCity}`);
         const dates = `${formatICSDate(startDate)}/${formatICSDate(endDate)}`;
 
@@ -174,9 +186,9 @@ function ScreenDetailsPage() {
     return (
         <main className="max-w-[1000px] mx-auto py-12 px-10">
             <section className="flex flex-col md:flex-row gap-8 mb-12">
-                <img src={screening.posterUrl ?? defaultMovie} alt={screening.filmTitle} className={posterClass} />
+                <img src={screening.posterUrl ?? defaultMovie} alt={displayTitle} className={posterClass} />
                 <div>
-                    <Heading className="mb-4">{screening.filmTitle}</Heading>
+                    <Heading className="mb-4">{displayTitle}</Heading>
                     <dl className="mb-4 flex flex-col gap-1 text-body">
                         {screening.director && (
                             <div>
@@ -197,7 +209,7 @@ function ScreenDetailsPage() {
                             </div>
                         )}
                     </dl>
-                    <p className={synopsisClass}>{screening.synopsis ?? t('screeningDetails.noSynopsis')}</p>
+                    <p className={synopsisClass}>{displaySynopsis ?? t('screeningDetails.noSynopsis')}</p>
                     {screening.trailerUrl && (
                         <section className="mt-6">
                             <Heading level="section" className="mb-4">{t('screeningDetails.trailer')}</Heading>
