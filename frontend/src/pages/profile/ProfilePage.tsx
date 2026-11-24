@@ -31,14 +31,17 @@ function ProfilePage() {
     const [error, setError] = useState('')
     const [successMsg, setSuccessMsg] = useState('')
 
-    // Synchronize local edit box states when the global user object updates
+    // Synchronize local edit box states and UI language when the global user object updates
     useEffect(() => {
         if (user) {
             setDisplayName(user.displayName || '')
             setBio(user.bio || '')
-            setLanguage(user.language || 'EN')
+            const savedLang = user.language || 'EN'
+            setLanguage(savedLang)
             setIs2faEnabled(user.twoFactorEnabled || false)
+            i18n.changeLanguage(savedLang.toLowerCase())
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user])
 
     function handleLogout() {
@@ -104,7 +107,6 @@ function ProfilePage() {
                 method: 'PATCH',
                 body: JSON.stringify({ displayName, bio, language }),
             })
-            // 立即切换前端 i18n 语言并写入 localStorage
             await i18n.changeLanguage(language.toLowerCase())
             setSuccessMsg(t('profile.messages.updateSuccess'))
             setTimeout(() => {
@@ -218,12 +220,16 @@ function ProfilePage() {
                             <label className="text-small font-medium text-text">{t('profile.edit.languageLabel')}</label>
                             <select
                                 value={language}
-                                onChange={(e) => setLanguage(e.target.value)}
+                                onChange={(e) => {
+                                    const nextLang = e.target.value
+                                    setLanguage(nextLang)
+                                    i18n.changeLanguage(nextLang.toLowerCase())
+                                }}
                                 className="py-2 px-3 border border-border rounded-md text-control bg-surface text-text focus:outline-none focus:border-brand"
                             >
                                 <option value="EN">English (EN)</option>
                                 <option value="FR">Français (FR)</option>
-                                <option value="CH">Chinese (CH)</option>
+                                <option value="CH">中文 (CH)</option>
                             </select>
                         </div>
 
