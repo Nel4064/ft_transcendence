@@ -24,11 +24,12 @@ down:
 
 # also removes the volumes: database data and node_modules are lost
 clean:
-	-$(COMPOSE) down -v
-	-podman rm -f development-proxy development-frontend development-backend development-db
-	-podman pod rm -f pod_development
-	-podman volume rm -f development_postgres_data development_frontend_node_modules development_backend_node_modules
-	
+	-$(COMPOSE) down -v --remove-orphans
+	@if command -v podman >/dev/null 2>&1; then \
+		podman rm -f development-proxy development-frontend development-backend development-db 2>/dev/null || true; \
+		podman pod rm -f pod_development 2>/dev/null || true; \
+		podman volume rm -f development_postgres_data development_frontend_node_modules development_backend_node_modules 2>/dev/null || true; \
+	fi
 re: clean all
 
 # rebuild images and refresh node_modules volumes (the database is kept)
