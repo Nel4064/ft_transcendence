@@ -35,30 +35,40 @@ rebuild: env secrets
 	$(COMPOSE) build
 	$(COMPOSE) up -d
 
-# database name and superuser, read from .env.dev (the superuser is only used inside the db container)
+# database name and user, read from .env.dev (the superuser is only used inside the db container)
 DB_NAME = $$(grep ^POSTGRES_DB= .env.dev | cut -d= -f2)
 DB_SUPERUSER = $$(grep ^POSTGRES_SUPERUSER= .env.dev | cut -d= -f2)
+DB_BACKEND_USER = $$(grep ^POSTGRES_BACKEND_USER= .env.dev | cut -d= -f2)
 
 # manual backup right now, in ./backups (manual_*.dump files are never deleted by the retention)
 backup: env
-	@file=backups/manual_$$(date +%Y%m%d_%H%M%S).dump; \
-	if podman exec development-db pg_dump -U $(DB_SUPERUSER) -d $(DB_NAME) -Fc > $$file.tmp; then \
+	@umask 077; file=backups/manual_$$(date -u +%Y%m%d_%H%M%S).dump; \
+	if podman exec development-db pg_dump -U $(DB_SUPERUSER) -d $(DB_NAME) -Fc > $$file.tmp \
+		&& podman exec -i development-db pg_restore --list < $$file.tmp | grep -q "TABLE DATA"; then \
 		mv $$file.tmp $$file; echo "💾 Backup saved: $$file"; \
 	else \
-		rm -f $$file.tmp; echo "❌ Backup failed"; exit 1; \
+		rm -f $$file.tmp; echo "❌ Backup failed (is the stack running? make up)"; exit 1; \
 	fi
 
 # restore a dump: make restore FILE=backups/<name>.dump (replaces the current data)
 restore:
 	@test -f "$(FILE)" || { echo "usage: make restore FILE=backups/<name>.dump"; exit 1; }
+	@[ "$$(podman inspect -f '{{.State.Running}}' development-db 2>/dev/null)" = "true" ] \
+		&& podman container exists development-backend \
+		|| { echo "❌ The containers are not running: run make up first"; exit 1; }
 	podman stop development-backend
 	@podman exec -i development-db pg_restore -U $(DB_SUPERUSER) -d $(DB_NAME) \
-		--clean --if-exists --single-transaction < "$(FILE)"; status=$$?; \
+		--clean --if-exists --single-transaction --no-owner --no-privileges --role=$(DB_BACKEND_USER) < "$(FILE)"; status=$$?; \
 	podman start development-backend; \
 	echo "⏳ Waiting for the backend to be healthy..."; \
-	i=0; until podman healthcheck run development-backend >/dev/null 2>&1 || [ $$i -ge 60 ]; do i=$$((i+1)); sleep 2; done; \
+	healthy=0; i=0; while [ $$i -lt 60 ]; do \
+		if podman healthcheck run development-backend >/dev/null 2>&1; then healthy=1; break; fi; \
+		i=$$((i+1)); sleep 2; \
+	done; \
 	podman restart development-proxy; \
-	if [ $$status -eq 0 ]; then echo "✅ Restored $(FILE)"; else echo "❌ Restore failed, data unchanged"; fi; \
+	if [ $$status -ne 0 ]; then echo "❌ Restore failed, data unchanged"; \
+	elif [ $$healthy -eq 0 ]; then echo "⚠️  Restored $(FILE), but the backend is not healthy after 2 min: podman logs development-backend"; status=1; \
+	else echo "✅ Restored $(FILE)"; fi; \
 	exit $$status
 
 # restart the app containers, and the proxy so nginx picks up their new IP addresses
@@ -74,7 +84,7 @@ studio:
 
 env:
 	@test -f .env.dev || cp .env.dev.example .env.dev
-	@mkdir -p backups
+	@mkdir -p backups && chmod 700 backups
 
 secrets:
 	@mkdir -p secrets
