@@ -12,6 +12,7 @@ const LOCALE_MAP: Record<string, string> = {
     en: 'en-GB',
     fr: 'fr-FR',
     zh: 'zh-CN',
+    ch: 'zh-CN',
 }
 
 const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
@@ -24,7 +25,15 @@ export default function CalendarPage() {
     const { apiFetch } = useAuth()
     const [currentDate, setCurrentDate] = useState(new Date())
 
-    const dateLocale = LOCALE_MAP[i18n.language?.slice(0, 2)] || 'en-GB'
+    const currentLang = i18n.language?.toLowerCase().split('-')[0] || 'en'
+    const dateLocale = LOCALE_MAP[currentLang] || 'en-GB'
+
+    const getLocalizedTitle = (s: Screening) => {
+        const translated =
+            s.titleTranslations?.[currentLang] ||
+            (currentLang === 'ch' ? s.titleTranslations?.zh : undefined)
+        return translated || s.filmTitle
+    }
 
     useEffect(() => {
         setIsLoading(true)
@@ -135,11 +144,12 @@ export default function CalendarPage() {
                                         minute: '2-digit'
                                     })
                                     const isPast = sDate < new Date()
+                                    const displayTitle = getLocalizedTitle(s)
                                     return (
                                         <div
                                             key={s.id}
                                             onClick={() => navigate(`/screenings/${s.id}`)}
-                                            title={t('calendar.eventTooltip', { title: s.filmTitle, time: timeStr })}
+                                            title={t('calendar.eventTooltip', { title: displayTitle, time: timeStr })}
                                             className={`group border rounded-lg p-1.5 cursor-pointer transition-all text-left
                                                 ${isPast
                                                     ? 'bg-gray-50 border-gray-100 opacity-60'
@@ -152,7 +162,7 @@ export default function CalendarPage() {
                                                     : 'text-gray-800 group-hover:text-brand'
                                                 }`}
                                             >
-                                                {s.filmTitle}
+                                                {displayTitle}
                                             </p>
                                             <p className={`text-[10px] mt-0.5 truncate
                                                 ${isPast ? 'text-gray-400' : 'text-gray-500'}`}
