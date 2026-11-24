@@ -110,7 +110,7 @@ function ProfilePage() {
             await i18n.changeLanguage(language.toLowerCase())
             setSuccessMsg(t('profile.messages.updateSuccess'))
             setTimeout(() => {
-                navigate('/')
+                window.location.href = '/'
             }, 500)
         } catch (err: any) {
             setError(err.message || t('profile.messages.updateFailed'))
