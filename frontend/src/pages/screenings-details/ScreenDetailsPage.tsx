@@ -9,6 +9,8 @@ import type { Screening } from '../../api/screenings'
 import { getScreening, rsvp, cancelRsvp, removeScreening } from '../../api/screenings'
 import Loader from '../../components/Loader/Loader'
 import Heading from '../../components/Heading/Heading'
+import ScreeningFilesManager from '../../components/ScreeningFiles/ScreeningFilesManager'
+
 
 const posterClass = "w-64 shrink-0 self-start rounded-md shadow-card"
 const synopsisClass = "text-body text-text-muted"
@@ -171,6 +173,14 @@ function ScreenDetailsPage() {
                         )}
                     </dl>
                     <p className={synopsisClass}>{screening.synopsis ?? 'No synopsis available.'}</p>
+                    {screening.attachmentUrl && (
+                        <p className="mt-4 text-body">
+                            <span className="font-bold text-text">More information: </span>
+                            <a href={screening.attachmentUrl} target="_blank" rel="noreferrer" className="text-text-muted underline">
+                                View
+                            </a>
+                        </p>
+                    )}
                     {screening.trailerUrl && (
                         <section className="mt-6">
                             <Heading level="section" className="mb-4">Trailer</Heading>
@@ -255,17 +265,23 @@ function ScreenDetailsPage() {
             </ul>
             
             {user?.role === 'ADMIN' && (
-                <div className="flex justify-end mt-4">
-                    <Button
-                        variant="admin"
-                        size="lg"
-                        onClick={handleRemove}
-                        disabled={new Date(screening.startsAt) < new Date()}
-                        className={new Date(screening.startsAt) < new Date() ? 'opacity-50 cursor-not-allowed' : ''}
-                    >
-                        Remove Event
-                    </Button>
-                </div>
+                <>
+                    <ScreeningFilesManager
+                        screening={screening}
+                        onUpdated={(updated) => setScreening((s) => s && { ...s, ...updated })}
+                    />
+                    <div className="flex justify-end mt-4">
+                        <Button
+                            variant="admin"
+                            size="lg"
+                            onClick={handleRemove}
+                            disabled={new Date(screening.startsAt) < new Date()}
+                            className={new Date(screening.startsAt) < new Date() ? 'opacity-50 cursor-not-allowed' : ''}
+                        >
+                            Remove Event
+                        </Button>
+                    </div>
+                </>
             )}
         </main>
     )
