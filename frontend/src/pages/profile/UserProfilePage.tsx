@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Shield, Globe, MessageCircle, Check } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Loader from '../../components/Loader/Loader';
 import Heading from '../../components/Heading/Heading';
+import Icon from '../../components/Icon/Icon';
+import Button from '../../components/button/Button';
+import BackButton from '../../components/BackButton/BackButton';
 
 interface UserProfile {
   id: string;
@@ -115,12 +117,7 @@ export default function UserProfilePage() {
     return (
       <main className="max-w-[500px] mx-auto my-[120px] p-6 bg-surface border border-border rounded-md shadow-card text-center">
         <p className="text-danger font-bold mb-4">{error || 'User not found'}</p>
-        <button
-          onClick={() => navigate(-1)}
-          className="py-2 px-4 rounded-md bg-brand text-white text-sm font-bold cursor-pointer"
-        >
-          Go Back
-        </button>
+        <Button onClick={() => navigate(-1)}>Go Back</Button>
       </main>
     );
   }
@@ -128,13 +125,7 @@ export default function UserProfilePage() {
   return (
     <main>
       <div className="flex flex-col gap-6 max-w-[600px] mx-auto my-[60px]">
-        {/* Back button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="w-fit py-1.5 px-3 rounded-md border border-border text-text-muted hover:text-text hover:bg-surface text-sm cursor-pointer transition-colors"
-        >
-          ← Back
-        </button>
+        <BackButton />
 
         {/* User profile display card */}
         <div className="flex flex-col items-center gap-4 p-8 bg-surface border border-border rounded-md shadow-card text-center">
@@ -165,14 +156,14 @@ export default function UserProfilePage() {
                       : 'bg-stone-100 text-stone-700'
                   }`}
                 >
-                  {profile.role === 'ADMIN' && <Shield className="w-3.5 h-3.5" />}
+                  {profile.role === 'ADMIN' && <Icon name="shield" size={14} />}
                   {profile.role === 'ADMIN' ? 'Admin' : 'Member'}
                 </span>
               )}
 
               {profile.language && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-stone-100 text-stone-700">
-                  <Globe className="w-3.5 h-3.5 text-stone-500" />
+                  <Icon name="world" size={14} />
                   {LANGUAGE_LABELS[profile.language] || profile.language}
                 </span>
               )}
@@ -201,12 +192,12 @@ export default function UserProfilePage() {
               >
                 {requestSent ? (
                   <>
-                    <Check className="w-4 h-4" />
+                    <Icon name="check" size={16} />
                     Friend Request Sent
                   </>
                 ) : (
                   <>
-                    <MessageCircle className="w-4 h-4" />
+                    <Icon name="message-circle" size={16} />
                     {sendingRequest ? 'Sending Request...' : 'Go to Chat'}
                   </>
                 )}
