@@ -8,7 +8,7 @@ const textClass = 'my-4 text-body text-text'
 const LANGUAGES = [
 	{ code: 'en', label: 'English' },
 	{ code: 'fr', label: 'Français' },
-	{ code: 'ch', label: '中文' },
+	{ code: 'zh', label: '中文' },
 ]
 
 function TermsOfServicePage() {

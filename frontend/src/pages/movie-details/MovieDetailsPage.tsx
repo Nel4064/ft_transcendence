@@ -15,7 +15,7 @@ const LOCALE_MAP: Record<string, string> = {
 	en: 'en-GB',
 	fr: 'fr-FR',
 	zh: 'zh-CN',
-	ch: 'zh-CN',
+	zh: 'zh-CN',
 }
 
 type Screening = {
@@ -163,7 +163,7 @@ function MovieDetailsPage() {
 	const minutes = first.filmduration ? Math.round(first.filmduration / 60) : 0
 
 	const pickLang = (map?: Record<string, string> | null) =>
-		map?.[currentLang] || (currentLang === 'ch' ? map?.zh : undefined)
+		map?.[currentLang] || (currentLang === 'zh' ? map?.zh : undefined)
 
 	const displayTitle = pickLang(translations?.titleTranslations) || first.filmtitle
 	const displaySynopsis = pickLang(translations?.synopsisTranslations) || rawSynopsis

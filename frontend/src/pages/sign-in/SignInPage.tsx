@@ -10,7 +10,7 @@ import Logo from '../../components/Logo/Logo' // 如果你的 Logo 路径不同�
 const LANGUAGES = [
   { code: 'en', label: 'English' },
   { code: 'fr', label: 'Français' },
-  { code: 'ch', label: '中文' },
+  { code: 'zh', label: '中文' },
 ]
 
 function SignInPage() {

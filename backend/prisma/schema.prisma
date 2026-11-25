@@ -19,7 +19,7 @@ enum Role {
 enum Language {
   EN
   FR
-  CH
+  ZH
 }
 
 enum ScreeningVersion {

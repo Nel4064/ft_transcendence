@@ -3,7 +3,7 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import en from './locales/en.json';
 import fr from './locales/fr.json';
-import ch from './locales/ch.json'
+import zh from './locales/zh.json'
 
 i18n
   .use(LanguageDetector) // 自动读取 localStorage 或浏览器默认语言
@@ -12,7 +12,7 @@ i18n
     resources: {
       en: { translation: en },
       fr: { translation: fr },
-      ch: { translation: ch}
+      zh: { translation: zh}
     },
     fallbackLng: 'en',
     interpolation: {

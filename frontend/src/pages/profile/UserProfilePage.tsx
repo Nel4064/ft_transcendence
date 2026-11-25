@@ -13,7 +13,7 @@ interface UserProfile {
   avatarUrl?: string;
   bio?: string;
   role?: 'ADMIN' | 'USER';
-  language?: 'EN' | 'FR' | 'ZH' | 'CH' | 'ES';
+  language?: 'EN' | 'FR' | 'ZH' | 'ZH' | 'ES';
   isFriend?: boolean;
 }
 
@@ -21,7 +21,7 @@ const LANGUAGE_LABELS: Record<string, string> = {
   EN: 'English',
   FR: 'Français',
   ZH: '中文',
-  CH: '中文',
+  ZH: '中文',
   ES: 'Español',
 };
 

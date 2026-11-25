@@ -2,7 +2,7 @@ const LOCALE_MAP: Record<string, string> = {
 	en: 'en-GB',
 	fr: 'fr-FR',
 	zh: 'zh-CN',
-	ch: 'zh-CN',
+	zh: 'zh-CN',
 }
 
 export function formatRelativeTime(dateInput: string | Date, locale = 'en'): string {

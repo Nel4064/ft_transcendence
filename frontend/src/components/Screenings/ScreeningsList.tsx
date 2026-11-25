@@ -27,7 +27,7 @@ function ScreeningsList({ upcomingOnly = false }: ScreeningsListProps) {
 		if (!s.titleTranslations) return s.filmTitle
 		return (
 			s.titleTranslations[currentLang] ||
-			(currentLang === 'ch' ? s.titleTranslations.zh : undefined) ||
+			(currentLang === 'zh' ? s.titleTranslations.zh : undefined) ||
 			s.filmTitle
 		)
 	}

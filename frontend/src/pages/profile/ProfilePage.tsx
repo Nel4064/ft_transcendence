@@ -229,7 +229,7 @@ function ProfilePage() {
                             >
                                 <option value="EN">English (EN)</option>
                                 <option value="FR">Français (FR)</option>
-                                <option value="CH">中文 (CH)</option>
+                                <option value="ZH">中文 (ZH)</option>
                             </select>
                         </div>
 

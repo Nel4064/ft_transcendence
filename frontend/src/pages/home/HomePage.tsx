@@ -7,7 +7,7 @@ import Heading from '../../components/Heading/Heading'
 const LANGUAGES = [
 	{ code: 'en', label: 'English' },
 	{ code: 'fr', label: 'Français' },
-	{ code: 'ch', label: '中文' },
+	{ code: 'zh', label: '中文' },
 ]
 
 function HomePage() {

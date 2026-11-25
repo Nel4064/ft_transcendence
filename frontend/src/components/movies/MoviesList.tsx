@@ -79,7 +79,7 @@ function MoviesList({ searchTerm = '', filter = 'title', perPage }: MoviesListPr
 		if (term === '') return true
 		if (filter === 'title') {
 			const map = translations[r.filmtitle] ?? titleCache.get(r.filmtitle)
-			const localized = map?.[currentLang] || (currentLang === 'ch' ? map?.zh : undefined) || ''
+			const localized = map?.[currentLang] || (currentLang === 'zh' ? map?.zh : undefined) || ''
 			return (
 				r.filmtitle.toLowerCase().includes(term) ||
 				localized.toLowerCase().includes(term)
@@ -141,7 +141,7 @@ function MoviesList({ searchTerm = '', filter = 'title', perPage }: MoviesListPr
 
 	const getLocalizedTitle = (rawTitle: string) => {
 		const map = translations[rawTitle] ?? titleCache.get(rawTitle)
-		return map?.[currentLang] || (currentLang === 'ch' ? map?.zh : undefined) || rawTitle
+		return map?.[currentLang] || (currentLang === 'zh' ? map?.zh : undefined) || rawTitle
 	}
 
 	return (

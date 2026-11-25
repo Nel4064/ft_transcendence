@@ -12,7 +12,7 @@ const LOCALE_MAP: Record<string, string> = {
     en: 'en-GB',
     fr: 'fr-FR',
     zh: 'zh-CN',
-    ch: 'zh-CN',
+    zh: 'zh-CN',
 }
 
 const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
@@ -31,7 +31,7 @@ export default function CalendarPage() {
     const getLocalizedTitle = (s: Screening) => {
         const translated =
             s.titleTranslations?.[currentLang] ||
-            (currentLang === 'ch' ? s.titleTranslations?.zh : undefined)
+            (currentLang === 'zh' ? s.titleTranslations?.zh : undefined)
         return translated || s.filmTitle
     }
 

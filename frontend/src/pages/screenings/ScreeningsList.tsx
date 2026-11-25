@@ -13,7 +13,7 @@ const ITEMS_PER_PAGE = 5
 const LOCALE_MAP: Record<string, string> = {
     en: 'en-GB',
     fr: 'fr-FR',
-    ch: 'zh-CN',
+    zh: 'zh-CN',
     zh: 'zh-CN',
 }
 
@@ -31,7 +31,7 @@ export default function ScreeningsList() {
     const getLocalizedTitle = (s: Screening) => {
         const translated =
             s.titleTranslations?.[currentLang] ||
-            (currentLang === 'ch' ? s.titleTranslations?.zh : undefined)
+            (currentLang === 'zh' ? s.titleTranslations?.zh : undefined)
         return translated || s.filmTitle || t('myScreenings.unknownTitle')
     }
 

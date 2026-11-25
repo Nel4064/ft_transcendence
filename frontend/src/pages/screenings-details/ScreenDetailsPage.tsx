@@ -20,8 +20,7 @@ const boxClass = "p-4 bg-surface border border-border rounded-lg shadow-card"
 const LOCALE_MAP: Record<string, string> = {
     en: 'en-GB',
     fr: 'fr-FR',
-    ch: 'zh-CN',
-    zh: 'zh-CN',
+    zh: 'zh-CN'
 }
 
 // 118 -> "1h58"
@@ -44,7 +43,7 @@ function ScreenDetailsPage() {
     const dateLocale = LOCALE_MAP[currentLang] || 'en-GB'
 
     const pickLang = (map?: Record<string, string> | null) =>
-        map?.[currentLang] || (currentLang === 'ch' ? map?.zh : undefined)
+        map?.[currentLang] || (currentLang === 'zh' ? map?.zh : undefined)
 
     const displayTitle = screening
         ? (pickLang(screening.titleTranslations) || screening.filmTitle)
@@ -321,10 +320,19 @@ function ScreenDetailsPage() {
 
 
             {user?.role === 'ADMIN' && (
-                <ScreeningFilesManager
-                    screening={screening}
-                    onUpdated={(updated) => setScreening(updated)}
-                />
+                <>
+                    <ScreeningFilesManager
+                        screening={screening}
+                        onUpdated={(updated) => setScreening(updated)}
+                    />
+                    {screening.externalCinemaId != null && screening.externalShowId && (
+                        <div className="mt-6 flex justify-end">
+                            <Button variant="admin" size="lg" onClick={handleRemove}>
+                                {t('screeningDetails.actions.removeEvent')}
+                            </Button>
+                        </div>
+                    )}
+                </>
             )}
         </main>
     )
