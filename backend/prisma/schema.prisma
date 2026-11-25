@@ -132,11 +132,6 @@ model Screening {
   country          String?                                     // filmcountry
   runtimeMinutes   Int?                                        // filmduration, null if implausible
   posterUrl        String?                                     // filmposter, https only
-<<<<<<< HEAD
-=======
-  originalPosterUrl String?                                    // new changed fileposter
-  attachmentUrl    String?                                     // PDF uploaded by an admin (flyer)
->>>>>>> 9c8f798 (chore(secrets): move TMDB_ACCESS_KEY to Podman secrets“)
   trailerUrl       String?                                     // filmtrailer, allowed hosts only
   version          ScreeningVersion?                           // filmversion, null if blank
   eventName        String?                                     // evenement
@@ -161,8 +156,6 @@ model Screening {
   // multi-language
   titleTranslations    Json?   // { "fr": "...", "en": "...", "zh": "..." }
   synopsisTranslations Json?   // { "fr": "...", "en": "...", "zh": "..." }
-
-
 
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
