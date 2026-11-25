@@ -28,6 +28,24 @@ type MoviesListProps = {
 
 // 模块级缓存，翻页或返回列表时不用重复请求 TMDB
 const titleCache = new Map<string, Record<string, string>>()
+const genreCache = new Map<string, string[]>()
+
+function normalizeGenres(raw: unknown): string[] {
+	if (!raw) return []
+	if (Array.isArray(raw)) {
+		return raw
+			.map((item) => (typeof item === 'string' ? item : (item as { name?: string })?.name ?? ''))
+			.map((s) => s.trim().toLowerCase())
+			.filter(Boolean)
+	}
+	if (typeof raw === 'string') {
+		return raw
+			.split(',')
+			.map((s) => s.trim().toLowerCase())
+			.filter(Boolean)
+	}
+	return []
+}
 
 function toLocalDay(iso: string) {
 	const d = new Date(iso)
@@ -41,6 +59,7 @@ function MoviesList({ searchTerm = '', filter = 'title', perPage }: MoviesListPr
 	const [searchParams, setSearchParams] = useSearchParams()
 	const [rows, setRows] = useState<FeedRow[]>([])
 	const [translations, setTranslations] = useState<Record<string, Record<string, string>>>({})
+	const [genresMap, setGenresMap] = useState<Record<string, string[]>>({})
 
 	const currentLang = i18n.language?.toLowerCase().split('-')[0] || 'en'
 	const rawPage = Math.max(1, Number(searchParams.get('page')) || 1)
@@ -74,7 +93,7 @@ function MoviesList({ searchTerm = '', filter = 'title', perPage }: MoviesListPr
 			.catch((err) => console.error('Failed to load feed:', err))
 	}, [])
 
-	const term = searchTerm.toLowerCase()
+	const term = searchTerm.trim().toLowerCase()
 	const filtered = rows.filter((r) => {
 		if (term === '') return true
 		if (filter === 'title') {
@@ -87,6 +106,10 @@ function MoviesList({ searchTerm = '', filter = 'title', perPage }: MoviesListPr
 		}
 		if (filter === 'cinema') return (r.cinenom ?? '').toLowerCase().includes(term)
 		if (filter === 'date') return toLocalDay(r.showstart) === term
+		if (filter === 'genre') {
+			const movieGenres = genresMap[r.filmtitle] ?? genreCache.get(r.filmtitle) ?? []
+			return movieGenres.includes(term)
+		}
 		return true
 	})
 
@@ -98,17 +121,24 @@ function MoviesList({ searchTerm = '', filter = 'title', perPage }: MoviesListPr
 		return true
 	})
 
+	// 所有去重片名（用于按 genre 筛选时补全未缓存的电影元数据）
+	const allUniqueTitles = Array.from(new Set(rows.map((r) => r.filmtitle)))
+
 	const totalPages = perPage ? Math.max(1, Math.ceil(uniqueMovies.length / perPage)) : 1
 	const page = rows.length > 0 ? Math.min(rawPage, totalPages) : rawPage
 	const visible = perPage ? uniqueMovies.slice((page - 1) * perPage, page * perPage) : uniqueMovies
-	const visibleTitlesKey = visible.map((r) => r.filmtitle).join('|')
 
-	// 只拉取当前页还没缓存过的电影标题翻译
+	// 按 genre 筛选时拉取所有去重影片的元数据；其他模式只拉当前页
+	const targetTitles = filter === 'genre' && term !== ''
+		? allUniqueTitles
+		: visible.map((r) => r.filmtitle)
+	const targetTitlesKey = targetTitles.join('|')
+
 	useEffect(() => {
 		let cancelled = false
-		const missing = visible
-			.map((r) => r.filmtitle)
-			.filter((title) => !titleCache.has(title))
+		const missing = targetTitles.filter(
+			(title) => !titleCache.has(title) || !genreCache.has(title)
+		)
 
 		if (missing.length === 0) return
 
@@ -116,28 +146,35 @@ function MoviesList({ searchTerm = '', filter = 'title', perPage }: MoviesListPr
 			missing.map(async (title) => {
 				try {
 					const data = await apiFetch(`/screenings/translate?title=${encodeURIComponent(title)}`)
-					if (data?.titleTranslations) {
-						titleCache.set(title, data.titleTranslations)
-						return [title, data.titleTranslations] as const
-					}
+					const parsedTranslations = data?.titleTranslations ?? {}
+					const parsedGenres = normalizeGenres(data?.genres)
+					titleCache.set(title, parsedTranslations)
+					genreCache.set(title, parsedGenres)
+					return { title, titleTranslations: parsedTranslations, genres: parsedGenres }
 				} catch {
 					// 忽略单条失败，保留原标题
+					return null
 				}
-				return null
 			})
 		).then((results) => {
 			if (cancelled) return
-			const next: Record<string, Record<string, string>> = {}
+			const nextTranslations: Record<string, Record<string, string>> = {}
+			const nextGenres: Record<string, string[]> = {}
 			for (const item of results) {
-				if (item) next[item[0]] = item[1]
+				if (!item) continue
+				nextTranslations[item.title] = item.titleTranslations
+				nextGenres[item.title] = item.genres
 			}
-			if (Object.keys(next).length > 0) {
-				setTranslations((prev) => ({ ...prev, ...next }))
+			if (Object.keys(nextTranslations).length > 0) {
+				setTranslations((prev) => ({ ...prev, ...nextTranslations }))
+			}
+			if (Object.keys(nextGenres).length > 0) {
+				setGenresMap((prev) => ({ ...prev, ...nextGenres }))
 			}
 		})
 
 		return () => { cancelled = true }
-	}, [visibleTitlesKey])
+	}, [targetTitlesKey])
 
 	const getLocalizedTitle = (rawTitle: string) => {
 		const map = translations[rawTitle] ?? titleCache.get(rawTitle)

@@ -110,10 +110,32 @@
   "selectMovies": {
     "heading": "为俱乐部挑选观影场次",
     "searchPlaceholder": "搜索电影",
-    "filter": {
+    "filters": {
       "title": "片名",
       "cinema": "影院",
-      "date": "日期"
+      "date": "日期",
+      "genre": "类型"
+    },
+    "selectGenrePlaceholder": "请选择电影类型...",
+    "genres": {
+      "Action": "动作",
+      "Adventure": "冒险",
+      "Animation": "动画",
+      "Comedy": "喜剧",
+      "Crime": "犯罪",
+      "Documentary": "纪录",
+      "Drama": "剧情",
+      "Family": "家庭",
+      "Fantasy": "奇幻",
+      "History": "历史",
+      "Horror": "恐怖",
+      "Music": "音乐",
+      "Mystery": "悬疑",
+      "Romance": "爱情",
+      "Science Fiction": "科幻",
+      "Thriller": "惊悚",
+      "War": "战争",
+      "Western": "西部"
     },
     "searchButton": "搜索",
     "pagination": {

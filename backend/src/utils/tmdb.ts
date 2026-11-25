@@ -4,6 +4,11 @@ export type TranslationsMap = {
   zh: string;
 };
 
+export interface TmdbGenre {
+  id: number;
+  name: string;
+}
+
 interface TmdbSearchResponse {
   results?: Array<{ id: number; title?: string; overview?: string }>;
 }
@@ -19,18 +24,28 @@ interface TmdbTranslationsResponse {
   }>;
 }
 
+interface TmdbMovieDetailsResponse {
+  genres?: TmdbGenre[];
+}
+
+export interface MovieTranslationsWithGenres {
+  titleTranslations: TranslationsMap;
+  synopsisTranslations: TranslationsMap;
+  genres: string[];
+  genreIds: number[];
+}
+
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
 export async function fetchMovieTranslations(
   filmTitle: string,
   synopsis: string,
-): Promise<{
-  titleTranslations: TranslationsMap;
-  synopsisTranslations: TranslationsMap;
-}> {
-  const fallback = {
+): Promise<MovieTranslationsWithGenres> {
+  const fallback: MovieTranslationsWithGenres = {
     titleTranslations: { en: filmTitle, fr: filmTitle, zh: filmTitle },
     synopsisTranslations: { en: synopsis, fr: synopsis, zh: synopsis },
+    genres: [],
+    genreIds: [],
   };
 
   const token = process.env.TMDB_ACCESS_KEY?.trim();
@@ -53,13 +68,28 @@ export async function fetchMovieTranslations(
     const movieId = searchData.results?.[0]?.id;
     if (!movieId) return fallback;
 
-    // 2. 一次性拉取该电影的所有语言翻译
+    // 2. 并行拉取多语言翻译与电影详情（含标准英文 genres）
     const transUrl = `${TMDB_BASE_URL}/movie/${movieId}/translations`;
-    const transRes = await fetch(transUrl, { headers });
+    const detailsUrl = `${TMDB_BASE_URL}/movie/${movieId}?language=en-US`;
+
+    const [transRes, detailsRes] = await Promise.all([
+      fetch(transUrl, { headers }),
+      fetch(detailsUrl, { headers }),
+    ]);
+
     if (!transRes.ok) return fallback;
 
     const transData = (await transRes.json()) as TmdbTranslationsResponse;
     const list = transData.translations ?? [];
+
+    let genres: string[] = [];
+    let genreIds: number[] = [];
+    if (detailsRes.ok) {
+      const detailsData = (await detailsRes.json()) as TmdbMovieDetailsResponse;
+      const rawGenres = detailsData.genres ?? [];
+      genres = rawGenres.map((g) => g.name).filter(Boolean);
+      genreIds = rawGenres.map((g) => g.id).filter((id) => typeof id === 'number');
+    }
 
     const pick = (lang: string, preferredRegion?: string) => {
       const matches = list.filter((t) => t.iso_639_1 === lang);
@@ -85,6 +115,8 @@ export async function fetchMovieTranslations(
         fr: fr?.overview?.trim() || synopsis,
         zh: zh?.overview?.trim() || synopsis,
       },
+      genres,
+      genreIds,
     };
   } catch (err) {
     console.warn(`TMDB translation fetch failed for "${filmTitle}":`, err);

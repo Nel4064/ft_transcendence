@@ -110,10 +110,32 @@
   "selectMovies": {
     "heading": "Choisir des séances pour le club",
     "searchPlaceholder": "Rechercher un film",
-    "filter": {
+    "filters": {
       "title": "Titre",
       "cinema": "Cinéma",
-      "date": "Date"
+      "date": "Date",
+      "genre": "Genre"
+    },
+    "selectGenrePlaceholder": "Choisir un genre...",
+    "genres": {
+      "Action": "Action",
+      "Adventure": "Aventure",
+      "Animation": "Animation",
+      "Comedy": "Comédie",
+      "Crime": "Crime",
+      "Documentary": "Documentaire",
+      "Drama": "Drame",
+      "Family": "Familial",
+      "Fantasy": "Fantastique",
+      "History": "Histoire",
+      "Horror": "Horreur",
+      "Music": "Musique",
+      "Mystery": "Mystère",
+      "Romance": "Romance",
+      "Science Fiction": "Science-Fiction",
+      "Thriller": "Thriller",
+      "War": "Guerre",
+      "Western": "Western"
     },
     "searchButton": "Rechercher",
     "pagination": {

@@ -110,10 +110,32 @@
   "selectMovies": {
     "heading": "Pick screening(s) for the club",
     "searchPlaceholder": "Search for a movie",
-    "filter": {
+  "filters": {
       "title": "Title",
       "cinema": "Cinema",
-      "date": "Date"
+      "date": "Date",
+      "genre": "Genre"
+    },
+    "selectGenrePlaceholder": "Select a genre...",
+    "genres": {
+      "Action": "Action",
+      "Adventure": "Adventure",
+      "Animation": "Animation",
+      "Comedy": "Comedy",
+      "Crime": "Crime",
+      "Documentary": "Documentary",
+      "Drama": "Drama",
+      "Family": "Family",
+      "Fantasy": "Fantasy",
+      "History": "History",
+      "Horror": "Horror",
+      "Music": "Music",
+      "Mystery": "Mystery",
+      "Romance": "Romance",
+      "Science Fiction": "Science Fiction",
+      "Thriller": "Thriller",
+      "War": "War",
+      "Western": "Western"
     },
     "searchButton": "Search",
     "pagination": {
