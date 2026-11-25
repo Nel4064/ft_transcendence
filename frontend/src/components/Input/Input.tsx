@@ -1,6 +1,6 @@
 import type { InputHTMLAttributes } from "react";
 
-type Size = "md" | "lg" | "xl";
+export type Size = "md" | "lg" | "xl";
 
 // pas de largeur fixe : dans une colonne flex il s'étire, sinon passer className="flex-1"
 const base =
@@ -14,7 +14,12 @@ const sizes: Record<Size, string> = {
   xl: "py-4 px-5",     // grande barre de recherche
 };
 
-const labelClass = "text-small font-medium text-text";
+// Exportés pour les autres champs de formulaire (Select) : même look partout
+export function fieldClass(size: Size = "lg", className = "") {
+  return `${base} ${sizes[size]} ${className}`.trim();
+}
+
+export const labelClass = "text-body font-medium text-text";
 const errorClass = "text-small text-danger";
 
 type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "size"> & {
@@ -27,7 +32,7 @@ export default function Input({ size = "lg", label, error, id, className = "", .
   const input = (
     <input
       id={id}
-      className={`${base} ${sizes[size]} ${error ? "border-danger" : ""} ${className}`.trim()}
+      className={fieldClass(size, `${error ? "border-danger" : ""} ${className}`)}
       aria-invalid={!!error}
       {...props}
     />
