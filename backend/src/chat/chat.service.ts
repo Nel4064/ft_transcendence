@@ -1,0 +1,97 @@
+import { Injectable, BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { ChatType } from '../generated/prisma/client.js';
+import { SendMessageDto } from './dto/chat.dto';
+
+@Injectable()
+export class ChatService 
+{
+	constructor(private readonly prisma: PrismaService) {}
+
+	async assertUserCanChat(
+		userId: string,
+		bannedMessage = 'Your account has been banned.',
+	): Promise<void> {
+		const user = await this.prisma.user.findUnique({
+			where: { id: userId },
+			select: { isBanned: true },
+		});
+
+		if (!user)
+			throw new UnauthorizedException('User not found');
+		if (user.isBanned)
+			throw new ForbiddenException(bannedMessage);
+	}
+
+	private async checkFriendship(senderId: string, receiverId: string): Promise<boolean>{
+		const friendship = await this.prisma.friendship.findUnique({
+			where: {
+				userId_friendId:{
+					userId: senderId,
+					friendId: receiverId,
+				},
+			},
+		});
+		return (!!friendship);
+	}
+
+	private readonly senderSelect = {
+		sender:{
+			select: { id: true, username: true, displayName: true, avatarUrl: true },
+		},
+	};
+
+	async sendMessage (senderId: string, dto: SendMessageDto){
+		const { receiverId, content } = dto;
+		const cleanContent = content.trim();
+
+		await this.assertUserCanChat(senderId);
+
+		if (receiverId === senderId)
+			throw new BadRequestException('Message cannot be sent to yourself');
+		
+		const isFriend = await this.checkFriendship(senderId, receiverId);
+		if (!isFriend)
+			throw new ForbiddenException('You are not friends yet');
+
+		await this.assertUserCanChat(receiverId, 'This user is unavailable for messaging.');
+		
+		return this.prisma.message.create({
+			data:{
+				content: cleanContent,
+				type: ChatType.DIRECT,
+				senderId: senderId,
+				receiverId: receiverId,
+			},
+			include: this.senderSelect,
+		});
+	}
+
+	async getDirectHistory(userId: string, friendId: string, limit: number = 50,){
+		const isFriend = await this.checkFriendship(userId, friendId);
+		if (!isFriend)
+			throw new ForbiddenException('You are not friends yet');
+		const validLimit = Number.isFinite(limit) ? Math.trunc(limit) : 50;
+		const safeLimit = Math.min(Math.max(validLimit, 1), 100);
+		const messages = await this.prisma.message.findMany({
+			where:{
+				type: ChatType.DIRECT,
+				OR:[{
+						senderId: userId,
+						receiverId: friendId,
+					},
+					{
+						senderId: friendId,
+						receiverId: userId,
+					},
+				],
+			},
+			orderBy:{
+				createdAt: 'desc',
+			},
+			take: safeLimit,
+			include: this.senderSelect,
+		});
+		return messages.reverse(); 
+	}
+}
