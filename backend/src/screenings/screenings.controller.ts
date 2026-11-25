@@ -1,10 +1,13 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Req, UseGuards, NotFoundException } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Req, UseGuards, NotFoundException, UseInterceptors, UploadedFiles, UseFilters } from '@nestjs/common';
 import { ScreeningsService } from './screenings.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { AuthenticatedRequest } from '../auth/authenticated-request';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../generated/prisma/client.js';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { screeningUploadOptions } from './screening-upload.config';
+import { MulterErrorFilter } from '../users/multer-error.filter';
 
 @Controller('screenings')
 export class ScreeningsController {
@@ -49,6 +52,29 @@ export class ScreeningsController {
     return this.screenings.pick(b.cineid, b.showid, req.user.userId);
   }
 
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Post(':id/files')
+  @UseFilters(new MulterErrorFilter())
+  @UseInterceptors(FileFieldsInterceptor(
+    [{ name: 'poster', maxCount: 1 }, { name: 'attachment', maxCount: 1 }],
+    screeningUploadOptions,
+  ))
+  uploadFiles(
+    @Param('id') id: string,
+    @UploadedFiles() files: { poster?: Express.Multer.File[]; attachment?: Express.Multer.File[] },
+  ) {
+    return this.screenings.saveFiles(id, files);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Delete(':id/files/:kind')
+  removeFile(@Param('id') id: string, @Param('kind') kind: string) {
+    return this.screenings.removeFile(id, kind);
+  }
+  
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Delete(':cineid/:showid')
