@@ -231,7 +231,8 @@
     "actions": {
       "going": "Going ✓",
       "rsvp": "RSVP",
-      "removeEvent": "Remove Event"
+      "removeEvent": "Remove Event",
+      "createEvent": "Create Event"
     },
     "calendar": {
       "google": "+ Google Calendar",
@@ -243,6 +244,32 @@
       "notFound": "Sorry, this session has been canceled or is no longer available.",
       "pastSession": "You cannot modify the RSVP for a past session.",
       "saveFailed": "An error occurred while saving your RSVP."
+    },
+    "moreInformation": "More information:",
+    "files": {
+      "heading": "Files (admin)",
+      "posterLabel": "Poster (PNG, JPG, WebP · 5 MB max)",
+      "changePoster": "Change poster",
+      "posterPreviewAlt": "Poster preview",
+      "restorePoster": "Restore original poster",
+      "confirmRestorePoster": "Restore the original poster?",
+      "attachmentsLabel": "Flyers & Images (PDF, PNG, JPG, WebP · 5 MB max each)",
+      "addAttachments": "Add flyers or images",
+      "noFileSelected": "No file selected",
+      "filesSelected": "{{count}} file(s) selected",
+      "remove": "Remove",
+      "delete": "Delete",
+      "confirmDeleteFile": "Delete this file?",
+      "upload": "Upload",
+      "uploading": "Uploading… {{progress}}%",
+      "errors": {
+        "wrongType": "{{name}}: wrong file type",
+        "tooLarge": "{{name}}: file is larger than 5 MB",
+        "tooManyFiles": "Maximum {{max}} files allowed at once",
+        "uploadFailedWithStatus": "Upload failed ({{status}})",
+        "networkError": "Network error during upload",
+        "deleteFailed": "Delete failed"
+      }
     }
   },
   "admin": {

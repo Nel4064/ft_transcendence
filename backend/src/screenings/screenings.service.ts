@@ -14,6 +14,17 @@ const VERSION: Record<string, 'VO' | 'VF' | 'VOSTF'> = {
   VO: 'VO', VERSION_ORIGINAL: 'VO', VF: 'VF', VERSION_LOCAL: 'VF', VERSION_ORIGINAL_LOCAL: 'VOSTF',
 };
 
+export type ScreeningAttachment = { url: string; name: string };
+
+function decodeOriginalName(name: string): string {
+  try {
+    const decoded = Buffer.from(name, 'latin1').toString('utf8');
+    return decoded.includes('\ufffd') ? name : decoded;
+  } catch {
+    return name;
+  }
+}
+
 @Injectable()
 export class ScreeningsService {
 
@@ -76,6 +87,7 @@ export class ScreeningsService {
 
     const minutes = Math.round(r.filmduration / 60);
     const synopsis = clean(r.filmstoryline);
+    const originalPoster = r.filmposter?.startsWith('https://') ? r.filmposter : null;
 
     // 拉取 TMDB 多语言翻译（失败时会自动回退到原片名和原简介，不会阻塞 pick）
     const { titleTranslations, synopsisTranslations } = await fetchMovieTranslations(
@@ -95,7 +107,8 @@ export class ScreeningsService {
       genres: clean(r.filmgenre)?.split(',').map((g: string) => g.trim()) ?? [],
       country: clean(r.filmcountry),
       runtimeMinutes: minutes > 0 && minutes < 600 ? minutes : null,
-      posterUrl: r.filmposter?.startsWith('https://') ? r.filmposter : null,
+      posterUrl: originalPoster,
+      originalPosterUrl: originalPoster,
       trailerUrl: r.filmtrailer?.startsWith('https://') ? r.filmtrailer : null,
       version: VERSION[r.filmversion] ?? null,
       eventName: clean(r.evenement),
@@ -138,26 +151,34 @@ export class ScreeningsService {
       cinemaName: screening.cinemaName,
       startsAt: screening.startsAt.toISOString(),
     }, actorId);
-    await this.deleteFile(screening.posterUrl);       // ← nouveau : efface l'affiche uploadée
-    await this.deleteFile(screening.attachmentUrl);   // ← nouveau : efface le flyer uploadé
+    await this.deleteFile(screening.posterUrl);
+    const attachmentUrls = ((screening.attachments as ScreeningAttachment[] | null) ?? []).map(
+      (a) => a.url,
+    );
+    await this.deleteFile(attachmentUrls);
     return screening;
   }
 
   // Supprime un fichier du disque, seulement s'il a été uploadé chez nous
   // (les affiches de l'API sont des liens https, il ne faut pas y toucher)
-  private async deleteFile(url?: string | null) {
-    if (!url?.startsWith('/uploads/screenings/')) return;
-    await unlink(join(process.cwd(), url)).catch(() => {});
+  private async deleteFile(url?: string | string[] | null) {
+    if (!url) return;
+    const urls = Array.isArray(url) ? url : [url];
+    for (const u of urls) {
+      if (!u?.startsWith('/uploads/screenings/')) continue;
+      await unlink(join(process.cwd(), u)).catch(() => { });
+    }
   }
 
   async saveFiles(id: string, files: { poster?: Express.Multer.File[]; attachment?: Express.Multer.File[] }) {
     const poster = files?.poster?.[0];
-    const attachment = files?.attachment?.[0];
+    const attachments = files?.attachment ?? [];
 
-    // efface les fichiers qui viennent d'arriver (utilisé en cas de refus)
     const discardNew = async () => {
       await this.deleteFile(poster && `/uploads/screenings/${poster.filename}`);
-      await this.deleteFile(attachment && `/uploads/screenings/${attachment.filename}`);
+      for (const f of attachments) {
+        await this.deleteFile(`/uploads/screenings/${f.filename}`);
+      }
     };
 
     const screening = await this.prisma.screening.findUnique({ where: { id } });
@@ -165,42 +186,63 @@ export class ScreeningsService {
       await discardNew();
       throw new NotFoundException('Screening not found');
     }
-    if (!poster && !attachment) throw new BadRequestException('No file uploaded');
+    if (!poster && attachments.length === 0) throw new BadRequestException('No file uploaded');
 
-    // validation du format réel : le contenu doit correspondre au type annoncé
-    for (const file of [poster, attachment]) {
+    for (const file of [poster, ...attachments]) {
       if (file && !(await hasValidSignature(file))) {
         await discardNew();
         throw new BadRequestException(`${file.originalname}: file content does not match its type`);
       }
     }
 
-    const data: { posterUrl?: string; attachmentUrl?: string } = {};
+    const data: { posterUrl?: string; originalPosterUrl?: string; attachments?: ScreeningAttachment[] } = {};
     if (poster) {
-      await this.deleteFile(screening.posterUrl);        // remplace l'ancienne affiche
+      if (!screening.originalPosterUrl && screening.posterUrl && !screening.posterUrl.startsWith('/uploads/screenings/')) {
+        data.originalPosterUrl = screening.posterUrl;
+      }
+      await this.deleteFile(screening.posterUrl);
       data.posterUrl = `/uploads/screenings/${poster.filename}`;
     }
-    if (attachment) {
-      await this.deleteFile(screening.attachmentUrl);    // remplace l'ancien PDF
-      data.attachmentUrl = `/uploads/screenings/${attachment.filename}`;
+    if (attachments.length > 0) {
+      const existing = (screening.attachments as ScreeningAttachment[] | null) ?? [];
+      const newItems: ScreeningAttachment[] = attachments.map((f) => ({
+        url: `/uploads/screenings/${f.filename}`,
+        name: decodeOriginalName(f.originalname),
+      }));
+      data.attachments = [...existing, ...newItems];
     }
     return this.prisma.screening.update({ where: { id }, data });
   }
 
-
-  async removeFile(id: string, kind: string) {
+  async removeFile(id: string, kind: string, url?: string) {
     if (kind !== 'poster' && kind !== 'attachment') throw new BadRequestException('Invalid file kind');
-    const field = kind === 'poster' ? 'posterUrl' : 'attachmentUrl';
 
     const screening = await this.prisma.screening.findUnique({ where: { id } });
     if (!screening) throw new NotFoundException('Screening not found');
-    if (!screening[field]?.startsWith('/uploads/screenings/'))
-      throw new BadRequestException(`No uploaded ${kind} to delete`);
 
-    await this.deleteFile(screening[field]);                                      // efface du disque
-    return this.prisma.screening.update({ where: { id }, data: { [field]: null } }); // vide le champ en base
+    if (kind === 'poster') {
+      if (!screening.posterUrl?.startsWith('/uploads/screenings/')) {
+        throw new BadRequestException('No uploaded poster to delete');
+      }
+      await this.deleteFile(screening.posterUrl);
+      return this.prisma.screening.update({
+        where: { id },
+        data: { posterUrl: screening.originalPosterUrl ?? null },
+      });
+    }
+
+    // kind === 'attachment'
+    const existing = (screening.attachments as ScreeningAttachment[] | null) ?? [];
+    if (!url || !existing.some((item) => item.url === url)) {
+      throw new BadRequestException('Attachment not found');
+    }
+    await this.deleteFile(url);
+    const nextAttachments = existing.filter((item) => item.url !== url);
+    return this.prisma.screening.update({
+      where: { id },
+      data: { attachments: nextAttachments },
+    });
   }
-
 
   async findOne(screeningId: string, userId: string) {
     const friendships = await this.prisma.friendship.findMany({

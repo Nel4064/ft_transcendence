@@ -68,7 +68,7 @@ export class ScreeningsController {
   @Post(':id/files')
   @UseFilters(new MulterErrorFilter())
   @UseInterceptors(FileFieldsInterceptor(
-    [{ name: 'poster', maxCount: 1 }, { name: 'attachment', maxCount: 1 }],
+    [{ name: 'poster', maxCount: 1 }, { name: 'attachment', maxCount: 10 }],
     screeningUploadOptions,
   ))
   uploadFiles(
@@ -81,8 +81,12 @@ export class ScreeningsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Delete(':id/files/:kind')
-  removeFile(@Param('id') id: string, @Param('kind') kind: string) {
-    return this.screenings.removeFile(id, kind);
+  removeFile(
+    @Param('id') id: string,
+    @Param('kind') kind: string,
+    @Query('url') url?: string,
+  ) {
+    return this.screenings.removeFile(id, kind, url);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

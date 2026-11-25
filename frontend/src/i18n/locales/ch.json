@@ -231,7 +231,8 @@
     "actions": {
       "going": "已报名 ✓",
       "rsvp": "报名参加",
-      "removeEvent": "删除场次"
+      "removeEvent": "删除场次",
+      "createEvent": "创建场次"
     },
     "calendar": {
       "google": "+ Google 日历",
@@ -243,6 +244,32 @@
       "notFound": "抱歉，该场次已取消或不再可用。",
       "pastSession": "无法修改已结束场次的报名状态。",
       "saveFailed": "保存报名状态时发生错误。"
+    },
+    "moreInformation": "更多信息：",
+    "files": {
+      "heading": "文件管理（管理员）",
+      "posterLabel": "海报（PNG、JPG、WebP · 最大 5 MB）",
+      "changePoster": "更换海报",
+      "posterPreviewAlt": "海报预览",
+      "restorePoster": "复原原海报",
+      "confirmRestorePoster": "确定要复原原来的海报吗？",
+      "attachmentsLabel": "宣传单与图片（PDF、PNG、JPG、WebP · 单文件最大 5 MB）",
+      "addAttachments": "添加宣传单或图片",
+      "noFileSelected": "未选择文件",
+      "filesSelected": "已选择 {{count}} 个文件",
+      "remove": "移除",
+      "delete": "删除",
+      "confirmDeleteFile": "确定要删除这个文件吗？",
+      "upload": "上传",
+      "uploading": "上传中… {{progress}}%",
+      "errors": {
+        "wrongType": "{{name}}：文件类型不支持",
+        "tooLarge": "{{name}}：文件大小超过 5 MB",
+        "tooManyFiles": "单次最多只能上传 {{max}} 个文件",
+        "uploadFailedWithStatus": "上传失败（{{status}}）",
+        "networkError": "上传时发生网络错误",
+        "deleteFailed": "删除失败"
+      }
     }
   },
   "admin": {

@@ -213,13 +213,21 @@ function ScreenDetailsPage() {
                     </dl>
                     <p className={synopsisClass}>{displaySynopsis ?? t('screeningDetails.noSynopsis')}</p>
                     <p className={synopsisClass}>{screening.synopsis ?? 'No synopsis available.'}</p>
-                    {screening.attachmentUrl && (
-                        <p className="mt-4 text-body">
-                            <span className="font-bold text-text">More information: </span>
-                            <a href={screening.attachmentUrl} target="_blank" rel="noreferrer" className="text-text-muted underline">
-                                View
-                            </a>
-                        </p>
+                    {screening.attachments && screening.attachments.length > 0 && (
+                        <div className="mt-4 text-body flex flex-wrap items-center gap-x-3 gap-y-1">
+                            <span className="font-bold text-text">{t('screeningDetails.moreInformation')}</span>
+                            {screening.attachments.map((item) => (
+                                <a
+                                    key={item.url}
+                                    href={item.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-text-muted underline"
+                                >
+                                    {item.name}
+                                </a>
+                            ))}
+                        </div>
                     )}
                     {screening.trailerUrl && (
                         <section className="mt-6">
@@ -308,8 +316,8 @@ function ScreenDetailsPage() {
                 </div>
             </ul>
 
-            
-            
+
+
             {user?.role === 'ADMIN' && (
                 <>
                     <ScreeningFilesManager
@@ -324,7 +332,7 @@ function ScreenDetailsPage() {
                             disabled={new Date(screening.startsAt) < new Date()}
                             className={new Date(screening.startsAt) < new Date() ? 'opacity-50 cursor-not-allowed' : ''}
                         >
-                            Remove Event
+                            {t('screeningDetails.actions.removeEvent')}
                         </Button>
                     </div>
                 </>

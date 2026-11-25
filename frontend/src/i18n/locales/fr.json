@@ -231,7 +231,8 @@
     "actions": {
       "going": "J'y vais ✓",
       "rsvp": "Participer",
-      "removeEvent": "Supprimer la séance"
+      "removeEvent": "Supprimer la séance",
+      "createEvent": "Créer une séance"
     },
     "calendar": {
       "google": "+ Google Agenda",
@@ -243,6 +244,32 @@
       "notFound": "Désolé, cette séance a été annulée ou n'est plus disponible.",
       "pastSession": "Vous ne pouvez pas modifier votre participation pour une séance passée.",
       "saveFailed": "Une erreur est survenue lors de l'enregistrement de votre participation."
+    },
+    "moreInformation": "Plus d'informations :",
+    "files": {
+      "heading": "Fichiers (admin)",
+      "posterLabel": "Affiche (PNG, JPG, WebP · 5 Mo max)",
+      "changePoster": "Changer l'affiche",
+      "posterPreviewAlt": "Aperçu de l'affiche",
+      "restorePoster": "Restaurer l'affiche d'origine",
+      "confirmRestorePoster": "Restaurer l'affiche d'origine ?",
+      "attachmentsLabel": "Flyers et images (PDF, PNG, JPG, WebP · 5 Mo max chacun)",
+      "addAttachments": "Ajouter des flyers ou images",
+      "noFileSelected": "Aucun fichier sélectionné",
+      "filesSelected": "{{count}} fichier(s) sélectionné(s)",
+      "remove": "Retirer",
+      "delete": "Supprimer",
+      "confirmDeleteFile": "Supprimer ce fichier ?",
+      "upload": "Envoyer",
+      "uploading": "Envoi… {{progress}}%",
+      "errors": {
+        "wrongType": "{{name}} : type de fichier non autorisé",
+        "tooLarge": "{{name}} : le fichier dépasse 5 Mo",
+        "tooManyFiles": "Maximum {{max}} fichiers autorisés à la fois",
+        "uploadFailedWithStatus": "Échec de l'envoi ({{status}})",
+        "networkError": "Erreur réseau pendant l'envoi",
+        "deleteFailed": "Échec de la suppression"
+      }
     }
   },
   "admin": {
