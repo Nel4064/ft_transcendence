@@ -25,7 +25,7 @@ const LANGUAGE_LABELS: Record<string, string> = {
     ZH: '中文',
 }
 
-const badgeClass = "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
+const badgeClass = "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-small font-medium"
 
 // Display only: no fetching, no auth. Each page decides where the profile comes from.
 function ProfileSummary({ profile, children }: ProfileSummaryProps) {
@@ -37,17 +37,17 @@ function ProfileSummary({ profile, children }: ProfileSummaryProps) {
 
             <div>
                 <Heading level="section" as="h1">{name}</Heading>
-                <p className="text-text-muted text-sm">@{profile.username}</p>
+                <p className="text-small text-text-muted">@{profile.username}</p>
 
                 <div className="flex items-center justify-center gap-2 mt-3">
                     {profile.role && (
-                        <span className={`${badgeClass} ${profile.role === 'ADMIN' ? 'bg-amber-100 text-amber-800' : 'bg-stone-100 text-stone-700'}`}>
+                        <span className={`${badgeClass} ${profile.role === 'ADMIN' ? 'bg-admin/10 text-admin' : 'bg-bg text-text-muted'}`}>
                             {profile.role === 'ADMIN' && <Icon name="shield" size={14} />}
                             {profile.role === 'ADMIN' ? 'Admin' : 'Member'}
                         </span>
                     )}
                     {profile.language && (
-                        <span className={`${badgeClass} bg-stone-100 text-stone-700`}>
+                        <span className={`${badgeClass} bg-bg text-text-muted`}>
                             <Icon name="world" size={14} />
                             {LANGUAGE_LABELS[profile.language] || profile.language}
                         </span>
@@ -56,8 +56,8 @@ function ProfileSummary({ profile, children }: ProfileSummaryProps) {
             </div>
 
             <div className="w-full mt-4 p-4 bg-bg border border-border rounded-md text-left">
-                <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-1">About Me</h3>
-                <p className="text-text text-sm whitespace-pre-wrap">
+                <h3 className="text-small font-bold text-text-muted uppercase tracking-wider mb-1">About Me</h3>
+                <p className="text-body text-text whitespace-pre-wrap">
                     {profile.bio || 'Nothing here yet.'}
                 </p>
             </div>
