@@ -360,7 +360,8 @@
     },
     "errors": {
       "updateFailed": "Impossible de mettre à jour la séance : {{message}}"
-    }
+    },
+    "back": "Retour"
   },
   "privacyPolicy": {
     "heading": "Politique de confidentialité",

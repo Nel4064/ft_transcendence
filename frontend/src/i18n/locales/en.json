@@ -360,7 +360,8 @@
     },
     "errors": {
       "updateFailed": "Could not update event: {{message}}"
-    }
+    },
+    "back": "back"
   },
   "privacyPolicy": {
     "heading": "Privacy Policy",

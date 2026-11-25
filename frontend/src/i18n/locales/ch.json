@@ -360,7 +360,8 @@
     },
     "errors": {
       "updateFailed": "无法更新场次：{{message}}"
-    }
+    },
+    "back": "返回"
   },
   "privacyPolicy": {
     "heading": "隐私政策",

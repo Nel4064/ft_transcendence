@@ -1,6 +1,7 @@
 import MoviesCard from './MoviesCard'
 import defaultMovie from '../../assets/default-movie.jpg'
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { normalizeTitle } from '../../utils/normalizeTitle'
 import { apiFetch } from '../../context/AuthContext'
@@ -37,13 +38,24 @@ function toLocalDay(iso: string) {
 
 function MoviesList({ searchTerm = '', filter = 'title', perPage }: MoviesListProps) {
 	const { t, i18n } = useTranslation()
+	const [searchParams, setSearchParams] = useSearchParams()
 	const [rows, setRows] = useState<FeedRow[]>([])
-	const [page, setPage] = useState(1)
 	const [translations, setTranslations] = useState<Record<string, Record<string, string>>>({})
 
 	const currentLang = i18n.language?.toLowerCase().split('-')[0] || 'en'
+	const rawPage = Math.max(1, Number(searchParams.get('page')) || 1)
 
-	useEffect(() => { setPage(1) }, [searchTerm, filter])
+	function setPage(newPage: number) {
+		setSearchParams((prev) => {
+			const next = new URLSearchParams(prev)
+			if (newPage <= 1) {
+				next.delete('page')
+			} else {
+				next.set('page', String(newPage))
+			}
+			return next
+		})
+	}
 
 	useEffect(() => {
 		const now = new Date()
@@ -87,6 +99,7 @@ function MoviesList({ searchTerm = '', filter = 'title', perPage }: MoviesListPr
 	})
 
 	const totalPages = perPage ? Math.max(1, Math.ceil(uniqueMovies.length / perPage)) : 1
+	const page = rows.length > 0 ? Math.min(rawPage, totalPages) : rawPage
 	const visible = perPage ? uniqueMovies.slice((page - 1) * perPage, page * perPage) : uniqueMovies
 	const visibleTitlesKey = visible.map((r) => r.filmtitle).join('|')
 

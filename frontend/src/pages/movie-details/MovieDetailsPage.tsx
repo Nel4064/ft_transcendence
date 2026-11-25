@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import defaultMovie from '../../assets/default-movie.jpg'
 import { normalizeTitle } from '../../utils/normalizeTitle'
@@ -45,6 +45,7 @@ const boxClass = "p-4 bg-surface border border-border rounded-lg shadow-card"
 
 function MovieDetailsPage() {
 	const { t, i18n } = useTranslation()
+	const navigate = useNavigate()
 	const { title = '' } = useParams()
 	const [screenings, setScreenings] = useState<Screening[]>([])
 	const [created, setCreated] = useState<Set<string>>(new Set())
@@ -53,9 +54,17 @@ function MovieDetailsPage() {
 	const currentLang = i18n.language?.split('-')[0] || 'en'
 	const dateLocale = LOCALE_MAP[currentLang] || 'en-GB'
 
+	function handleBack() {
+		if (window.history.state?.idx > 0) {
+			navigate(-1)
+		} else {
+			navigate('/select-movies')
+		}
+	}
+
 	async function toggleEvent(s: Screening) {
-		const actualCineId = s.cineid || 0;
-		const key = `${actualCineId}-${s.showid}`;
+		const actualCineId = s.cineid || 0
+		const key = `${actualCineId}-${s.showid}`
 
 		try {
 			if (created.has(key)) {
@@ -123,8 +132,26 @@ function MovieDetailsPage() {
 		return `${h}h${m}`
 	}
 
+	const backButton = (
+		<button
+			type="button"
+			onClick={handleBack}
+			className="mb-6 inline-flex items-center gap-2 text-body font-bold text-text-muted hover:text-text transition-colors cursor-pointer"
+		>
+			<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+			</svg>
+			<span>{t('movieDetails.back')}</span>
+		</button>
+	)
+
 	if (screenings.length === 0)
-		return <main className="py-12 px-10"><Loader /></main>
+		return (
+			<main className="max-w-[1000px] mx-auto py-12 px-10">
+				{backButton}
+				<Loader />
+			</main>
+		)
 
 	const first = screenings[0]
 	const poster = first.filmposter?.startsWith('https://') ? first.filmposter : defaultMovie
@@ -143,6 +170,8 @@ function MovieDetailsPage() {
 
 	return (
 		<main className="max-w-[1000px] mx-auto py-12 px-10">
+			{backButton}
+
 			<section className="flex flex-col md:flex-row gap-8 mb-12">
 				<img src={poster} alt={displayTitle} className={posterClass} />
 				<div>
@@ -183,8 +212,8 @@ function MovieDetailsPage() {
 			<Heading level="section" className="mb-4">{t('movieDetails.upcomingScreenings')}</Heading>
 			<ul className="flex flex-col gap-4">
 				{screenings.map((s) => {
-					const actualCineId = s.cineid || 0;
-					const key = `${actualCineId}-${s.showid}`;
+					const actualCineId = s.cineid || 0
+					const key = `${actualCineId}-${s.showid}`
 
 					return (
 						<li key={key} className={rowClass}>
@@ -202,7 +231,7 @@ function MovieDetailsPage() {
 								{created.has(key) ? t('movieDetails.actions.removeEvent') : t('movieDetails.actions.createEvent')}
 							</Button>
 						</li>
-					);
+					)
 				})}
 			</ul>
 		</main>
