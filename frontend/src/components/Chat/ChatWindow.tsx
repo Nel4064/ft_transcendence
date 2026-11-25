@@ -6,14 +6,19 @@ import type { Socket } from 'socket.io-client'
 import Avatar from '../../components/Avatar/Avatar'
 import Button from '../../components/button/Button'
 import MessageBubble from './MessageBubble'
-import {  
-	getMessageDateKey, 
-	getMessageDateLabel, 
-	shouldGroupMessage, 
-	getErrorMessage, 
-	isConversationMissing, 
-	mergeMessages 
-} from '../../utils/formatMessageTime'
+import { isSameDate, getMessageDateLabel } from '../../utils/formatMessageTime'
+import { mergeMessages, shouldGroupMessage } from '../../utils/groupedMessages'
+
+const UUID_REGEX =
+	/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function getErrorStatus(error: unknown): number | undefined {
+	if (typeof error === 'object' && error !== null && 'status' in error) {
+		const status = (error as { status?: unknown }).status;
+		return typeof status === 'number' ? status : undefined;
+	}
+	return undefined;
+}
 
 export type Message = {
 	id: string;
@@ -62,41 +67,57 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 		setInput('');
 		setIsSending(false);
 		setSendError(null);
+		setMessages([]);
+		setFriendUser(null);
 		if (!friendId) return;
+
+		if (!UUID_REGEX.test(friendId)) {
+			setError("This conversation doesn't exist.");
+			setLoading(false);
+			return;
+		}
+
 		let isCancelled = false;
 		setLoading(true);
 		setError(null);
-		setMessages([]);
-		setFriendUser(null);
 
 		const fetchData = async () => {
+			// ---- test status 500 ----
+			// const [historyResult, profileResult] = await Promise.allSettled([
+    		// 	Promise.reject(
+        	// 		Object.assign(new Error('Test error'), { status: 500 })
+    		// 	),
+    		// 	apiFetch(`/users/${friendId}`),
+			// ]);
 			const [historyResult, profileResult] = await Promise.allSettled([
 				getDirectHistory(apiFetch, friendId),
 				apiFetch(`/users/${friendId}`),
 			]);
 			if (isCancelled) return;
 
-			if (profileResult.status === 'fulfilled') {
-				setFriendUser(profileResult.value);
-			}
-
 			if (profileResult.status === 'rejected') {
+				const status = getErrorStatus(profileResult.reason);
 				setError(
-					isConversationMissing(profileResult.reason)
-						|| (historyResult.status === 'rejected' && isConversationMissing(historyResult.reason))
+					status === 404 || status === 400
 						? "This conversation doesn't exist."
 						: 'Unable to load this conversation. Please try again.',
 				);
-			} else if (historyResult.status === 'fulfilled') {
+				setLoading(false);
+				return;
+			}
+
+			setFriendUser(profileResult.value);
+
+			if (historyResult.status === 'fulfilled') {
 				setMessages((currentMessages) => mergeMessages(currentMessages, historyResult.value));
 			} else {
-				const error = historyResult.reason as any;
-				if (error?.status === 403) {
+				const status = getErrorStatus(historyResult.reason);
+				if (status === 403) {
 					setIsFriend(false);
-				} else if (error?.status === 404 || isConversationMissing(historyResult.reason)) {
+				} else if (status === 404 || status === 400) {
 					setError("This conversation doesn't exist.");
 				} else {
-					setError("Unable to load this conversation. Please try again.");
+					setError('Unable to load this conversation. Please try again.');
 				}
 			}
 
@@ -230,7 +251,9 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 					const previousMessage = messages[index - 1];
 					const nextMessage = messages[index + 1];
 					const showDateSeparator = !previousMessage
-						|| getMessageDateKey(previousMessage.createdAt) !== getMessageDateKey(msg.createdAt);
+						|| !isSameDate(
+							new Date(previousMessage.createdAt), 
+							new Date(msg.createdAt));
 					const isGrouped = shouldGroupMessage(previousMessage, msg);
 					const groupsWithNext = nextMessage !== undefined && shouldGroupMessage(msg, nextMessage);
 					return (

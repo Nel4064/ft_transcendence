@@ -5,12 +5,8 @@ export type MessageItem = {
 	[key: string]: any;
 };
 
-function isSameDate(date1: Date, date2: Date): boolean {
-	return (
-		date1.getFullYear() === date2.getFullYear() &&
-		date1.getMonth() === date2.getMonth() &&
-		date1.getDate() === date2.getDate()
-	);
+export function isSameDate(date1: Date, date2: Date): boolean {
+	return date1.toDateString() === date2.toDateString();
 }
 
 export function formatMessageTime(dateString: string): string {
@@ -29,19 +25,14 @@ export function formatMessageTime(dateString: string): string {
 		return `${dateStr} ${timeStr}`;
 }
 
-export function getMessageDateKey(dateString: string): string {
-	return new Date(dateString).toDateString();
-}
-
 export function getMessageDateLabel(dateString: string): string {
 	const date = new Date(dateString);
-	const dateKey = getMessageDateKey(dateString);
 	const today = new Date();
-	if (dateKey === today.toDateString()) return 'Today';
+	if (isSameDate(date, today)) return 'Today';
 
 	const yesterday = new Date(today);
 	yesterday.setDate(yesterday.getDate() - 1);
-	if (dateKey === yesterday.toDateString()) return 'Yesterday';
+	if (isSameDate(date, yesterday)) return 'Yesterday';
 
 	return date.toLocaleDateString('en-US', {
 		year: 'numeric',
@@ -50,31 +41,3 @@ export function getMessageDateLabel(dateString: string): string {
 	});
 }
 
-export function shouldGroupMessage(previousMessage: MessageItem | undefined, message: MessageItem): boolean {
-	if (!previousMessage || previousMessage.senderId !== message.senderId) return false;
-	if (getMessageDateKey(previousMessage.createdAt) !== getMessageDateKey(message.createdAt)) return false;
-
-	const elapsed = new Date(message.createdAt).getTime() - new Date(previousMessage.createdAt).getTime();
-	return elapsed >= 0 && elapsed <= 5 * 60 * 1000;
-}
-
-export function getErrorMessage(error: unknown): string {
-	return error instanceof Error ? error.message : '';
-}
-
-export function isConversationMissing(error: unknown): boolean {
-	return /validation failed \(uuid is expected\)|invalid uuid|not found|404/i.test(getErrorMessage(error));
-}
-
-export function mergeMessages<T extends MessageItem>(currentMessages: T[], incomingMessages: T[]): T[] {
-	const messagesById = new Map<string, T>();
-	for (const message of currentMessages) {
-		messagesById.set(message.id, message);
-	}
-	for (const message of incomingMessages) {
-		messagesById.set(message.id, message);
-	}
-	return [...messagesById.values()].sort(
-		(a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-	);
-}
