@@ -349,7 +349,7 @@
       },
       "thirdParties": {
         "title": "Tiers",
-        "body": "Les horaires des séances proviennent du flux public datacinesindes.fr. Nous ne vendons ni ne partageons vos données avec des annonceurs."
+        "body": "Les horaires des séances proviennent du flux public datacinesindes.fr. Les traductions des films sont fournies via The Movie Database (TMDB). Ce produit utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB. Nous ne vendons ni ne partageons vos données avec des annonceurs."
       },
       "rights": {
         "title": "Vos droits",

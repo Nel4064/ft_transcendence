@@ -12,6 +12,12 @@ and SIL OFL 1.1 for fonts.
 - Link: https://datacinesindes.fr/data-fair/api/v1/datasets/programmation-cinemas/lines
 - API: https://datacinesindes.fr/data-fair/api/v1/datasets/programmation-cinemas/lines
 
+### Movie translations (TMDB)
+- Provider: The Movie Database (TMDB)
+- Licence: TMDB API Terms of Use (free for non-commercial use with attribution; this product uses the TMDB API but is not endorsed or certified by TMDB)
+- Link: https://www.themoviedb.org/
+- API: https://developer.themoviedb.org/docs/getting-started
+
 ## Fonts
 
 ### Fraunces

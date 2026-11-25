@@ -349,7 +349,7 @@
       },
       "thirdParties": {
         "title": "第三方服务",
-        "body": "影片放映时间来自公开的 datacinesindes.fr 数据源。我们不会向广告商出售或共享你的数据。"
+        "body": "放映时间来自公开的 datacinesindes.fr 数据源。电影翻译通过 The Movie Database (TMDB) 提供。本产品使用 TMDB API，但未获得 TMDB 的认可或认证。我们不会向广告商出售或共享您的数据。"
       },
       "rights": {
         "title": "你的权利",
