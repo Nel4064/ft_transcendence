@@ -10,8 +10,8 @@ import { io } from 'socket.io-client';
 import Alert from '../Alert/Alert';
 import { getNotifications } from '../../api/notifications';
 
-const linkClass = "text-nav font-bold text-text-muted hover:text-text [&.active]:text-text transition-colors duration-300";
-const linkClassAdmin = "text-nav font-bold text-text-admin-muted hover:text-admin [&.active]:text-admin transition-colors duration-300";
+const linkClass = "whitespace-nowrap text-nav font-bold text-text-muted hover:text-text [&.active]:text-text transition-colors duration-300";
+const linkClassAdmin = "whitespace-nowrap text-nav font-bold text-text-admin-muted hover:text-admin [&.active]:text-admin transition-colors duration-300";
 
 function Navbar() {
     const { t } = useTranslation();
@@ -70,14 +70,14 @@ function Navbar() {
 
     return (
         <nav className="relative bg-surface border-b border-border shadow-card">
-            <div className="flex items-center justify-between py-3 sm:py-[18px] px-4 sm:px-6 lg:px-10">
-                <div className="mr-auto" onClick={closeMenu}>
+            <div className="flex items-center justify-between py-3 sm:py-[18px] px-4 sm:px-6 xl:px-10">
+                <div className="mr-auto shrink-0" onClick={closeMenu}>
                     <Logo />
                 </div>
 
                 {/* desktop */}
                 {user && (
-                    <div className="hidden lg:flex items-center gap-6 xl:gap-10">
+                    <div className="hidden xl:flex items-center gap-6 2xl:gap-10">
                         {user.role === 'ADMIN' && (
                             <NavLink to="/select-movies" className={linkClassAdmin}>
                                 {t('navbar.selectMovies')}
@@ -107,14 +107,14 @@ function Navbar() {
                 )}
 
                 {/* Right actions: mobile hamburger button + avatar / login button */}
-                <div className="flex items-center gap-3 sm:gap-5 lg:ml-7">
+                <div className="flex items-center gap-3 sm:gap-5 xl:ml-7 shrink-0">
                     {user && (
                         <button
                             type="button"
                             onClick={() => setIsMobileMenuOpen((prev) => !prev)}
                             aria-label={t('navbar.toggleMenu')}
                             aria-expanded={isMobileMenuOpen}
-                            className="lg:hidden relative p-2 rounded-md text-text-muted hover:text-text hover:bg-bg transition-colors"
+                            className="xl:hidden relative p-2 rounded-md text-text-muted hover:text-text hover:bg-bg transition-colors"
                         >
                             {isMobileMenuOpen ? (
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,7 +143,7 @@ function Navbar() {
 
             {/* Collapsible menu for mobile / tablet */}
             {user && isMobileMenuOpen && (
-                <div className="lg:hidden flex flex-col gap-4 px-4 sm:px-6 pt-3 pb-5 bg-surface border-t border-border">
+                <div className="xl:hidden flex flex-col gap-4 px-4 sm:px-6 pt-3 pb-5 bg-surface border-t border-border">
                     {user.role === 'ADMIN' && (
                         <NavLink to="/select-movies" onClick={closeMenu} className={`${linkClassAdmin} py-1`}>
                             {t('navbar.selectMovies')}
