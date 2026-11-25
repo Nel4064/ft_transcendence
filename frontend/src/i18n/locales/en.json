@@ -210,7 +210,8 @@
       "operationFailed": "Operation failed",
       "removeFailed": "Failed to remove friend"
     },
-    "pageTitle": "Friends"
+    "pageTitle": "Friends",
+    "viewProfile": "View profile"
   },
   "screeningDetails": {
     "unavailable": {
@@ -430,6 +431,7 @@
       "notFound": "User not found",
       "sendRequestFailed": "Failed to send friend request"
     }
-  },
-  "viewProfile": "View profile"
+  }
+  
+  
 }

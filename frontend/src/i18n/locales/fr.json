@@ -210,7 +210,8 @@
       "operationFailed": "L'opération a échoué",
       "removeFailed": "Impossible de retirer cet ami"
     },
-    "pageTitle": "Amis"
+    "pageTitle": "Amis",
+    "viewProfile": "Voir le profil"
   },
   "screeningDetails": {
     "unavailable": {
@@ -430,6 +431,5 @@
       "notFound": "Utilisateur introuvable",
       "sendRequestFailed": "Impossible d'envoyer la demande d'ami"
     }
-  },
-  "viewProfile": "Voir le profil"
+  }
 }

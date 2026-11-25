@@ -210,7 +210,8 @@
       "operationFailed": "操作失败",
       "removeFailed": "移除好友失败"
     },
-    "pageTitle": "好友"
+    "pageTitle": "好友",
+    "viewProfile": "查看资料"
   },
   "screeningDetails": {
     "unavailable": {
@@ -430,6 +431,5 @@
       "notFound": "未找到该用户",
       "sendRequestFailed": "发送好友申请失败"
     }
-  },
-  "viewProfile": "查看资料"
+  }
 }
