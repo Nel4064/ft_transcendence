@@ -65,15 +65,16 @@ restore:
 		if podman healthcheck run development-backend >/dev/null 2>&1; then healthy=1; break; fi; \
 		i=$$((i+1)); sleep 2; \
 	done; \
-	podman restart development-proxy; \
+	podman exec development-proxy nginx -s reload >/dev/null 2>&1 || podman restart development-proxy; \
 	if [ $$status -ne 0 ]; then echo "❌ Restore failed, data unchanged"; \
 	elif [ $$healthy -eq 0 ]; then echo "⚠️  Restored $(FILE), but the backend is not healthy after 2 min: podman logs development-backend"; status=1; \
 	else echo "✅ Restored $(FILE)"; fi; \
 	exit $$status
 
-# restart the app containers, and the proxy so nginx picks up their new IP addresses
+# restart the app containers, then reload nginx so it looks up their new IP addresses
 restart:
-	podman restart development-backend development-frontend development-proxy
+	podman restart development-backend development-frontend
+	podman exec development-proxy nginx -s reload || podman restart development-proxy
 
 logs:
 	$(COMPOSE) logs -f
