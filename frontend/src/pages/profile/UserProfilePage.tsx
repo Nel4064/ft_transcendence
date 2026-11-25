@@ -12,15 +12,16 @@ interface UserProfile {
   avatarUrl?: string;
   bio?: string;
   role?: 'ADMIN' | 'USER';
-  language?: 'EN' | 'FR' | 'ES';
+  language?: 'EN' | 'FR' | 'ZH';
   isFriend?: boolean;
 }
 
 const LANGUAGE_LABELS: Record<string, string> = {
   EN: 'English',
   FR: 'Français',
-  ES: 'Español',
+  ZH: '中文',
 };
+
 
 export default function UserProfilePage() {
   const { id } = useParams<{ id: string }>();
