@@ -15,7 +15,7 @@ export TMDB_ACCESS_KEY=$(cat /run/secrets/tmdb_access_key)
 npx prisma generate
 
 # 2. Apply schema.prisma changes to the database
-npx prisma db push
+npx prisma db push --accept-data-loss
 
 # 3. Run the seed script last
 echo "Seeding bot users and games..."
