@@ -132,6 +132,8 @@ model Screening {
   country          String?                                     // filmcountry
   runtimeMinutes   Int?                                        // filmduration, null if implausible
   posterUrl        String?                                     // filmposter, https only
+  originalPosterUrl String?                                     // new changed fileposter
+  attachmentUrl    String?                                     // PDF uploaded by an admin (flyer)
   trailerUrl       String?                                     // filmtrailer, allowed hosts only
   version          ScreeningVersion?                           // filmversion, null if blank
   eventName        String?                                     // evenement

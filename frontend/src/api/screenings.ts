@@ -10,6 +10,7 @@ export type Screening = {
     id: string;
     filmTitle: string;
     posterUrl: string | null;
+    attachmentUrl?: string | null;
     startsAt: string;
     cinemaName?: string;
     isGoing?: boolean;
@@ -50,4 +51,35 @@ export const cancelRsvp = async (apiFetch: ApiFetch, id: string) => {
 
 export const removeScreening = async (apiFetch: ApiFetch, cinemaId: number, showId: string) => {
     return apiFetch(`/screenings/${cinemaId}/${encodeURIComponent(showId)}`, { method: 'DELETE' });
+};
+
+
+// Upload avec XMLHttpRequest (et pas fetch) pour pouvoir suivre la progression
+export const uploadScreeningFiles = (
+    id: string,
+    formData: FormData,
+    onProgress: (percent: number) => void,
+): Promise<Screening> =>
+    new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `/api/screenings/${id}/files`);
+
+        const token = localStorage.getItem('token') || localStorage.getItem('jwt_token');
+        if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+
+        xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+        };
+        xhr.onload = () => {
+            let data: any = null;
+            try { data = JSON.parse(xhr.responseText); } catch { /* réponse non JSON (ex: 413 nginx) */ }
+            if (xhr.status >= 200 && xhr.status < 300) resolve(data);
+            else reject(new Error(data?.message || `Upload failed (${xhr.status})`));
+        };
+        xhr.onerror = () => reject(new Error('Network error during upload'));
+        xhr.send(formData);   // pas de Content-Type : le navigateur le met tout seul
+    });
+
+export const deleteScreeningFile = async (apiFetch: ApiFetch, id: string, kind: 'poster' | 'attachment'): Promise<Screening> => {
+    return apiFetch(`/screenings/${id}/files/${kind}`, { method: 'DELETE' });
 };

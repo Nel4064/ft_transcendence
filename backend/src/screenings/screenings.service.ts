@@ -2,6 +2,11 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { fetchMovieTranslations } from 'src/utils/tmdb';
+import { unlink } from 'fs/promises';
+import { join } from 'path';
+import { hasValidSignature } from './screening-upload.config';
+
+
 
 const FEED = 'https://datacinesindes.fr/data-fair/api/v1/datasets/programmation-cinemas/lines';
 const clean = (v?: string | null) => (v && v !== 'null' && v.trim()) || null;
@@ -133,8 +138,69 @@ export class ScreeningsService {
       cinemaName: screening.cinemaName,
       startsAt: screening.startsAt.toISOString(),
     }, actorId);
+    await this.deleteFile(screening.posterUrl);       // ← nouveau : efface l'affiche uploadée
+    await this.deleteFile(screening.attachmentUrl);   // ← nouveau : efface le flyer uploadé
     return screening;
   }
+
+  // Supprime un fichier du disque, seulement s'il a été uploadé chez nous
+  // (les affiches de l'API sont des liens https, il ne faut pas y toucher)
+  private async deleteFile(url?: string | null) {
+    if (!url?.startsWith('/uploads/screenings/')) return;
+    await unlink(join(process.cwd(), url)).catch(() => {});
+  }
+
+  async saveFiles(id: string, files: { poster?: Express.Multer.File[]; attachment?: Express.Multer.File[] }) {
+    const poster = files?.poster?.[0];
+    const attachment = files?.attachment?.[0];
+
+    // efface les fichiers qui viennent d'arriver (utilisé en cas de refus)
+    const discardNew = async () => {
+      await this.deleteFile(poster && `/uploads/screenings/${poster.filename}`);
+      await this.deleteFile(attachment && `/uploads/screenings/${attachment.filename}`);
+    };
+
+    const screening = await this.prisma.screening.findUnique({ where: { id } });
+    if (!screening) {
+      await discardNew();
+      throw new NotFoundException('Screening not found');
+    }
+    if (!poster && !attachment) throw new BadRequestException('No file uploaded');
+
+    // validation du format réel : le contenu doit correspondre au type annoncé
+    for (const file of [poster, attachment]) {
+      if (file && !(await hasValidSignature(file))) {
+        await discardNew();
+        throw new BadRequestException(`${file.originalname}: file content does not match its type`);
+      }
+    }
+
+    const data: { posterUrl?: string; attachmentUrl?: string } = {};
+    if (poster) {
+      await this.deleteFile(screening.posterUrl);        // remplace l'ancienne affiche
+      data.posterUrl = `/uploads/screenings/${poster.filename}`;
+    }
+    if (attachment) {
+      await this.deleteFile(screening.attachmentUrl);    // remplace l'ancien PDF
+      data.attachmentUrl = `/uploads/screenings/${attachment.filename}`;
+    }
+    return this.prisma.screening.update({ where: { id }, data });
+  }
+
+
+  async removeFile(id: string, kind: string) {
+    if (kind !== 'poster' && kind !== 'attachment') throw new BadRequestException('Invalid file kind');
+    const field = kind === 'poster' ? 'posterUrl' : 'attachmentUrl';
+
+    const screening = await this.prisma.screening.findUnique({ where: { id } });
+    if (!screening) throw new NotFoundException('Screening not found');
+    if (!screening[field]?.startsWith('/uploads/screenings/'))
+      throw new BadRequestException(`No uploaded ${kind} to delete`);
+
+    await this.deleteFile(screening[field]);                                      // efface du disque
+    return this.prisma.screening.update({ where: { id }, data: { [field]: null } }); // vide le champ en base
+  }
+
 
   async findOne(screeningId: string, userId: string) {
     const friendships = await this.prisma.friendship.findMany({
