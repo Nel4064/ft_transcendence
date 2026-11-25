@@ -430,5 +430,6 @@
       "notFound": "Utilisateur introuvable",
       "sendRequestFailed": "Impossible d'envoyer la demande d'ami"
     }
-  }
+  },
+  "viewProfile": "Voir le profil"
 }
