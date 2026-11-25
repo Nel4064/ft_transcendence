@@ -14,8 +14,7 @@ const FEED_URL = 'https://datacinesindes.fr/data-fair/api/v1/datasets/programmat
 const LOCALE_MAP: Record<string, string> = {
 	en: 'en-GB',
 	fr: 'fr-FR',
-	zh: 'zh-CN',
-	zh: 'zh-CN',
+	zh: 'zh-CN'
 }
 
 type Screening = {

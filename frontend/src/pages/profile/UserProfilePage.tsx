@@ -13,16 +13,14 @@ interface UserProfile {
   avatarUrl?: string;
   bio?: string;
   role?: 'ADMIN' | 'USER';
-  language?: 'EN' | 'FR' | 'ZH' | 'ZH' | 'ES';
+  language?: 'EN' | 'FR' | 'ZH';
   isFriend?: boolean;
 }
 
 const LANGUAGE_LABELS: Record<string, string> = {
   EN: 'English',
   FR: 'Français',
-  ZH: '中文',
-  ZH: '中文',
-  ES: 'Español',
+  ZH: '中文'
 };
 
 export default function UserProfilePage() {

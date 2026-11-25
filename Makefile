@@ -3,7 +3,8 @@ COMPOSE = podman-compose -p development -f compose.yaml -f compose.dev.yaml --en
 # all secrets live in the podman secret store (external: true in compose.yaml)
 # generated: random values created here / manual: filled in by hand from the 42 intra
 GENERATED_SECRETS = jwt_secret postgres_backend_user_pw postgres_superuser_pw
-MANUAL_SECRETS = fortytwo_client_id fortytwo_client_secret tmdb_access_key
+MANUAL_SECRETS = fortytwo_client_id fortytwo_client_secret
+OPTIONAL_SECRETS = tmdb_access_key
 
 # 32 random bytes as hex: only 0-9a-f, so safe inside DATABASE_URL (no trailing newline)
 RANDOM_SECRET = openssl rand -hex 32 | tr -d '\n'
@@ -24,12 +25,8 @@ down:
 
 # also removes the volumes: database data and node_modules are lost
 clean:
-	-$(COMPOSE) down -v --remove-orphans
-	@if command -v podman >/dev/null 2>&1; then \
-		podman rm -f development-proxy development-frontend development-backend development-db 2>/dev/null || true; \
-		podman pod rm -f pod_development 2>/dev/null || true; \
-		podman volume rm -f development_postgres_data development_frontend_node_modules development_backend_node_modules 2>/dev/null || true; \
-	fi
+	$(COMPOSE) down -v
+
 re: clean all
 
 # rebuild images and refresh node_modules volumes (the database is kept)
@@ -62,10 +59,23 @@ secrets:
 		touch secrets/$$s.txt; \
 		test -s secrets/$$s.txt || echo "⚠️  secrets/$$s.txt is empty (needed for 42 OAuth)"; \
 	done
+	@for s in $(OPTIONAL_SECRETS); do \
+		touch secrets/$$s.txt; \
+		test -s secrets/$$s.txt || echo "⚠️  secrets/$$s.txt is empty (needed for TMDB translations, optional)"; \
+	done
 	@chmod 600 secrets/*.txt
 	@for s in $(GENERATED_SECRETS) $(MANUAL_SECRETS); do \
 		if ! podman secret exists $$s && test -s secrets/$$s.txt; then \
 			podman secret create $$s secrets/$$s.txt; \
+		fi; \
+	done
+	@for s in $(OPTIONAL_SECRETS); do \
+		if ! podman secret exists $$s; then \
+			if test -s secrets/$$s.txt; then \
+				podman secret create $$s secrets/$$s.txt; \
+			else \
+				printf "placeholder" | podman secret create $$s -; \
+			fi; \
 		fi; \
 	done
 	@echo "🔑 Secrets are ready."

@@ -13,8 +13,7 @@ const ITEMS_PER_PAGE = 5
 const LOCALE_MAP: Record<string, string> = {
     en: 'en-GB',
     fr: 'fr-FR',
-    zh: 'zh-CN',
-    zh: 'zh-CN',
+    zh: 'zh-CN'
 }
 
 export default function ScreeningsList() {

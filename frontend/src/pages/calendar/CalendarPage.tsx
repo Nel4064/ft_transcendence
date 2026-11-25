@@ -11,8 +11,7 @@ import Heading from '../../components/Heading/Heading'
 const LOCALE_MAP: Record<string, string> = {
     en: 'en-GB',
     fr: 'fr-FR',
-    zh: 'zh-CN',
-    zh: 'zh-CN',
+    zh: 'zh-CN'
 }
 
 const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const

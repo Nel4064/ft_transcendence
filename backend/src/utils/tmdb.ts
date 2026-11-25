@@ -33,8 +33,8 @@ export async function fetchMovieTranslations(
     synopsisTranslations: { en: synopsis, fr: synopsis, zh: synopsis },
   };
 
-  const token = process.env.TMDB_ACCESS_KEY;
-  if (!token || !filmTitle) {
+  const token = process.env.TMDB_ACCESS_KEY?.trim();
+  if (!token || token === 'placeholder' || !filmTitle) {
     return fallback;
   }
 

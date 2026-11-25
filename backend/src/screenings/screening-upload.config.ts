@@ -29,7 +29,7 @@ export const screeningUploadOptions: MulterOptions = {
     }
     cb(null, true);
   },
-  limits: { fileSize: 5 * 1024 * 1024, files: 6 },  // 5 Mo par fichier, 2 fichiers max
+  limits: { fileSize: 5 * 1024 * 1024, files: 11}  // 5 Mo par fichier, 11 fichiers max
 };
 
 // Signature (premiers octets) attendue pour chaque type
