@@ -45,13 +45,13 @@ services:
       FRONTEND_OAUTH_URI: ${FRONTEND_OAUTH_URI}
       # --- 2FA (enable with two-factor module) ---
       TWO_FACTOR_URL: ${TWO_FACTOR_URL}
-      TMDB_ACCESS_KEY: ${TMDB_ACCESS_KEY}
     secrets:
       - postgres_backend_user_pw
       - jwt_secret
       # --- 42 OAuth (enable with auth module) ---
       - fortytwo_client_id
       - fortytwo_client_secret
+      - tmdb_access_key
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health > /dev/null || exit 1"]
       interval: 5s
@@ -104,4 +104,7 @@ secrets:
   fortytwo_client_id:
     external: true
   fortytwo_client_secret:
+    external: true  
+  # --- TMDB access key
+  tmdb_access_key:
     external: true

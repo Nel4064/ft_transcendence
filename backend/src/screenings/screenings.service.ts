@@ -77,6 +77,7 @@ export class ScreeningsService {
       r.filmtitle,
       synopsis ?? '',
     );
+    const originalPoster = r.filmposter?.startsWith('https://') ? r.filmposter : null;
 
     const data = {
       externalCinemaId: r.cineid ?? (cineid || 0),
@@ -91,6 +92,7 @@ export class ScreeningsService {
       country: clean(r.filmcountry),
       runtimeMinutes: minutes > 0 && minutes < 600 ? minutes : null,
       posterUrl: r.filmposter?.startsWith('https://') ? r.filmposter : null,
+      originalPosterUrl: originalPoster,
       trailerUrl: r.filmtrailer?.startsWith('https://') ? r.filmtrailer : null,
       version: VERSION[r.filmversion] ?? null,
       eventName: clean(r.evenement),
@@ -136,6 +138,75 @@ export class ScreeningsService {
     return screening;
   }
 
+<<<<<<< HEAD
+=======
+  // Supprime un fichier du disque, seulement s'il a été uploadé chez nous
+  // (les affiches de l'API sont des liens https, il ne faut pas y toucher)
+  private async deleteFile(url?: string | null) {
+    if (!url?.startsWith('/uploads/screenings/')) return;
+    await unlink(join(process.cwd(), url)).catch(() => { });
+  }
+
+  async saveFiles(id: string, files: { poster?: Express.Multer.File[]; attachment?: Express.Multer.File[] }) {
+    const poster = files?.poster?.[0];
+    const attachment = files?.attachment?.[0];
+
+    // efface les fichiers qui viennent d'arriver (utilisé en cas de refus)
+    const discardNew = async () => {
+      await this.deleteFile(poster && `/uploads/screenings/${poster.filename}`);
+      await this.deleteFile(attachment && `/uploads/screenings/${attachment.filename}`);
+    };
+
+    const screening = await this.prisma.screening.findUnique({ where: { id } });
+    if (!screening) {
+      await discardNew();
+      throw new NotFoundException('Screening not found');
+    }
+    if (!poster && !attachment) throw new BadRequestException('No file uploaded');
+
+    // validation du format réel : le contenu doit correspondre au type annoncé
+    for (const file of [poster, attachment]) {
+      if (file && !(await hasValidSignature(file))) {
+        await discardNew();
+        throw new BadRequestException(`${file.originalname}: file content does not match its type`);
+      }
+    }
+
+    const data: { posterUrl?: string; originalPosterUrl?: string; attachmentUrl?: string } = {};
+    if (poster) {
+      // 如果还没备份过原图，且当前 posterUrl 是外部链接，先备份下来
+      if (!screening.originalPosterUrl && screening.posterUrl && !screening.posterUrl.startsWith('/uploads/screenings/')) {
+        data.originalPosterUrl = screening.posterUrl;
+      }
+      await this.deleteFile(screening.posterUrl);        // remplace l'ancienne affiche
+      data.posterUrl = `/uploads/screenings/${poster.filename}`;
+    }
+    if (attachment) {
+      await this.deleteFile(screening.attachmentUrl);    // remplace l'ancien PDF
+      data.attachmentUrl = `/uploads/screenings/${attachment.filename}`;
+    }
+    return this.prisma.screening.update({ where: { id }, data });
+  }
+
+
+  async removeFile(id: string, kind: string) {
+    if (kind !== 'poster' && kind !== 'attachment') throw new BadRequestException('Invalid file kind');
+    const field = kind === 'poster' ? 'posterUrl' : 'attachmentUrl';
+
+    const screening = await this.prisma.screening.findUnique({ where: { id } });
+    if (!screening) throw new NotFoundException('Screening not found');
+    if (!screening[field]?.startsWith('/uploads/screenings/'))
+      throw new BadRequestException(`No uploaded ${kind} to delete`);
+
+    await this.deleteFile(screening[field]); // efface du disque
+
+    // poster 还原为原海报，attachment 保持清空为 null
+    const nextValue = kind === 'poster' ? (screening.originalPosterUrl ?? null) : null;
+    return this.prisma.screening.update({ where: { id }, data: { [field]: nextValue } });
+  }
+
+
+>>>>>>> 9c8f798 (chore(secrets): move TMDB_ACCESS_KEY to Podman secrets“)
   async findOne(screeningId: string, userId: string) {
     const friendships = await this.prisma.friendship.findMany({
       where: { userId },

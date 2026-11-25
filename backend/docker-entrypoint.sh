@@ -9,6 +9,7 @@ export JWT_SECRET=$(cat /run/secrets/jwt_secret)
 # --- 42 OAuth (enable with auth module) ---
 export FORTYTWO_CLIENT_ID=$(cat /run/secrets/fortytwo_client_id)
 export FORTYTWO_CLIENT_SECRET=$(cat /run/secrets/fortytwo_client_secret)
+export TMDB_ACCESS_KEY=$(cat /run/secrets/tmdb_access_key)
 
 # 1. Generate Prisma client first (must be at the beginning to ensure complete dependencies)
 npx prisma generate

@@ -3,7 +3,7 @@ COMPOSE = podman-compose -p development -f compose.yaml -f compose.dev.yaml --en
 # all secrets live in the podman secret store (external: true in compose.yaml)
 # generated: random values created here / manual: filled in by hand from the 42 intra
 GENERATED_SECRETS = jwt_secret postgres_backend_user_pw postgres_superuser_pw
-MANUAL_SECRETS = fortytwo_client_id fortytwo_client_secret
+MANUAL_SECRETS = fortytwo_client_id fortytwo_client_secret tmdb_access_key
 
 # 32 random bytes as hex: only 0-9a-f, so safe inside DATABASE_URL (no trailing newline)
 RANDOM_SECRET = openssl rand -hex 32 | tr -d '\n'
