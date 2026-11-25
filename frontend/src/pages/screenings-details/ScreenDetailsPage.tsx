@@ -215,14 +215,16 @@ function ScreenDetailsPage() {
                     <p className={synopsisClass}>{screening.synopsis ?? 'No synopsis available.'}</p>
                     {screening.attachments && screening.attachments.length > 0 && (
                         <div className="mt-4 text-body flex flex-wrap items-center gap-x-3 gap-y-1">
-                            <span className="font-bold text-text">{t('screeningDetails.moreInformation')}</span>
+                            <span className="font-bold text-text">
+                                {t('screeningDetails.moreInformation')}
+                            </span>
                             {screening.attachments.map((item) => (
                                 <a
                                     key={item.url}
                                     href={item.url}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="text-text-muted underline"
+                                    className="text-brand underline"
                                 >
                                     {item.name}
                                 </a>
@@ -319,23 +321,10 @@ function ScreenDetailsPage() {
 
 
             {user?.role === 'ADMIN' && (
-                <>
-                    <ScreeningFilesManager
-                        screening={screening}
-                        onUpdated={(updated) => setScreening((s) => s && { ...s, ...updated })}
-                    />
-                    <div className="flex justify-end mt-4">
-                        <Button
-                            variant="admin"
-                            size="lg"
-                            onClick={handleRemove}
-                            disabled={new Date(screening.startsAt) < new Date()}
-                            className={new Date(screening.startsAt) < new Date() ? 'opacity-50 cursor-not-allowed' : ''}
-                        >
-                            {t('screeningDetails.actions.removeEvent')}
-                        </Button>
-                    </div>
-                </>
+                <ScreeningFilesManager
+                    screening={screening}
+                    onUpdated={(updated) => setScreening(updated)}
+                />
             )}
         </main>
     )

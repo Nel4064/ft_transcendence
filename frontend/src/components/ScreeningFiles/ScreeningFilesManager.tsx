@@ -17,8 +17,8 @@ type Props = {
 
 function ScreeningFilesManager({ screening, onUpdated }: Props) {
 	const { t } = useTranslation()
-	const { apiFetch } = useAuth()
-
+	const { apiFetch, user } = useAuth()
+	if (user?.role !== 'ADMIN') return null
 	const [posterFile, setPosterFile] = useState<File | null>(null)
 	const [posterPreview, setPosterPreview] = useState<string | null>(null)
 	const [attachmentFiles, setAttachmentFiles] = useState<File[]>([])
