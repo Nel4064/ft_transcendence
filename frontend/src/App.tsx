@@ -13,6 +13,9 @@ import FriendsPage from './pages/friends/FriendsPage'
 import ManageMembersPage from './pages/manage-members/ManageMembersPage'
 import { AuthProvider } from './context/AuthContext'
 import ProfilePage from './pages/profile/ProfilePage'
+import EditProfilePage from './pages/profile/EditProfilePage'
+import Security2FAPage from './pages/profile/Security2FAPage'
+import PrivacyGDPRPage from './pages/profile/PrivacyGDPRPage'
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
 import MovieDetailsPage from './pages/movie-details/MovieDetailsPage'
 import ScreenDetailsPage from './pages/screenings-details/ScreenDetailsPage'
@@ -30,14 +33,12 @@ function App() {
 			<Navbar />
 			<div className="flex-1">
 				<Routes>
-				{/* Pages publiques */}
 				<Route path="/" element={<HomePage />} />
 				<Route path="/signin" element={<SignInPage />} />
 				<Route path="/signup" element={<SignUpPage />} />
 				<Route path="/privacypolicy" element={<PrivacyPolicyPage />} />
 				<Route path="/termsofservice" element={<TermsOfServicePage />} />
 
-				{/* Pages réservées aux utilisateurs connectés */}
 				<Route element={<ProtectedRoute />}>
 					<Route path="/profile" element={<ProfilePage />} />
 					<Route path="/notifications" element={<NotificationsPage />} />
@@ -47,6 +48,9 @@ function App() {
 					<Route path="/friends" element={<FriendsPage />} />
 					<Route path="/users/:id" element={<UserProfilePage />} />
 					<Route path="/calendar" element={<CalendarPage />} />
+					<Route path="/profile/security" element={<Security2FAPage />} />
+					<Route path="/profile/privacy" element={<PrivacyGDPRPage />} />
+					<Route path="/profile/edit" element={<EditProfilePage />} />					
 				</Route>
 
 				<Route element={<ProtectedRoute adminOnly />}>
