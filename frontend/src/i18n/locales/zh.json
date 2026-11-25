@@ -247,6 +247,7 @@
       "saveFailed": "保存报名状态时发生错误。"
     },
     "moreInformation": "更多信息：",
+    "back": "返回",
     "files": {
       "heading": "文件管理（管理员）",
       "posterLabel": "海报（PNG、JPG、WebP · 最大 5 MB）",

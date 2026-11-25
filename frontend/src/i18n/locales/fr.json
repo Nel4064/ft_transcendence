@@ -247,6 +247,7 @@
       "saveFailed": "Une erreur est survenue lors de l'enregistrement de votre participation."
     },
     "moreInformation": "Plus d'informations :",
+    "back": "Retour",
     "files": {
       "heading": "Fichiers (admin)",
       "posterLabel": "Affiche (PNG, JPG, WebP · 5 Mo max)",

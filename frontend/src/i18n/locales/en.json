@@ -247,6 +247,7 @@
       "saveFailed": "An error occurred while saving your RSVP."
     },
     "moreInformation": "More information:",
+    "back": "Back",
     "files": {
       "heading": "Files (admin)",
       "posterLabel": "Poster (PNG, JPG, WebP · 5 MB max)",
