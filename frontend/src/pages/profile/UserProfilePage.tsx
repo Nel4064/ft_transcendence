@@ -107,16 +107,16 @@ export default function UserProfilePage() {
             <Button
               onClick={handleGoToChat}
               disabled={sendingRequest || requestSent}
-              className="w-full mt-2 flex items-center justify-center gap-2"
+              className="w-full flex items-center justify-center gap-2"
             >
                 {requestSent ? (
                   <>
-                    <Icon name="check" size={16} />
+                    <Icon name="check" size={26} />
                     Friend Request Sent
                   </>
                 ) : (
                   <>
-                    <Icon name="message-circle" size={16} />
+                    <Icon name="message-circle" size={26} />
                     {sendingRequest ? 'Sending Request...' : 'Go to Chat'}
                   </>
                 )}
