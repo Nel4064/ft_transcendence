@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from 'react'
+import { useEffect, useState, type ChangeEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import Button, { buttonClass } from '../button/Button'
 import { useAuth } from '../../context/AuthContext'
@@ -12,21 +12,40 @@ const ATTACHMENT_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'image/w
 
 type Props = {
 	screening: Screening
+	isPast?: boolean
 	onUpdated: (updated: Screening) => void
 }
 
-function ScreeningFilesManager({ screening, onUpdated }: Props) {
+function ScreeningFilesManager({ screening, isPast: isPastProp, onUpdated }: Props) {
 	const { t } = useTranslation()
 	const { apiFetch, user } = useAuth()
 	if (user?.role !== 'ADMIN') return null
+
+	const isPast = typeof isPastProp === 'boolean'
+		? isPastProp
+		: new Date(screening.startsAt) < new Date()
+
 	const [posterFile, setPosterFile] = useState<File | null>(null)
 	const [posterPreview, setPosterPreview] = useState<string | null>(null)
 	const [attachmentFiles, setAttachmentFiles] = useState<File[]>([])
 	const [progress, setProgress] = useState<number | null>(null)
 	const [error, setError] = useState('')
 
+	useEffect(() => {
+		if (!isPast) return
+		if (posterPreview) URL.revokeObjectURL(posterPreview)
+		setPosterFile(null)
+		setPosterPreview(null)
+		setAttachmentFiles([])
+		setError('')
+	}, [isPast])
+
 	function handleSelectPoster(e: ChangeEvent<HTMLInputElement>) {
 		setError('')
+		if (isPast) {
+			e.target.value = ''
+			return
+		}
 		const file = e.target.files?.[0]
 		e.target.value = ''
 		if (!file) return
@@ -44,6 +63,10 @@ function ScreeningFilesManager({ screening, onUpdated }: Props) {
 
 	function handleSelectAttachments(e: ChangeEvent<HTMLInputElement>) {
 		setError('')
+		if (isPast) {
+			e.target.value = ''
+			return
+		}
 		const selected = Array.from(e.target.files ?? [])
 		e.target.value = ''
 		if (selected.length === 0) return
@@ -64,10 +87,12 @@ function ScreeningFilesManager({ screening, onUpdated }: Props) {
 	}
 
 	function removePendingAttachment(index: number) {
+		if (isPast) return
 		setAttachmentFiles((prev) => prev.filter((_, i) => i !== index))
 	}
 
 	async function handleUpload() {
+		if (isPast) return
 		if (!posterFile && attachmentFiles.length === 0) return
 		const formData = new FormData()
 		if (posterFile) formData.append('poster', posterFile)
@@ -91,6 +116,7 @@ function ScreeningFilesManager({ screening, onUpdated }: Props) {
 	}
 
 	async function handleDelete(kind: 'poster' | 'attachment', url?: string) {
+		if (isPast) return
 		const confirmMessage = kind === 'poster'
 			? t('screeningDetails.files.confirmRestorePoster')
 			: t('screeningDetails.files.confirmDeleteFile')
@@ -101,6 +127,8 @@ function ScreeningFilesManager({ screening, onUpdated }: Props) {
 			setError(err.message)
 		}
 	}
+
+	if (isPast) return null
 
 	const isUploadedPoster = !!screening.posterUrl?.startsWith('/uploads/screenings/')
 	const uploadedAttachments = screening.attachments ?? []
@@ -169,7 +197,6 @@ function ScreeningFilesManager({ screening, onUpdated }: Props) {
 					</span>
 				</div>
 
-				{/* 待上传的文件列表 */}
 				{attachmentFiles.length > 0 && (
 					<ul className="flex flex-col gap-1 text-small text-text-muted">
 						{attachmentFiles.map((file, idx) => (
@@ -187,7 +214,6 @@ function ScreeningFilesManager({ screening, onUpdated }: Props) {
 					</ul>
 				)}
 
-				{/* 已上传的文件列表：显示原始文件名，点击打开 + 单独删除 */}
 				{uploadedAttachments.length > 0 && (
 					<ul className="flex flex-col gap-2 mt-2">
 						{uploadedAttachments.map((item) => (
