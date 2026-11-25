@@ -14,6 +14,7 @@ export class ScreeningsController {
   @Get()
   findAll() { return this.screenings.findAll(); }
 
+  @UseGuards(JwtAuthGuard)
   @Get('translate')
   async translate(
     @Query('title') title: string,
