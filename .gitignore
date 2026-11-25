@@ -38,6 +38,9 @@ Thumbs.db
 # Docker / Podman
 postgres-data/
 
+# database dumps: they contain personal data(emails, password hashes)
+/backups/
+
 *.tsbuildinfo
 
 backend/uploads/
