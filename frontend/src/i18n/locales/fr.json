@@ -58,16 +58,26 @@
     }
   },
   "profile": {
+    "links": {
+      "edit": "Modifier le profil",
+      "security": "Gérer l'authentification à deux facteurs",
+      "privacy": "Télécharger ou supprimer mes données (RGPD)"
+    },
     "avatar": {
-      "changeTitle": "Cliquez pour changer d'avatar",
-      "uploading": "Envoi...",
-      "change": "Modifier"
+      "changeTitle": "Cliquer pour changer l'avatar",
+      "uploading": "Téléversement...",
+      "change": "Modifier",
+      "changePhoto": "Changer la photo"
+    },
+    "summary": {
+      "aboutMe": "À propos de moi",
+      "emptyBio": "Rien pour l'instant."
     },
     "edit": {
       "heading": "Modifier le profil",
-      "displayNameLabel": "Nom d'affichage",
-      "displayNamePlaceholder": "Entrez votre nom d'affichage",
-      "bioLabel": "Biographie",
+      "displayNameLabel": "Nom affiché",
+      "displayNamePlaceholder": "Entrez votre nom affiché",
+      "bioLabel": "À propos de moi",
       "bioPlaceholder": "Écrivez quelque chose sur vous...",
       "languageLabel": "Langue",
       "saveButton": "Enregistrer les modifications"
@@ -82,23 +92,24 @@
       "disableButton": "Désactiver la 2FA",
       "step1Qr": "1. Scannez ce QR code avec Google Authenticator ou Authy :",
       "qrAlt": "QR Code 2FA",
-      "step2Code": "2. Entrez le code à 6 chiffres de votre application pour activer :",
+      "step2Code": "2. Saisissez le code à 6 chiffres de votre application pour vérifier et activer :",
       "verifyButton": "Vérifier et activer",
-      "disablePrompt": "Entrez le code à 6 chiffres de votre application pour désactiver la 2FA :",
+      "disablePrompt": "Saisissez le code à 6 chiffres de votre application d'authentification pour désactiver la 2FA :",
       "confirmDisableButton": "Confirmer et désactiver",
       "cancelButton": "Annuler"
     },
-    "logoutButton": "Se déconnecter",
+    "logoutButton": "Déconnexion",
     "messages": {
       "init2faFailed": "Échec de l'initialisation de la 2FA",
       "enable2faSuccess": "2FA activée avec succès !",
       "invalidCode": "Code de vérification invalide",
       "disable2faSuccess": "La 2FA a été désactivée.",
       "disable2faFailed": "Échec de la désactivation de la 2FA",
-      "updateSuccess": "Profil mis à jour avec succès !",
+      "updateSuccess": "Profil mis à jour.",
       "updateFailed": "Échec de la mise à jour du profil",
-      "uploadSuccess": "Avatar mis à jour ! Actualisation...",
-      "uploadFailed": "Échec de l'envoi de l'avatar"
+      "uploadPhotoSuccess": "Photo mise à jour.",
+      "uploadSuccess": "Avatar téléversé avec succès ! Actualisation...",
+      "uploadFailed": "Échec du téléversement de la photo"
     }
   },
   "home": {

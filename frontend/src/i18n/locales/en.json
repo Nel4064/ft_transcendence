@@ -58,16 +58,26 @@
     }
   },
   "profile": {
+    "links": {
+      "edit": "Edit profile",
+      "security": "Manage two-factor authentication",
+      "privacy": "Download or delete my data (GDPR)"
+    },
     "avatar": {
       "changeTitle": "Click to change avatar",
       "uploading": "Uploading...",
-      "change": "Change"
+      "change": "Change",
+      "changePhoto": "Change photo"
+    },
+    "summary": {
+      "aboutMe": "About Me",
+      "emptyBio": "Nothing here yet."
     },
     "edit": {
       "heading": "Edit Profile",
       "displayNameLabel": "Display Name",
       "displayNamePlaceholder": "Enter your display name",
-      "bioLabel": "Bio",
+      "bioLabel": "About Me",
       "bioPlaceholder": "Write something about yourself...",
       "languageLabel": "Language",
       "saveButton": "Save Profile Changes"
@@ -97,6 +107,7 @@
       "disable2faFailed": "Failed to disable 2FA",
       "updateSuccess": "Profile updated successfully!",
       "updateFailed": "Failed to update profile",
+      "uploadPhotoSuccess": "Photo updated.",
       "uploadSuccess": "Avatar uploaded successfully! Refreshing...",
       "uploadFailed": "Failed to upload avatar"
     }
@@ -110,7 +121,7 @@
   "selectMovies": {
     "heading": "Pick screening(s) for the club",
     "searchPlaceholder": "Search for a movie",
-  "filters": {
+    "filters": {
       "title": "Title",
       "cinema": "Cinema",
       "date": "Date",
@@ -169,8 +180,8 @@
       "saveFailed": "An error occurred while saving your RSVP."
     }
   },
-   "screenings": {
-    "emptyUpcoming":"No upcoming screenings yet."
+  "screenings": {
+    "emptyUpcoming": "No upcoming screenings yet."
   },
   "calendar": {
     "loading": "Loading your calendar...",
@@ -458,6 +469,4 @@
       "sendRequestFailed": "Failed to send friend request"
     }
   }
-  
-  
 }

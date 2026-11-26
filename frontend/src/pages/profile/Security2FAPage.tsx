@@ -1,11 +1,13 @@
+import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/button/Button'
 import Input from '../../components/Input/Input'
 import Heading from '../../components/Heading/Heading'
 import BackButton from '../../components/BackButton/BackButton'
-import { useState, useEffect } from 'react'
 
 function Security2FAPage() {
+    const { t } = useTranslation()
     const { user, apiFetch, disable2fa } = useAuth()
 
     // 2FA related states
@@ -34,7 +36,7 @@ function Security2FAPage() {
             setQrCodeUrl(data.qrCodeUrl || data)
             setSetupStep('qr')
         } catch (err: any) {
-            setError(err.message || 'Failed to initialize 2FA')
+            setError(err.message || t('profile.messages.init2faFailed', 'Failed to initialize 2FA'))
         }
     }
 
@@ -51,9 +53,9 @@ function Security2FAPage() {
             setIs2faEnabled(true)
             setSetupStep('idle')
             setTotpCode('')
-            setSuccessMsg('2FA successfully enabled!')
+            setSuccessMsg(t('profile.messages.enable2faSuccess', '2FA successfully enabled!'))
         } catch (err: any) {
-            setError(err.message || 'Invalid verification code')
+            setError(err.message || t('profile.messages.invalidCode', 'Invalid verification code'))
         }
     }
 
@@ -68,9 +70,9 @@ function Security2FAPage() {
             setIs2faEnabled(false)
             setSetupStep('idle')
             setDisableCode('')
-            setSuccessMsg('2FA has been disabled.')
+            setSuccessMsg(t('profile.messages.disable2faSuccess', '2FA has been disabled.'))
         } catch (err: any) {
-            setError(err.message || 'Failed to disable 2FA')
+            setError(err.message || t('profile.messages.disable2faFailed', 'Failed to disable 2FA'))
         }
     }
 
@@ -80,32 +82,47 @@ function Security2FAPage() {
                 <BackButton />
 
                 {/* Global alert messages */}
-                {error && <p className="py-2 px-3 rounded-md bg-danger/10 text-danger text-small font-bold text-center">{error}</p>}
-                {successMsg && <p className="py-2 px-3 rounded-md bg-green-500/10 text-green-600 text-small font-bold text-center">{successMsg}</p>}
+                {error && (
+                    <p className="py-2 px-3 rounded-md bg-danger/10 text-danger text-small font-bold text-center">
+                        {error}
+                    </p>
+                )}
+                {successMsg && (
+                    <p className="py-2 px-3 rounded-md bg-green-500/10 text-green-600 text-small font-bold text-center">
+                        {successMsg}
+                    </p>
+                )}
 
                 {/* 2FA management card */}
                 <div className="p-5 bg-surface border border-border rounded-md shadow-card flex flex-col gap-4">
-                    <Heading level="card" as="h2">Two-Factor Authentication (2FA)</Heading>
+                    <Heading level="card" as="h2">
+                        {t('profile.twoFactor.heading', 'Two-Factor Authentication (2FA)')}
+                    </Heading>
 
                     <div className="flex items-center justify-between flex-wrap gap-4">
                         <div>
                             <p className="text-text font-medium">
-                                Status: <span className={is2faEnabled ? "text-green-600 font-bold" : "text-text-muted"}>
-                                    {is2faEnabled ? "Enabled" : "Disabled"}
+                                {t('profile.twoFactor.statusLabel', 'Status:')}{' '}
+                                <span className={is2faEnabled ? 'text-green-600 font-bold' : 'text-text-muted'}>
+                                    {is2faEnabled
+                                        ? t('profile.twoFactor.enabled', 'Enabled')
+                                        : t('profile.twoFactor.disabled', 'Disabled')}
                                 </span>
                             </p>
-                            <p className="text-small text-text-muted">Secure your account using an authenticator app.</p>
+                            <p className="text-small text-text-muted">
+                                {t('profile.twoFactor.description', 'Secure your account using an authenticator app.')}
+                            </p>
                         </div>
 
                         {!is2faEnabled && setupStep === 'idle' && (
                             <Button onClick={handleStart2faSetup}>
-                                Enable 2FA
+                                {t('profile.twoFactor.enableButton', 'Enable 2FA')}
                             </Button>
                         )}
 
                         {is2faEnabled && setupStep === 'idle' && (
                             <Button variant="danger" onClick={() => setSetupStep('disable')}>
-                                Disable 2FA
+                                {t('profile.twoFactor.disableButton', 'Disable 2FA')}
                             </Button>
                         )}
                     </div>
@@ -113,13 +130,21 @@ function Security2FAPage() {
                     {/* QR code setup area for enabling 2FA */}
                     {setupStep === 'qr' && (
                         <form onSubmit={handleVerify2fa} className="flex flex-col gap-3 mt-2 pt-4 border-t border-border">
-                            <p className="text-small text-text-muted">1. Scan this QR code with Google Authenticator or Authy:</p>
+                            <p className="text-small text-text-muted">
+                                {t('profile.twoFactor.step1Qr', '1. Scan this QR code with Google Authenticator or Authy:')}
+                            </p>
                             {qrCodeUrl && (
                                 <div className="flex justify-center bg-white p-3 rounded-md w-fit mx-auto border border-border">
-                                    <img src={qrCodeUrl} alt="2FA QR Code" className="w-[160px] h-[160px]" />
+                                    <img
+                                        src={qrCodeUrl}
+                                        alt={t('profile.twoFactor.qrAlt', '2FA QR Code')}
+                                        className="w-[160px] h-[160px]"
+                                    />
                                 </div>
                             )}
-                            <p className="text-small text-text-muted">2. Enter the 6-digit code from your app to verify and activate:</p>
+                            <p className="text-small text-text-muted">
+                                {t('profile.twoFactor.step2Code', '2. Enter the 6-digit code from your app to verify and activate:')}
+                            </p>
                             <div className="flex gap-2">
                                 <Input
                                     size="md"
@@ -132,10 +157,10 @@ function Security2FAPage() {
                                     required
                                 />
                                 <Button type="submit">
-                                    Verify & Turn On
+                                    {t('profile.twoFactor.verifyButton', 'Verify & Turn On')}
                                 </Button>
                                 <Button variant="secondary" onClick={() => setSetupStep('idle')}>
-                                    Cancel
+                                    {t('profile.twoFactor.cancelButton', 'Cancel')}
                                 </Button>
                             </div>
                         </form>
@@ -144,7 +169,9 @@ function Security2FAPage() {
                     {/* Form requiring code input to disable 2FA */}
                     {setupStep === 'disable' && (
                         <form onSubmit={handleDisable2fa} className="flex flex-col gap-3 mt-2 pt-4 border-t border-border">
-                            <p className="text-small text-text-muted">Enter the 6-digit code from your authenticator app to disable 2FA:</p>
+                            <p className="text-small text-text-muted">
+                                {t('profile.twoFactor.disablePrompt', 'Enter the 6-digit code from your authenticator app to disable 2FA:')}
+                            </p>
                             <div className="flex gap-2">
                                 <Input
                                     size="md"
@@ -157,10 +184,10 @@ function Security2FAPage() {
                                     required
                                 />
                                 <Button type="submit" variant="danger">
-                                    Confirm & Disable
+                                    {t('profile.twoFactor.confirmDisableButton', 'Confirm & Disable')}
                                 </Button>
                                 <Button variant="secondary" onClick={() => setSetupStep('idle')}>
-                                    Cancel
+                                    {t('profile.twoFactor.cancelButton', 'Cancel')}
                                 </Button>
                             </div>
                         </form>

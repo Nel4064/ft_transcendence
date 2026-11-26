@@ -40,10 +40,13 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
+const SUPPORTED_LANGS = ['en', 'fr', 'zh']
+
 // Change default value to an empty string ''
 const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL || ''
 ).replace(/\/+$/, '')
+
 function normalizeApiPath(path: string): string {
   const cleanPath = path.startsWith('/') ? path : `/${path}`
 
@@ -55,19 +58,20 @@ function normalizeApiPath(path: string): string {
 }
 
 export function LanguageSync() {
-  const { user } = useAuth();
-  const { i18n } = useTranslation();
+  const { user } = useAuth()
+  const { i18n } = useTranslation()
 
   useEffect(() => {
-    if (user?.language) {
-      const targetLng = user.language.toLowerCase(); // 'EN' -> 'en'
+    const saved = localStorage.getItem('i18nextLng')
+    if (!saved && user?.language) {
+      const targetLng = user.language.toLowerCase() // 'EN' -> 'en'
       if (i18n.language !== targetLng) {
-        i18n.changeLanguage(targetLng);
+        i18n.changeLanguage(targetLng)
       }
     }
-  }, [user?.language, i18n]);
+  }, [user?.language, i18n])
 
-  return null;
+  return null
 }
 
 export async function apiFetch(
@@ -106,10 +110,10 @@ export async function apiFetch(
   if (!response.ok) {
     const error: any = new Error(
       data?.message || `API request failed (${response.status})`
-    );
-    error.status = response.status;
-    error.data = data;
-    throw error;
+    )
+    error.status = response.status
+    error.data = data
+    throw error
   }
 
   return data
@@ -139,14 +143,40 @@ export function AuthProvider({
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (user?.language) {
-      const targetLng = user.language.toLowerCase() // 'EN' -> 'en'
+  async function applyPreferredLanguage(userData: User): Promise<User> {
+    const saved = localStorage.getItem('i18nextLng')?.split('-')[0]?.toLowerCase()
+
+    if (saved && SUPPORTED_LANGS.includes(saved)) {
+      if (i18n.language !== saved) {
+        await i18n.changeLanguage(saved)
+      }
+
+      const upper = saved.toUpperCase()
+      if (userData.language?.toUpperCase() !== upper) {
+        try {
+          const updated = await apiFetch('/users/me', {
+            method: 'PATCH',
+            body: JSON.stringify({ language: upper }),
+          })
+          return getUser(updated)
+        } catch {
+          return userData
+        }
+      }
+
+      return userData
+    }
+
+    if (userData.language) {
+      const targetLng = userData.language.toLowerCase()
+      localStorage.setItem('i18nextLng', targetLng)
       if (i18n.language !== targetLng) {
-        i18n.changeLanguage(targetLng)
+        await i18n.changeLanguage(targetLng)
       }
     }
-  }, [user?.language, i18n])
+
+    return userData
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -177,9 +207,10 @@ export function AuthProvider({
         }
 
         const profile = await apiFetch('/users/me')
+        const syncedUser = await applyPreferredLanguage(getUser(profile))
 
         if (!cancelled) {
-          setUser(getUser(profile))
+          setUser(syncedUser)
         }
       } catch (error) {
         localStorage.removeItem('token')
@@ -201,7 +232,8 @@ export function AuthProvider({
     return () => {
       cancelled = true
     }
-  }, []) // 👈 3. 这里一定要改回空数组 []，不要放 user?.language
+  }, [])
+
   // Step 1: Standard account/password login
   async function login(
     identifier: string,
@@ -223,7 +255,6 @@ export function AuthProvider({
         throw new Error('2FA response did not contain userId')
       }
 
-      // Fix point: When returning 2FA state, userId must be provided simultaneously
       return {
         twoFactorRequired: true,
         userId: String(payload.userId),
@@ -242,10 +273,10 @@ export function AuthProvider({
 
     try {
       const profile = await apiFetch('/users/me')
-      const userData = getUser(profile)
+      const syncedUser = await applyPreferredLanguage(getUser(profile))
 
-      setUser(userData)
-      return userData
+      setUser(syncedUser)
+      return syncedUser
     } catch (error) {
       localStorage.removeItem('token')
       localStorage.removeItem('jwt_token')
@@ -283,10 +314,10 @@ export function AuthProvider({
 
     try {
       const profile = await apiFetch('/users/me')
-      const userData = getUser(profile)
+      const syncedUser = await applyPreferredLanguage(getUser(profile))
 
-      setUser(userData)
-      return userData
+      setUser(syncedUser)
+      return syncedUser
     } catch (error) {
       localStorage.removeItem('token')
       localStorage.removeItem('jwt_token')
@@ -309,7 +340,6 @@ export function AuthProvider({
       body: JSON.stringify({ password, code }),
     })
 
-    // Update 2FA status in local user state
     if (user) {
       setUser({
         ...user,
