@@ -5,7 +5,6 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { useTranslation } from 'react-i18next'
 import i18n from '../i18n'
 
 export type User = {
@@ -55,23 +54,6 @@ function normalizeApiPath(path: string): string {
   }
 
   return `/api${cleanPath}`
-}
-
-export function LanguageSync() {
-  const { user } = useAuth()
-  const { i18n } = useTranslation()
-
-  useEffect(() => {
-    const saved = localStorage.getItem('i18nextLng')
-    if (!saved && user?.language) {
-      const targetLng = user.language.toLowerCase() // 'EN' -> 'en'
-      if (i18n.language !== targetLng) {
-        i18n.changeLanguage(targetLng)
-      }
-    }
-  }, [user?.language, i18n])
-
-  return null
 }
 
 export async function apiFetch(
@@ -144,34 +126,32 @@ export function AuthProvider({
   const [loading, setLoading] = useState(true)
 
   async function applyPreferredLanguage(userData: User): Promise<User> {
-    const saved = localStorage.getItem('i18nextLng')?.split('-')[0]?.toLowerCase()
+    const serverLang = userData.language?.split('-')[0]?.toLowerCase()
 
+    // 1. 已登录且服务端有语言偏好：以服务端为准，不同步覆盖数据库
+    if (serverLang && SUPPORTED_LANGS.includes(serverLang)) {
+      localStorage.setItem('i18nextLng', serverLang)
+      if (i18n.language !== serverLang) {
+        await i18n.changeLanguage(serverLang)
+      }
+      return userData
+    }
+
+    // 2. 服务端未设置语言时：若本地已有有效语种，应用并回填一次服务端
+    const saved = localStorage.getItem('i18nextLng')?.split('-')[0]?.toLowerCase()
     if (saved && SUPPORTED_LANGS.includes(saved)) {
       if (i18n.language !== saved) {
         await i18n.changeLanguage(saved)
       }
 
-      const upper = saved.toUpperCase()
-      if (userData.language?.toUpperCase() !== upper) {
-        try {
-          const updated = await apiFetch('/users/me', {
-            method: 'PATCH',
-            body: JSON.stringify({ language: upper }),
-          })
-          return getUser(updated)
-        } catch {
-          return userData
-        }
-      }
-
-      return userData
-    }
-
-    if (userData.language) {
-      const targetLng = userData.language.toLowerCase()
-      localStorage.setItem('i18nextLng', targetLng)
-      if (i18n.language !== targetLng) {
-        await i18n.changeLanguage(targetLng)
+      try {
+        const updated = await apiFetch('/users/me', {
+          method: 'PATCH',
+          body: JSON.stringify({ language: saved.toUpperCase() }),
+        })
+        return getUser(updated)
+      } catch {
+        return userData
       }
     }
 
