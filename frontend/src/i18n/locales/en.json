@@ -169,6 +169,9 @@
       "saveFailed": "An error occurred while saving your RSVP."
     }
   },
+   "screenings": {
+    "emptyUpcoming":"No upcoming screenings yet."
+  },
   "calendar": {
     "loading": "Loading your calendar...",
     "heading": "My Screening Calendar",

@@ -387,6 +387,9 @@
     },
     "back": "返回"
   },
+  "screenings": {
+    "emptyUpcoming":"暂无即将开始的观影场次"
+  },
   "privacyPolicy": {
     "heading": "隐私政策",
     "intro": "CineClub 是一个面向本地独立电影俱乐部成员的观影排期与社交平台。本页面说明我们收集哪些个人数据、收集原因以及成员对这些数据的控制权。",

@@ -169,6 +169,9 @@
       "saveFailed": "Une erreur est survenue lors de l'enregistrement de votre participation."
     }
   },
+  "screenings": {
+    "emptyUpcoming": "Aucune séance à venir pour le moment."
+  },
   "calendar": {
     "loading": "Chargement de votre calendrier...",
     "heading": "Mon calendrier de séances",
