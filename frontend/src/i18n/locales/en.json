@@ -468,5 +468,8 @@
       "notFound": "User not found",
       "sendRequestFailed": "Failed to send friend request"
     }
+  },
+  "common": {
+    "back": "Back"
   }
 }

@@ -468,5 +468,8 @@
       "notFound": "Utilisateur introuvable",
       "sendRequestFailed": "Impossible d'envoyer la demande d'ami"
     }
+  },
+  "common": {
+    "back": "Retour"
   }
 }

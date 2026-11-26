@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import defaultMovie from '../../assets/default-movie.jpg'
 import { useAuth } from '../../context/AuthContext'
+import BackButton from '../../components/BackButton/BackButton'
 import Button from '../../components/button/Button'
 import Avatar from '../../components/Avatar/Avatar'
 import Icon from '../../components/Icon/Icon'
@@ -196,15 +197,7 @@ function ScreenDetailsPage() {
     return (
         <main className="max-w-[1000px] mx-auto py-12 px-10">
             <div className="mb-6">
-                <button
-                    type="button"
-                    onClick={handleBack}
-                    aria-label={t('screeningDetails.back', 'Back')}
-                    className="inline-flex items-center gap-2 text-body font-medium text-text-muted hover:text-text transition-colors cursor-pointer"
-                >
-                    <span aria-hidden="true">←</span>
-                    <span>{t('screeningDetails.back', 'Back')}</span>
-                </button>
+                <BackButton label={t('screeningDetails.back', 'Back')} onClick={handleBack} />
             </div>
 
             <section className="flex flex-col md:flex-row gap-8 mb-12">
@@ -232,7 +225,6 @@ function ScreenDetailsPage() {
                         )}
                     </dl>
                     <p className={synopsisClass}>{displaySynopsis ?? t('screeningDetails.noSynopsis')}</p>
-                    <p className={synopsisClass}>{screening.synopsis ?? 'No synopsis available.'}</p>
                     {screening.attachments && screening.attachments.length > 0 && (
                         <div className="mt-4 text-body flex flex-wrap items-center gap-x-3 gap-y-1">
                             <span className="font-bold text-text">

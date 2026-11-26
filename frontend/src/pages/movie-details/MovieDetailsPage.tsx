@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import defaultMovie from '../../assets/default-movie.jpg'
 import { normalizeTitle } from '../../utils/normalizeTitle'
 import { apiFetch } from '../../context/AuthContext'
+import BackButton from '../../components/BackButton/BackButton'
 import Button from '../../components/button/Button'
 import Icon from '../../components/Icon/Icon'
 import Loader from '../../components/Loader/Loader'
@@ -132,16 +133,9 @@ function MovieDetailsPage() {
 	}
 
 	const backButton = (
-		<button
-			type="button"
-			onClick={handleBack}
-			className="mb-6 inline-flex items-center gap-2 text-body font-bold text-text-muted hover:text-text transition-colors cursor-pointer"
-		>
-			<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-			</svg>
-			<span>{t('movieDetails.back')}</span>
-		</button>
+		<div className="mb-6">
+			<BackButton label={t('movieDetails.back')} onClick={handleBack} />
+		</div>
 	)
 
 	if (screenings.length === 0)

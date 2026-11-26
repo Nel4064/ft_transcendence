@@ -468,5 +468,8 @@
       "notFound": "未找到该用户",
       "sendRequestFailed": "发送好友申请失败"
     }
+  },
+  "common": {
+    "back": "返回"
   }
 }

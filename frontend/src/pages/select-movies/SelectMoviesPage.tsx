@@ -9,7 +9,6 @@ import { useSearchParams } from 'react-router-dom'
 const boxClass = "flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full max-w-[1000px] mx-auto mb-10 sm:mb-16 lg:mb-24 p-4 sm:p-6 lg:p-8 bg-surface border border-border rounded-lg shadow-card"
 const selectClass = "w-full sm:w-auto py-3.5 sm:py-4 px-4 sm:px-5 border border-border rounded-md text-control bg-surface cursor-pointer"
 
-// 与后端返回的 genre 值对齐（按你们后端实际存储的值调整，如英文名或 key）
 const GENRE_OPTIONS = [
 	'Action',
 	'Adventure',
