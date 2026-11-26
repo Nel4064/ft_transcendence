@@ -45,12 +45,19 @@ services:
       FRONTEND_OAUTH_URI: ${FRONTEND_OAUTH_URI}
       # --- 2FA (enable with two-factor module) ---
       TWO_FACTOR_URL: ${TWO_FACTOR_URL}
+      # --- Mail (GDPR confirmation emails) ---
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      MAIL_FROM: ${MAIL_FROM}
     secrets:
       - postgres_backend_user_pw
       - jwt_secret
       # --- 42 OAuth (enable with auth module) ---
       - fortytwo_client_id
       - fortytwo_client_secret
+      # --- Mail (GDPR confirmation emails) ---
+      - smtp_user
+      - smtp_pw
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health > /dev/null || exit 1"]
       interval: 5s
@@ -82,7 +89,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_BACKEND_USER}
-      BACKUP_INTERVAL: ${BACKUP_INTERVAL:-86400}
+      BACKUP_INTERVAL: ${BACKUP_INTERVAL:-86400} # seconds
       BACKUP_KEEP: ${BACKUP_KEEP:-7} # days
     secrets:
       - postgres_backend_user_pw
@@ -125,4 +132,8 @@ secrets:
   fortytwo_client_id:
     external: true
   fortytwo_client_secret:
+    external: true
+  smtp_user:
+    external: true
+  smtp_pw:
     external: true

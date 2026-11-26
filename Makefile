@@ -3,7 +3,7 @@ COMPOSE = podman-compose -p development -f compose.yaml -f compose.dev.yaml --en
 # all secrets live in the podman secret store (external: true in compose.yaml)
 # generated: random values created here / manual: filled in by hand from the 42 intra
 GENERATED_SECRETS = jwt_secret postgres_backend_user_pw postgres_superuser_pw
-MANUAL_SECRETS = fortytwo_client_id fortytwo_client_secret
+MANUAL_SECRETS = fortytwo_client_id fortytwo_client_secret smtp_user smtp_pw
 
 # 32 random bytes as hex: only 0-9a-f, so safe inside DATABASE_URL (no trailing newline)
 RANDOM_SECRET = openssl rand -hex 32 | tr -d '\n'
@@ -94,7 +94,7 @@ secrets:
 	done
 	@for s in $(MANUAL_SECRETS); do \
 		touch secrets/$$s.txt; \
-		test -s secrets/$$s.txt || echo "⚠️  secrets/$$s.txt is empty (needed for 42 OAuth)"; \
+		test -s secrets/$$s.txt || echo "⚠️  secrets/$$s.txt is empty (fill it manually for 42OAuth and SMTP)"; \
 	done
 	@chmod 600 secrets/*.txt
 	@for s in $(GENERATED_SECRETS) $(MANUAL_SECRETS); do \
