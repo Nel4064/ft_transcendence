@@ -1,7 +1,11 @@
-import { Injectable, BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, 
+		BadRequestException, 
+		ForbiddenException, 
+		UnauthorizedException, 
+		NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChatType } from '../generated/prisma/client.js';
-import { SendMessageDto } from './dto/chat.dto';
+import { SendGroupMessageDto, SendMessageDto } from './dto/chat.dto';
 
 @Injectable()
 export class ChatService 
@@ -33,6 +37,11 @@ export class ChatService
 			},
 		});
 		return (!!friendship);
+	}
+
+	private getSafeLimit(limit: number): number{
+		const validLimit = Number.isFinite(limit) ? Math.trunc(limit) : 50;
+		return Math.min(Math.max(validLimit, 1), 100);
 	}
 
 	private readonly senderSelect = {
@@ -71,8 +80,7 @@ export class ChatService
 		const isFriend = await this.checkFriendship(userId, friendId);
 		if (!isFriend)
 			throw new ForbiddenException('You are not friends yet');
-		const validLimit = Number.isFinite(limit) ? Math.trunc(limit) : 50;
-		const safeLimit = Math.min(Math.max(validLimit, 1), 100);
+		const safeLimit = this.getSafeLimit(limit);
 		const messages = await this.prisma.message.findMany({
 			where:{
 				type: ChatType.DIRECT,
@@ -94,4 +102,67 @@ export class ChatService
 		});
 		return messages.reverse(); 
 	}
+
+	private async assertUserIsAttending(userId: string, screeningId: string): 
+	Promise<void> {
+		const screening = await this.prisma.screening.findUnique({
+			where:{ id:screeningId },
+		});
+		if (!screening)
+			throw new NotFoundException('Screening not found');
+		
+		const rsvp = await this.prisma.rsvp.findUnique({
+			where:{ 
+				userId_screeningId:{
+					userId: userId,
+					screeningId: screeningId,
+			},
+		},
+	});
+		if (!rsvp)
+			throw new ForbiddenException('User will not attend this screening');
+	}
+
+	async sendGroupMessage(senderId: string, dto: SendGroupMessageDto){
+		const { screeningId, content } = dto;
+		const cleanContent = content.trim();
+		await this.assertUserCanChat(senderId);
+		await this.assertUserIsAttending(senderId, screeningId);
+		return this.prisma.message.create({
+			data:{
+				content: cleanContent,
+				type: ChatType.EVENT,
+				senderId: senderId,
+				screeningId: screeningId
+			},
+			include:this.senderSelect,
+		});
+	}
+
+	async getGroupHistory(userId: string, screeningId: string, limit: number = 50){
+		await this.assertUserCanChat(userId);
+		await this.assertUserIsAttending(userId, screeningId);
+		const safeLimit = this.getSafeLimit(limit);
+		const messages = await this.prisma.message.findMany({
+			where: {
+				type: ChatType.EVENT,
+				screeningId: screeningId
+			},
+			orderBy: {
+				createdAt: 'desc'
+			},
+			take: safeLimit,
+			include: this.senderSelect,
+		});
+		return messages.reverse();
+	}
+
+	async getUserGroupRoomIds(userId: string): Promise<string[]> {
+		const rsvps = await this.prisma.rsvp.findMany({
+			where: { userId },
+			select: { screeningId: true },
+		});
+		return rsvps.map(r => `event_${r.screeningId}`);
+	}
 }
+

@@ -13,7 +13,7 @@ import { Socket, Server } from 'socket.io';
 import { ForbiddenException, Logger, UnauthorizedException, UsePipes, ValidationPipe, HttpException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ChatService } from './chat.service';
-import { SendMessageDto } from './dto/chat.dto';
+import { SendMessageDto, SendGroupMessageDto } from './dto/chat.dto';
 
 @WebSocketGateway({ namespace: '/chat' , cors: { origin: true, credentials: true} })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -66,6 +66,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     client.data.userId = userId;
     await client.join(`user_${userId}`);
     this.logger.log(`User ${userId} connected`);
+    
+    const groupRooms = await this.chatService.getUserGroupRoomIds(userId);
+    for (const room of groupRooms) {
+      await client.join(room)
+    }
+    this.logger.log(`User ${userId} joined ${groupRooms.length} group room(s)`);
   }
 
   handleDisconnect(client: Socket){
@@ -106,5 +112,33 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       client.emit('chatError', { message: errorMessage });
       return { status: 'error', code: statusCode, message: errorMessage };
     }
+  }
+
+  @UsePipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+        exceptionFactory: (errors)=> new WsException(errors),
+      }),
+  )
+  @SubscribeMessage('sendGroupMessage')
+  async handleGroupNewMessage(
+      @ConnectedSocket() client: Socket,
+      @MessageBody() dto: SendGroupMessageDto
+  ){
+      const senderId = client.data.userId;
+      if (!senderId)
+          throw new WsException('Unauthorized');
+      try{
+          const groupMessage = await this.chatService.sendGroupMessage(senderId, dto)
+          this.wss.to(`event_${dto.screeningId}`).emit('newGroupMessage', groupMessage)
+          return { status: 'ok', data: groupMessage };
+      } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to send message';
+          const statusCode = error instanceof HttpException ? error.getStatus() : 500;
+          client.emit('chatError', { message: errorMessage });
+          return { status: 'error', code: statusCode, message: errorMessage };
+      }
   }
 }
