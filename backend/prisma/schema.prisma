@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
   moduleFormat = "cjs"
 }
 
@@ -44,6 +44,11 @@ enum NotificationType {
 //  EVENT_CANCELLED    // if event is cancelled (outside CineClub user's scope)    → everyone who RSVPed
 }
 
+enum ChatType {
+  DIRECT
+  EVENT
+}
+
 model User {
   id               String   @id @default(uuid()) @db.Uuid
   username         String   @unique @db.VarChar(50)
@@ -51,19 +56,19 @@ model User {
   email            String   @unique @db.VarChar(255)
     
   // Authentication
-  passwordHash     String?  @db.VarChar(255)  // Optional: Only for local registration
-  oauth42Id        String?  @unique           // Optional: Only for 42 OAuth login
-  
+  passwordHash String? @db.VarChar(255) // Optional: Only for local registration
+  oauth42Id    String? @unique // Optional: Only for 42 OAuth login
+
   // Profile Information
-  avatarUrl        String?
-  bio              String?  @db.Text
-  language         Language   @default(EN)    // Default is English
-  role             Role     @default(USER)    // Default is regular user
-  
+  avatarUrl String?
+  bio       String?  @db.Text
+  language  Language @default(EN) // Default is English
+  role      Role     @default(USER) // Default is regular user
+
   // Two-Factor Authentication (2FA)
-  twoFactorEnabled Boolean  @default(false)
-  twoFactorSecret  String?  @db.VarChar(255)
-  
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String? @db.VarChar(255)
+
   // Audit Timestamps
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -82,6 +87,9 @@ model User {
   
   //admin ban
   isBanned Boolean @default(false)
+
+  sentMessages      Message[]      @relation("SentMessages")
+  receivedMessages  Message[]      @relation("ReceivedMessages")
 
   rsvps         Rsvp[]
   @@map("users") // Maps the model to a lowercase "users" table in the database
@@ -119,9 +127,9 @@ model Friendship {
 
 // A screening chosen by the club, copied from the datacinesindes.fr feed if and when picked.
 model Screening {
-  id               String            @id @default(uuid())
-  externalShowId   String            @db.VarChar(20)           // showid (unique per cinema only)
-  externalCinemaId Int                                         // cineid
+  id               String @id @default(uuid())
+  externalShowId   String @db.VarChar(20) // showid (unique per cinema only)
+  externalCinemaId Int // cineid
 
   // Film (snapshot from the feed)
   filmTitle        String                                      // filmtitle, raw
@@ -140,16 +148,16 @@ model Screening {
   bookingUrl       String?                                     // showurl (V3)
 
   // Showtime
-  startsAt         DateTime          @db.Timestamptz(3)        // showstart
-  endsAt           DateTime          @db.Timestamptz(3)        // showend
+  startsAt DateTime @db.Timestamptz(3) // showstart
+  endsAt   DateTime @db.Timestamptz(3) // showend
 
   // Cinema
-  cinemaName       String            @db.VarChar(60)           // cinenom
-  cinemaAddress    String            @db.VarChar(100)          // cineadresse
-  cinemaPostalCode String            @db.VarChar(5)            // cinecp
-  cinemaCity       String            @db.VarChar(40)           // cineville
-  cinemaLatitude   Float?                                      // _coords.lat (V3)
-  cinemaLongitude  Float?                                      // _coords.lon (V3)
+  cinemaName       String @db.VarChar(60) // cinenom
+  cinemaAddress    String @db.VarChar(100) // cineadresse
+  cinemaPostalCode String @db.VarChar(5) // cinecp
+  cinemaCity       String @db.VarChar(40) // cineville
+  cinemaLatitude   Float? // _coords.lat (V3)
+  cinemaLongitude  Float? // _coords.lon (V3)
 
   // // Club side
   //isCancelled      Boolean           @default(false)
@@ -161,6 +169,7 @@ model Screening {
 
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
+  messages  Message[]
 
   @@unique([externalCinemaId, externalShowId])
   @@index([startsAt])
@@ -183,21 +192,43 @@ model Rsvp {
 }
 
 model Notification {
-  id              String           @id @default(uuid()) @db.Uuid
+  id String @id @default(uuid()) @db.Uuid
 
   // Recipient: who reads it
-  userId          String           @db.Uuid
-  user            User             @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  userId String @db.Uuid
+  user   User   @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
 
   // Actor: who caused it (null if their account was deleted)
-  actorId         String?          @db.Uuid
-  actor           User?            @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  actorId String? @db.Uuid
+  actor   User?   @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
 
-  type            NotificationType
-  payload         Json
-  readAt          DateTime?
-  createdAt       DateTime         @default(now())
+  type      NotificationType
+  payload   Json
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
 
   @@index([userId, readAt, createdAt])
   @@map("notifications")
+}
+
+model Message {
+  id        String   @id @default(uuid()) @db.Uuid
+  content   String   @db.Text
+  type      ChatType @default(DIRECT)
+  createdAt DateTime @default(now())
+
+  senderId String @db.Uuid
+  sender   User   @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  // private message only
+  receiverId String? @db.Uuid
+  receiver   User?   @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  // group message only
+  screeningId String?
+  screening   Screening? @relation(fields: [screeningId], references: [id], onDelete: Cascade)
+
+  @@index([senderId, receiverId])
+  @@index([screeningId])
+  @@map("messages")
 }

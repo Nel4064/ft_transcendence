@@ -18,6 +18,7 @@ import ScreenDetailsPage from './pages/screenings-details/ScreenDetailsPage'
 import UserProfilePage from './pages/profile/UserProfilePage'
 import ScreeningsList from './pages/screenings/ScreeningsList'
 import CalendarPage from './pages/calendar/CalendarPage'
+import ChatPage from './pages/chat/ChatPage'
 import AdminDashboard from './pages/admin/AdminDashboard'
 
 
@@ -45,6 +46,7 @@ function App() {
 					<Route path="/screenings/:id" element={<ScreenDetailsPage />} />
 					<Route path="/friends" element={<FriendsPage />} />
 					<Route path="/users/:id" element={<UserProfilePage />} />
+					<Route path="/chat/:friendId" element={<ChatPage />} />
 					<Route path="/calendar" element={<CalendarPage />} />
 				</Route>
 

@@ -104,9 +104,12 @@ export async function apiFetch(
   }
 
   if (!response.ok) {
-    throw new Error(
-      data?.message || `API request failed (${response.status})`,
-    )
+    const error: any = new Error(
+      data?.message || `API request failed (${response.status})`
+    );
+    error.status = response.status;
+    error.data = data;
+    throw error;
   }
 
   return data

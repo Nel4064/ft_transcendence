@@ -5,6 +5,7 @@ import Loader from '../Loader/Loader';
 import FriendsCard from './FriendsCard';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { io } from 'socket.io-client';
 import {
@@ -35,6 +36,7 @@ interface FriendRequest {
 export default function FriendsManager() {
     const { t } = useTranslation();
     const { apiFetch, user } = useAuth();
+    const navigate = useNavigate();
 
     const [activeTab, setActiveTab] = useState<'friends' | 'requests' | 'search'>(() => {
         return (sessionStorage.getItem('friends_activeTab') as any) || 'friends';
@@ -214,7 +216,7 @@ export default function FriendsManager() {
                     ) : (
                         friends.map((friend) => (
                             <FriendsCard key={friend.id} user={friend} subtitle={`@${friend.username}`}>
-                                <Button onClick={() => alert(t('friends.notifications.redirectChat', { username: friend.username }))}>
+                                <Button onClick={() => navigate(`/chat/${friend.id}`)}>
                                     {t('friends.actions.chat')}
                                 </Button>
                                 <Button
