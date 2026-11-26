@@ -4,6 +4,7 @@ import RsvpScreeningCard from '../../components/Screenings/RsvpScreeningCard'
 import defaultMovie from '../../assets/default-movie.jpg'
 import { useAuth } from '../../context/AuthContext'
 import { type Screening, getMyRsvpScreenings, rsvp, cancelRsvp } from '../../api/screenings'
+import { getLocalizedValue } from '../../utils/localizedValue'
 import Loader from '../../components/Loader/Loader'
 import Heading from '../../components/Heading/Heading'
 import EmptyState from '../../components/EmptyState/EmptyState'
@@ -26,13 +27,6 @@ export default function ScreeningsList() {
 
     const currentLang = i18n.language?.toLowerCase().split('-')[0] || 'en'
     const dateLocale = LOCALE_MAP[currentLang] || 'en-GB'
-
-    const getLocalizedTitle = (s: Screening) => {
-        const translated =
-            s.titleTranslations?.[currentLang] ||
-            (currentLang === 'zh' ? s.titleTranslations?.zh : undefined)
-        return translated || s.filmTitle || t('myScreenings.unknownTitle')
-    }
 
     useEffect(() => {
         setIsLoading(true)
@@ -151,11 +145,16 @@ export default function ScreeningsList() {
                                     })}`;
                                 } catch (e) { }
                             }
+                            const localizedTitle = getLocalizedValue(
+                                s.titleTranslations,
+                                i18n.language,
+                                s.filmTitle || t('myScreenings.unknownTitle'),
+                            )
                             return (
                                 <RsvpScreeningCard
                                     key={s.id}
                                     id={s.id}
-                                    movie={getLocalizedTitle(s)}
+                                    movie={localizedTitle}
                                     image={s.posterUrl ?? defaultMovie}
                                     cinema={s.cinemaName || t('myScreenings.unknownCinema')}
                                     dateFormatted={formattedDate}

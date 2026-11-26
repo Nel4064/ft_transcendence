@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import defaultMovie from '../../assets/default-movie.jpg'
 import { normalizeTitle } from '../../utils/normalizeTitle'
+import { getLocalizedValue } from '../../utils/localizedValue'
 import { apiFetch } from '../../context/AuthContext'
 import BackButton from '../../components/BackButton/BackButton'
 import Button from '../../components/button/Button'
@@ -51,7 +52,7 @@ function MovieDetailsPage() {
 	const [created, setCreated] = useState<Set<string>>(new Set())
 	const [translations, setTranslations] = useState<MovieTranslations | null>(null)
 
-	const currentLang = i18n.language?.split('-')[0] || 'en'
+	const currentLang = i18n.language?.toLowerCase().split('-')[0] || 'en'
 	const dateLocale = LOCALE_MAP[currentLang] || 'en-GB'
 
 	function handleBack() {
@@ -155,11 +156,10 @@ function MovieDetailsPage() {
 	const cast = clean(first.filmcast)
 	const minutes = first.filmduration ? Math.round(first.filmduration / 60) : 0
 
-	const pickLang = (map?: Record<string, string> | null) =>
-		map?.[currentLang] || (currentLang === 'zh' ? map?.zh : undefined)
-
-	const displayTitle = pickLang(translations?.titleTranslations) || first.filmtitle
-	const displaySynopsis = pickLang(translations?.synopsisTranslations) || rawSynopsis
+	const displayTitle = getLocalizedValue(translations?.titleTranslations, i18n.language, first.filmtitle)
+	const displaySynopsis = rawSynopsis
+		? getLocalizedValue(translations?.synopsisTranslations, i18n.language, rawSynopsis)
+		: null
 
 	return (
 		<main className="max-w-[1000px] mx-auto py-12 px-10">

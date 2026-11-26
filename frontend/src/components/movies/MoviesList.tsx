@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { normalizeTitle } from '../../utils/normalizeTitle'
+import { getLocalizedValue } from '../../utils/localizedValue'
 import { apiFetch } from '../../context/AuthContext'
 import Button from '../button/Button'
 
@@ -61,7 +62,6 @@ function MoviesList({ searchTerm = '', filter = 'title', perPage }: MoviesListPr
 	const [translations, setTranslations] = useState<Record<string, Record<string, string>>>({})
 	const [genresMap, setGenresMap] = useState<Record<string, string[]>>({})
 
-	const currentLang = i18n.language?.toLowerCase().split('-')[0] || 'en'
 	const rawPage = Math.max(1, Number(searchParams.get('page')) || 1)
 
 	function setPage(newPage: number) {
@@ -98,7 +98,7 @@ function MoviesList({ searchTerm = '', filter = 'title', perPage }: MoviesListPr
 		if (term === '') return true
 		if (filter === 'title') {
 			const map = translations[r.filmtitle] ?? titleCache.get(r.filmtitle)
-			const localized = map?.[currentLang] || (currentLang === 'zh' ? map?.zh : undefined) || ''
+			const localized = getLocalizedValue(map, i18n.language, '')
 			return (
 				r.filmtitle.toLowerCase().includes(term) ||
 				localized.toLowerCase().includes(term)
@@ -176,21 +176,20 @@ function MoviesList({ searchTerm = '', filter = 'title', perPage }: MoviesListPr
 		return () => { cancelled = true }
 	}, [targetTitlesKey])
 
-	const getLocalizedTitle = (rawTitle: string) => {
-		const map = translations[rawTitle] ?? titleCache.get(rawTitle)
-		return map?.[currentLang] || (currentLang === 'zh' ? map?.zh : undefined) || rawTitle
-	}
-
 	return (
 		<>
-			{visible.map((r) => (
-				<MoviesCard
-					key={r.filmtitle}
-					movie={r.filmtitle}
-					displayTitle={getLocalizedTitle(r.filmtitle)}
-					image={r.filmposter?.startsWith('https://') ? r.filmposter : defaultMovie}
-				/>
-			))}
+			{visible.map((r) => {
+				const map = translations[r.filmtitle] ?? titleCache.get(r.filmtitle)
+				const displayTitle = getLocalizedValue(map, i18n.language, r.filmtitle)
+				return (
+					<MoviesCard
+						key={r.filmtitle}
+						movie={r.filmtitle}
+						displayTitle={displayTitle}
+						image={r.filmposter?.startsWith('https://') ? r.filmposter : defaultMovie}
+					/>
+				)
+			})}
 			{perPage && totalPages > 1 && (
 				<div className="col-span-full flex items-center justify-center gap-4 mt-4">
 					<Button variant="admin" onClick={() => setPage(page - 1)} disabled={page === 1}>

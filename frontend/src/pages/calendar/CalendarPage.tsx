@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 
 import type { Screening } from '../../api/screenings'
 import { getMyRsvpScreenings } from '../../api/screenings'
+import { getLocalizedValue } from '../../utils/localizedValue'
 import Loader from '../../components/Loader/Loader'
 import Heading from '../../components/Heading/Heading'
 
@@ -26,13 +27,6 @@ export default function CalendarPage() {
 
     const currentLang = i18n.language?.toLowerCase().split('-')[0] || 'en'
     const dateLocale = LOCALE_MAP[currentLang] || 'en-GB'
-
-    const getLocalizedTitle = (s: Screening) => {
-        const translated =
-            s.titleTranslations?.[currentLang] ||
-            (currentLang === 'zh' ? s.titleTranslations?.zh : undefined)
-        return translated || s.filmTitle
-    }
 
     useEffect(() => {
         setIsLoading(true)
@@ -143,7 +137,7 @@ export default function CalendarPage() {
                                         minute: '2-digit'
                                     })
                                     const isPast = sDate < new Date()
-                                    const displayTitle = getLocalizedTitle(s)
+                                    const displayTitle = getLocalizedValue(s.titleTranslations, i18n.language, s.filmTitle)
                                     return (
                                         <div
                                             key={s.id}
