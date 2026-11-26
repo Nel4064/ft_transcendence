@@ -23,7 +23,7 @@ function SignInPage() {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  const { login, authenticate2fa, apiFetch, setUser, user } = useAuth()
+  const { login, authenticate2fa, user } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
@@ -33,30 +33,6 @@ function SignInPage() {
     const lang = e.target.value
     i18n.changeLanguage(lang)
     localStorage.setItem('i18nextLng', lang)
-  }
-
-  async function syncSelectedLanguageToBackend() {
-    const selectedLang = (
-      localStorage.getItem('i18nextLng') ||
-      i18n.language ||
-      'en'
-    )
-      .split('-')[0]
-      .toUpperCase()
-
-    if (!['EN', 'FR', 'ZH'].includes(selectedLang)) return
-
-    try {
-      const data = await apiFetch('/api/users/me', {
-        method: 'PATCH',
-        body: JSON.stringify({ language: selectedLang }),
-      })
-      if (data?.user && setUser) {
-        setUser(data.user)
-      }
-    } catch {
-      // 同步失败不阻塞正常登录流程
-    }
   }
 
   // 1. Core: Perfectly align with the parameter capturing logic of App-test.tsx
@@ -76,9 +52,7 @@ function SignInPage() {
     if (token) {
       localStorage.setItem('token', token)
       localStorage.setItem('jwt_token', token)
-      syncSelectedLanguageToBackend().finally(() => {
-        navigate('/', { replace: true })
-      })
+      navigate('/', { replace: true })
       return
     }
 
@@ -131,7 +105,6 @@ function SignInPage() {
         return
       }
 
-      await syncSelectedLanguageToBackend()
       navigate('/', { replace: true })
     } catch (err) {
       setError(
@@ -162,7 +135,6 @@ function SignInPage() {
 
     try {
       await authenticate2fa(code, userId)
-      await syncSelectedLanguageToBackend()
       navigate('/', { replace: true })
     } catch (err) {
       setError(
