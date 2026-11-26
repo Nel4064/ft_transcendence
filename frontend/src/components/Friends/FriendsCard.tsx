@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Avatar from "../Avatar/Avatar";
 
 type FriendsCardProps = {
@@ -13,12 +14,18 @@ const avatarButtonClass = "cursor-pointer hover:opacity-80 transition-opacity"
 
 function FriendsCard({ user, subtitle, children }: FriendsCardProps) {
 	const navigate = useNavigate()
+	const { t } = useTranslation()
 	const name = user.displayName || user.username
 
 	return (
 		<div className={cardClass}>
 			<div className="flex items-center gap-3">
-				<button type="button" onClick={() => navigate(`/users/${user.id}`)} className={avatarButtonClass} title="View profile">
+				<button
+					type="button"
+					onClick={() => navigate(`/users/${user.id}`)}
+					className={avatarButtonClass}
+					title={t("friends.viewProfile")}
+				>
 					<Avatar src={user.avatarUrl} name={name} size={40} />
 				</button>
 				<div>

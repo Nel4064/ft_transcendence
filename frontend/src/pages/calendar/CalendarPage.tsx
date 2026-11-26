@@ -1,18 +1,32 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../context/AuthContext'
 
 import type { Screening } from '../../api/screenings'
 import { getMyRsvpScreenings } from '../../api/screenings'
+import { getLocalizedValue } from '../../utils/localizedValue'
 import Loader from '../../components/Loader/Loader'
 import Heading from '../../components/Heading/Heading'
 
+const LOCALE_MAP: Record<string, string> = {
+    en: 'en-GB',
+    fr: 'fr-FR',
+    zh: 'zh-CN'
+}
+
+const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
+
 export default function CalendarPage() {
+    const { t, i18n } = useTranslation()
     const navigate = useNavigate()
     const [screenings, setScreenings] = useState<Screening[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const { apiFetch } = useAuth()
     const [currentDate, setCurrentDate] = useState(new Date())
+
+    const currentLang = i18n.language?.toLowerCase().split('-')[0] || 'en'
+    const dateLocale = LOCALE_MAP[currentLang] || 'en-GB'
 
     useEffect(() => {
         setIsLoading(true)
@@ -50,19 +64,21 @@ export default function CalendarPage() {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
         calendarCells.push({ empty: false, day, dateStr, key: dateStr })
     }
-    const monthTitle = currentDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+    const monthTitle = currentDate.toLocaleDateString(dateLocale, { month: 'long', year: 'numeric' })
+
     if (isLoading) {
-        return <main className="py-12 px-10"><Loader text="Loading your calendar..." /></main>
+        return <main className="py-12 px-10"><Loader text={t('calendar.loading')} /></main>
     }
+
     return (
         <main className="max-w-[1000px] mx-auto py-12 px-6">
             <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
                 <div>
                     <Heading className="tracking-tight">
-                        My Screening Calendar
+                        {t('calendar.heading')}
                     </Heading>
                     <p className="text-[14px] text-gray-500 mt-1">
-                        Review past sessions and see upcoming movie club events.
+                        {t('calendar.subtitle')}
                     </p>
                 </div>
 
@@ -71,22 +87,24 @@ export default function CalendarPage() {
                         onClick={prevMonth}
                         className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 font-semibold"
                     >
-                        ← Prev
+                        ← {t('calendar.prev')}
                     </button>
-                    <span className="font-serif font-bold text-gray-800 min-w-[120px] text-center">
+                    <span className="font-serif font-bold text-gray-800 min-w-[120px] text-center capitalize">
                         {monthTitle}
                     </span>
                     <button
                         onClick={nextMonth}
                         className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 font-semibold"
                     >
-                        Next →
+                        {t('calendar.next')} →
                     </button>
                 </div>
             </div>
 
             <div className="grid grid-cols-7 gap-2 mb-2 text-center font-medium text-xs text-gray-400 uppercase tracking-wider">
-                <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+                {WEEKDAYS.map((day) => (
+                    <div key={day}>{t(`calendar.weekdays.${day}`)}</div>
+                ))}
             </div>
 
             <div className="grid grid-cols-7 gap-2">
@@ -114,21 +132,21 @@ export default function CalendarPage() {
                             <div className="flex flex-col gap-1.5 flex-1">
                                 {dayScreenings.map((s) => {
                                     const sDate = new Date(s.startsAt)
-                                    const timeStr = sDate.toLocaleTimeString('en-GB', {
+                                    const timeStr = sDate.toLocaleTimeString(dateLocale, {
                                         hour: '2-digit',
                                         minute: '2-digit'
                                     })
                                     const isPast = sDate < new Date()
+                                    const displayTitle = getLocalizedValue(s.titleTranslations, i18n.language, s.filmTitle)
                                     return (
                                         <div
                                             key={s.id}
                                             onClick={() => navigate(`/screenings/${s.id}`)}
-                                            title={`${s.filmTitle} at ${timeStr}`}
-                                            // 🌟 根据 isPast 切换完全不同的 UI 风格
+                                            title={t('calendar.eventTooltip', { title: displayTitle, time: timeStr })}
                                             className={`group border rounded-lg p-1.5 cursor-pointer transition-all text-left
                                                 ${isPast
-                                                    ? 'bg-gray-50 border-gray-100 opacity-60' // 过去：无阴影、灰色底、半透明
-                                                    : 'bg-white hover:bg-brand/10 border-gray-200 hover:border-brand/30 shadow-sm' // 未来：纯白底、悬浮高亮、有阴影
+                                                    ? 'bg-gray-50 border-gray-100 opacity-60'
+                                                    : 'bg-white hover:bg-brand/10 border-gray-200 hover:border-brand/30 shadow-sm'
                                                 }`}
                                         >
                                             <p className={`text-[11px] font-semibold truncate transition-colors
@@ -137,7 +155,7 @@ export default function CalendarPage() {
                                                     : 'text-gray-800 group-hover:text-brand'
                                                 }`}
                                             >
-                                                {s.filmTitle}
+                                                {displayTitle}
                                             </p>
                                             <p className={`text-[10px] mt-0.5 truncate
                                                 ${isPast ? 'text-gray-400' : 'text-gray-500'}`}

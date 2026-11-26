@@ -1,0 +1,509 @@
+{
+  "navbar": {
+    "selectMovies": "Choisir des films",
+    "manageMembers": "Gérer les membres",
+    "screenings": "Séances",
+    "calendar": "Calendrier",
+    "friends": "Amis",
+    "notifications": "Notifications",
+    "login": "Connexion",
+    "toggleMenu": "Afficher le menu de navigation"
+  },
+  "signUp": {
+    "heading": "Créer un compte",
+    "acceptTerms": "J'accepte les <terms>Conditions d'utilisation</terms> et la <privacy>Politique de confidentialité</privacy>",
+    "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "signIn": "Se connecter",
+    "placeholders": {
+      "username": "Votre nom d'utilisateur",
+      "email": "Votre e-mail",
+      "password": "Votre mot de passe",
+      "confirmPassword": "Confirmez votre mot de passe"
+    },
+    "buttons": {
+      "signUp": "S'inscrire",
+      "signInWith42": "Se connecter avec 42"
+    },
+    "errors": {
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "mustAcceptTerms": "Vous devez accepter les conditions d'utilisation",
+      "registrationFailed": "Échec de l'inscription"
+    }
+  },
+  "signIn": {
+    "twoFactorHeading": "Authentification à deux facteurs",
+    "twoFactorPrompt": "Saisissez le code à 6 chiffres de votre application d'authentification.",
+    "newUser": "Nouveau ?",
+    "createAccount": "Créer un compte",
+    "placeholders": {
+      "identifier": "E-mail ou nom d'utilisateur",
+      "password": "Mot de passe",
+      "twoFactorCode": "Code de vérification à 6 chiffres"
+    },
+    "buttons": {
+      "pleaseWait": "Veuillez patienter...",
+      "verifyCode": "Vérifier le code",
+      "signIn": "Se connecter",
+      "signInWith42": "Se connecter avec 42",
+      "backToSignIn": "Retour à la connexion"
+    },
+    "errors": {
+      "twoFactorEnabled": "La 2FA est activée. Veuillez saisir le code à 6 chiffres de votre application d'authentification.",
+      "oauthFailed": "Échec de la connexion 42 OAuth : {{error}}",
+      "enterCode": "Veuillez saisir le code à 6 chiffres",
+      "loginFailed": "Échec de la connexion",
+      "missingUserId": "Identifiant utilisateur manquant. Veuillez vous reconnecter.",
+      "invalidCode": "Veuillez saisir un code valide à 6 chiffres",
+      "twoFactorFailed": "Échec de la vérification 2FA"
+    }
+  },
+  "profile": {
+    "links": {
+      "edit": "Modifier le profil",
+      "security": "Gérer l'authentification à deux facteurs",
+      "privacy": "Télécharger ou supprimer mes données (RGPD)"
+    },
+    "avatar": {
+      "changeTitle": "Cliquer pour changer l'avatar",
+      "uploading": "Téléversement...",
+      "change": "Modifier",
+      "changePhoto": "Changer la photo"
+    },
+    "summary": {
+      "aboutMe": "À propos de moi",
+      "emptyBio": "Rien pour l'instant."
+    },
+    "edit": {
+      "heading": "Modifier le profil",
+      "displayNameLabel": "Nom affiché",
+      "displayNamePlaceholder": "Entrez votre nom affiché",
+      "bioLabel": "À propos de moi",
+      "bioPlaceholder": "Écrivez quelque chose sur vous...",
+      "languageLabel": "Langue",
+      "saveButton": "Enregistrer les modifications"
+    },
+    "twoFactor": {
+      "heading": "Authentification à deux facteurs (2FA)",
+      "statusLabel": "Statut :",
+      "enabled": "Activée",
+      "disabled": "Désactivée",
+      "description": "Sécurisez votre compte à l'aide d'une application d'authentification.",
+      "enableButton": "Activer la 2FA",
+      "disableButton": "Désactiver la 2FA",
+      "step1Qr": "1. Scannez ce QR code avec Google Authenticator ou Authy :",
+      "qrAlt": "QR Code 2FA",
+      "step2Code": "2. Saisissez le code à 6 chiffres de votre application pour vérifier et activer :",
+      "verifyButton": "Vérifier et activer",
+      "disablePrompt": "Saisissez le code à 6 chiffres de votre application d'authentification pour désactiver la 2FA :",
+      "confirmDisableButton": "Confirmer et désactiver",
+      "cancelButton": "Annuler"
+    },
+    "logoutButton": "Déconnexion",
+    "messages": {
+      "init2faFailed": "Échec de l'initialisation de la 2FA",
+      "enable2faSuccess": "2FA activée avec succès !",
+      "invalidCode": "Code de vérification invalide",
+      "disable2faSuccess": "La 2FA a été désactivée.",
+      "disable2faFailed": "Échec de la désactivation de la 2FA",
+      "updateSuccess": "Profil mis à jour.",
+      "updateFailed": "Échec de la mise à jour du profil",
+      "uploadPhotoSuccess": "Photo mise à jour.",
+      "uploadSuccess": "Avatar téléversé avec succès ! Actualisation...",
+      "uploadFailed": "Échec du téléversement de la photo"
+    }
+  },
+  "home": {
+    "titleLine1": "Découvrez des films",
+    "titleLine2": "Rencontrez des passionnés",
+    "subtitle": "Créez des séances, rejoignez des discussions et connectez-vous avec des cinéphiles.",
+    "upcomingScreenings": "Prochaines séances..."
+  },
+  "selectMovies": {
+    "heading": "Choisir des séances pour le club",
+    "searchPlaceholder": "Rechercher un film",
+    "filters": {
+      "title": "Titre",
+      "cinema": "Cinéma",
+      "date": "Date",
+      "genre": "Genre"
+    },
+    "selectGenrePlaceholder": "Choisir un genre...",
+    "genres": {
+      "Action": "Action",
+      "Adventure": "Aventure",
+      "Animation": "Animation",
+      "Comedy": "Comédie",
+      "Crime": "Crime",
+      "Documentary": "Documentaire",
+      "Drama": "Drame",
+      "Family": "Familial",
+      "Fantasy": "Fantastique",
+      "History": "Histoire",
+      "Horror": "Horreur",
+      "Music": "Musique",
+      "Mystery": "Mystère",
+      "Romance": "Romance",
+      "Science Fiction": "Science-Fiction",
+      "Thriller": "Thriller",
+      "War": "Guerre",
+      "Western": "Western"
+    },
+    "searchButton": "Rechercher",
+    "pagination": {
+      "previous": "Précédent",
+      "next": "Suivant",
+      "pageInfo": "Page {{page}} / {{totalPages}}"
+    }
+  },
+  "myScreenings": {
+    "heading": "Mes séances",
+    "subtitle": "Gérez vos prochaines séances du ciné-club et consultez votre historique.",
+    "tabs": {
+      "upcoming": "À venir",
+      "history": "Historique"
+    },
+    "loading": "Chargement des séances...",
+    "empty": {
+      "upcoming": "Aucune séance à venir pour le moment.",
+      "history": "Vous n'avez encore assisté à aucune séance."
+    },
+    "dateTbd": "Date à confirmer",
+    "unknownTitle": "Titre inconnu",
+    "unknownCinema": "Cinéma inconnu",
+    "pagination": {
+      "previous": "Précédent",
+      "next": "Suivant"
+    },
+    "errors": {
+      "notFound": "Désolé, cette séance a été annulée ou n'est plus disponible.",
+      "pastSession": "Vous ne pouvez pas modifier votre participation pour une séance passée.",
+      "saveFailed": "Une erreur est survenue lors de l'enregistrement de votre participation."
+    }
+  },
+  "screenings": {
+    "emptyUpcoming": "Aucune séance à venir pour le moment."
+  },
+  "calendar": {
+    "loading": "Chargement de votre calendrier...",
+    "heading": "Mon calendrier de séances",
+    "subtitle": "Consultez vos séances passées et les prochains événements du ciné-club.",
+    "prev": "Préc.",
+    "next": "Suiv.",
+    "weekdays": {
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mer",
+      "thu": "Jeu",
+      "fri": "Ven",
+      "sat": "Sam",
+      "sun": "Dim"
+    },
+    "eventTooltip": "{{title}} à {{time}}"
+  },
+  "friends": {
+    "tabs": {
+      "myFriends": "Mes amis",
+      "requests": "Demandes d'ami",
+      "addFriends": "Ajouter des amis"
+    },
+    "loading": {
+      "friends": "Chargement des amis...",
+      "requests": "Chargement des demandes..."
+    },
+    "empty": {
+      "friends": "Aucun ami pour le moment, allez en ajouter !",
+      "requests": "Aucune nouvelle demande d'ami"
+    },
+    "requestSubtitle": "Souhaite vous ajouter en ami",
+    "actions": {
+      "chat": "Discuter",
+      "remove": "Supprimer",
+      "accept": "Accepter",
+      "reject": "Refuser",
+      "addFriend": "Ajouter",
+      "hideResult": "Masquer ce résultat"
+    },
+    "search": {
+      "placeholder": "Entrez un nom d'utilisateur ou un pseudo...",
+      "button": "Rechercher",
+      "noResults": "Aucun utilisateur trouvé",
+      "enterKeywords": "Entrez des mots-clés pour lancer la recherche"
+    },
+    "confirmRemove": "Voulez-vous vraiment retirer {{name}} de vos amis ?",
+    "notifications": {
+      "requestAcceptedByOther": "Quelqu'un a accepté votre demande d'ami !",
+      "requestSent": "Demande d'ami envoyée avec succès !",
+      "requestAccepted": "Demande d'ami acceptée",
+      "requestRejected": "Demande d'ami refusée",
+      "friendRemoved": "Ami retiré avec succès",
+      "redirectChat": "Redirection vers la discussion avec {{username}}"
+    },
+    "errors": {
+      "loadFriends": "Impossible de charger vos amis. Veuillez réessayer plus tard.",
+      "loadRequests": "Impossible de charger vos demandes d'ami. Veuillez réessayer plus tard.",
+      "searchFailed": "Échec de la recherche, veuillez réessayer",
+      "sendFailed": "Échec de l'envoi de la demande",
+      "operationFailed": "L'opération a échoué",
+      "removeFailed": "Impossible de retirer cet ami"
+    },
+    "pageTitle": "Amis",
+    "viewProfile": "Voir le profil"
+  },
+  "screeningDetails": {
+    "unavailable": {
+      "heading": "Séance indisponible",
+      "message": "Cette séance n'existe plus ou a été supprimée.",
+      "backButton": "Retour aux séances"
+    },
+    "director": "Réalisateur :",
+    "cast": "Casting :",
+    "duration": "Durée :",
+    "noSynopsis": "Aucun synopsis disponible.",
+    "trailer": "Bande-annonce",
+    "dateAtTime": "{{date}} à {{time}}",
+    "goingCount": "{{count}} participants",
+    "friendsGoing": "{{count}} amis participent :",
+    "noFriendsGoing": "Aucun ami ne participe pour le moment",
+    "chatPlaceholder": "Ajouter le chat ici",
+    "actions": {
+      "going": "J'y vais ✓",
+      "rsvp": "Participer",
+      "removeEvent": "Supprimer la séance",
+      "createEvent": "Créer une séance"
+    },
+    "calendar": {
+      "google": "+ Google Agenda",
+      "ics": "+ Apple/Outlook (.ics)",
+      "defaultDescription": "Séance de cinéma du club.",
+      "reminder": "Rappel"
+    },
+    "errors": {
+      "notFound": "Désolé, cette séance a été annulée ou n'est plus disponible.",
+      "pastSession": "Vous ne pouvez pas modifier votre participation pour une séance passée.",
+      "saveFailed": "Une erreur est survenue lors de l'enregistrement de votre participation."
+    },
+    "moreInformation": "Plus d'informations :",
+    "back": "Retour",
+    "files": {
+      "heading": "Fichiers (admin)",
+      "posterLabel": "Affiche (PNG, JPG, WebP · 5 Mo max)",
+      "changePoster": "Changer l'affiche",
+      "posterPreviewAlt": "Aperçu de l'affiche",
+      "restorePoster": "Restaurer l'affiche d'origine",
+      "confirmRestorePoster": "Restaurer l'affiche d'origine ?",
+      "attachmentsLabel": "Flyers et images (PDF, PNG, JPG, WebP · 5 Mo max chacun)",
+      "addAttachments": "Ajouter des flyers ou images",
+      "noFileSelected": "Aucun fichier sélectionné",
+      "filesSelected": "{{count}} fichier(s) sélectionné(s)",
+      "remove": "Retirer",
+      "delete": "Supprimer",
+      "confirmDeleteFile": "Supprimer ce fichier ?",
+      "upload": "Envoyer",
+      "uploading": "Envoi… {{progress}}%",
+      "errors": {
+        "wrongType": "{{name}} : type de fichier non autorisé",
+        "tooLarge": "{{name}} : le fichier dépasse 5 Mo",
+        "tooManyFiles": "Maximum {{max}} fichiers autorisés à la fois",
+        "uploadFailedWithStatus": "Échec de l'envoi ({{status}})",
+        "networkError": "Erreur réseau pendant l'envoi",
+        "deleteFailed": "Échec de la suppression"
+      }
+    }
+  },
+  "admin": {
+    "loading": "Chargement des membres...",
+    "heading": "Administration du club",
+    "badge": "Admin uniquement",
+    "searchPlaceholder": "Rechercher un utilisateur par nom...",
+    "filters": {
+      "all": "Tous les utilisateurs",
+      "admins": "Admins uniquement",
+      "members": "Membres uniquement",
+      "banned": "Bannis uniquement"
+    },
+    "table": {
+      "users": "UTILISATEURS",
+      "role": "RÔLE",
+      "joinedDate": "DATE D'INSCRIPTION",
+      "activity": "ACTIVITÉ (RSVPs)",
+      "actions": "ACTIONS"
+    },
+    "roles": {
+      "banned": "Banni",
+      "admin": "Admin",
+      "member": "Membre"
+    },
+    "activity": {
+      "attended": "{{count}} participées",
+      "upcoming": "{{count}} à venir"
+    },
+    "actions": {
+      "resign": "Démissionner (Retirer mon rôle Admin)",
+      "cannotEditCoAdmin": "Impossible de modifier un co-admin",
+      "unban": "Débannir",
+      "makeAdmin": "Nommer Admin"
+    },
+    "tooltips": {
+      "viewProfile": "Cliquer pour voir le profil",
+      "permanentlyRemove": "Supprimer définitivement l'utilisateur",
+      "banUser": "Bannir l'utilisateur",
+      "removeUser": "Supprimer l'utilisateur"
+    },
+    "empty": "Aucun utilisateur ne correspond à vos critères.",
+    "pagination": {
+      "showing": "Affichage de {{start}} à {{end}} sur {{total}} utilisateurs",
+      "rowsPerPage": "Lignes par page",
+      "perPage": "{{count}} / page",
+      "prev": "Préc.",
+      "next": "Suiv."
+    },
+    "confirm": {
+      "makeAdmin": "Voulez-vous vraiment promouvoir cet utilisateur en tant qu'Admin ?",
+      "remove": "Voulez-vous vraiment supprimer définitivement cet utilisateur du club ?",
+      "ban": "Voulez-vous vraiment bannir cet utilisateur ?",
+      "unban": "Voulez-vous vraiment débannir cet utilisateur ?",
+      "resign": "Voulez-vous vraiment retirer vos droits d'Admin ? Vous perdrez l'accès à ce tableau de bord."
+    },
+    "errors": {
+      "makeAdmin": "Échec de la promotion en tant qu'Admin.",
+      "remove": "Échec de la suppression de l'utilisateur.",
+      "ban": "Échec du bannissement de l'utilisateur.",
+      "unban": "Échec du débannissement de l'utilisateur.",
+      "lastAdmin": "⚠️ Vous êtes le dernier admin du club ! Veuillez promouvoir un autre membre avant de démissionner.",
+      "resign": "Échec de la démission."
+    }
+  },
+  "notifications": {
+    "heading": "Notifications",
+    "empty": "Aucune notification pour le moment.",
+    "types": {
+      "clubPick": "<b>{{actor}}</b> a sélectionné <b>{{film}}</b> ({{date}})",
+      "clubPickRemoved": "<b>{{actor}}</b> a retiré <b>{{film}}</b> ({{date}})",
+      "friendRequest": "<b>{{actor}}</b> vous a envoyé une demande d'ami",
+      "friendAccepted": "<b>{{actor}}</b> a accepté votre demande d'ami",
+      "friendRsvp": "<b>{{actor}}</b> participe à <b>{{film}}</b> ({{date}})",
+      "unknown": "Nouvelle notification inconnue"
+    }
+  },
+  "movieDetails": {
+    "director": "Réalisateur :",
+    "cast": "Casting :",
+    "duration": "Durée :",
+    "noSynopsis": "Aucun synopsis disponible.",
+    "trailer": "Bande-annonce",
+    "upcomingScreenings": "Prochaines séances",
+    "actions": {
+      "removeEvent": "Supprimer la séance",
+      "createEvent": "Créer la séance"
+    },
+    "errors": {
+      "updateFailed": "Impossible de mettre à jour la séance : {{message}}"
+    },
+    "back": "Retour"
+  },
+  "privacyPolicy": {
+    "heading": "Politique de confidentialité",
+    "intro": "CineClub est une plateforme de planification et d'échange social pour les membres d'un club de cinéma indépendant local. Cette page explique quelles données personnelles nous collectons, pourquoi, et quel contrôle les membres ont dessus.",
+    "sections": {
+      "collect": {
+        "title": "Ce que nous collectons",
+        "body": "Les données de compte (e-mail, nom d'affichage, avatar, bio), les données d'activité (inscriptions aux séances, amis, messages de chat), ainsi que — si utilisés — votre identifiant 42 Intra ou votre clé secrète d'authentification à deux facteurs."
+      },
+      "purpose": {
+        "title": "Pourquoi nous les collectons",
+        "body": "Pour faire fonctionner le calendrier partagé des séances du club, permettre aux membres de se reconnaître et d'échanger des messages, générer votre export de calendrier personnel et sécuriser votre compte."
+      },
+      "thirdParties": {
+        "title": "Tiers",
+        "body": "Les horaires des séances proviennent du flux public datacinesindes.fr. Les traductions des films sont fournies via The Movie Database (TMDB). Ce produit utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB. Nous ne vendons ni ne partageons vos données avec des annonceurs."
+      },
+      "rights": {
+        "title": "Vos droits",
+        "body": "Vous pouvez exporter une copie de toutes les données que nous détenons sur votre compte, ou demander leur suppression définitive, à tout moment depuis les paramètres de votre profil."
+      }
+    }
+  },
+  "termsOfService": {
+    "heading": "Conditions d'utilisation",
+    "intro": "Ces conditions régissent votre utilisation de CineClub, une plateforme de planification et d'échange social pour les membres d'un club de cinéma indépendant local. En créant un compte, vous les acceptez.",
+    "sections": {
+      "membership": {
+        "title": "Adhésion",
+        "body": "Les comptes sont réservés aux membres individuels du club. Vous êtes responsable de la confidentialité de vos identifiants de connexion ainsi que de toute activité effectuée depuis votre compte."
+      },
+      "acceptableUse": {
+        "title": "Utilisation acceptable",
+        "body": "Restez respectueux dans le chat, inscrivez-vous aux séances de bonne foi, et n'essayez pas d'accéder au compte d'un autre membre ni de détourner le calendrier."
+      },
+      "screeningData": {
+        "title": "Données des séances",
+        "body": "Les horaires des séances proviennent du flux public datacinesindes.fr et peuvent occasionnellement être inexacts ou modifiés sans préavis par le cinéma — vérifiez toujours avant de vous déplacer."
+      },
+      "termination": {
+        "title": "Résiliation",
+        "body": "Vous pouvez supprimer votre compte à tout moment. Nous nous réservons le droit de suspendre les comptes qui enfreignent ces conditions."
+      }
+    }
+  },
+  "userProfile": {
+    "aboutMe": "À propos",
+    "emptyBio": "Cet utilisateur n'a encore rien écrit~",
+    "confirmFriendRequest": "Vous devez être ami avec {{name}} avant de discuter. Envoyer une demande d'ami maintenant ?",
+    "roles": {
+      "admin": "Admin",
+      "member": "Membre"
+    },
+    "buttons": {
+      "back": "← Retour",
+      "goBack": "Retour",
+      "goToChat": "Aller au chat",
+      "sendingRequest": "Envoi en cours...",
+      "requestSent": "Demande d'ami envoyée"
+    },
+    "alerts": {
+      "requestSent": "Demande d'ami envoyée !"
+    },
+    "errors": {
+      "loadFailed": "Impossible de charger le profil utilisateur",
+      "notFound": "Utilisateur introuvable",
+      "sendRequestFailed": "Impossible d'envoyer la demande d'ami"
+    }
+  },
+  "common": {
+    "back": "Retour"
+  },
+  "chat": {
+    "groupPlaceholder": "La discussion de groupe de l'événement sera bientôt disponible ici.",
+    "backToFriends": "Retour aux amis",
+    "backToFriendsLabel": "← Amis",
+    "goToFriends": "Aller aux amis",
+    "viewProfile": "Cliquer pour voir le profil",
+    "unavailable": "Conversation indisponible",
+    "loading": "Chargement...",
+    "emptyWithFriend": "Aucun message pour l'instant. Dites bonjour !",
+    "emptyNoHistory": "Aucun historique de conversation disponible.",
+    "inputPlaceholder": "Écrire un message...",
+    "messagingDisabled": "Messagerie désactivée",
+    "sendButton": "Envoyer",
+    "notFriendsNotice": "Vous ne pouvez pas envoyer de messages car vous n'êtes pas amis.",
+    "errors": {
+      "notFound": "Cette conversation n'existe pas.",
+      "loadFailed": "Impossible de charger cette conversation. Veuillez réessayer.",
+      "sendFailed": "Le message n'a pas pu être envoyé. Veuillez réessayer."
+    },
+    "sidebar": {
+      "title": "Discussion",
+      "tabs": {
+        "groups": "Groupes d'événements",
+        "friends": "Messages privés"
+      },
+      "groupsEmpty": "Les discussions de groupe d'événements apparaîtront ici.",
+      "loading": "Chargement des amis...",
+      "loadFailed": "Échec du chargement des amis.",
+      "errorPrefix": "Erreur :",
+      "noFriends": "Vous n'avez pas encore d'amis.",
+      "unreadCount_one": "{{count}} message non lu",
+      "unreadCount_other": "{{count}} messages non lus"
+    }
+  }
+}

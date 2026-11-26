@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { io, type Socket } from 'socket.io-client';
 import ChatWindow, { type Message } from '../../components/Chat/ChatWindow';
 import ChatSidebar, { type ChatTab } from '../../components/Chat/ChatSidebar';
 import { useAuth } from '../../context/AuthContext';
 
 export default function ChatPage() {
+    const { t } = useTranslation();
     const { friendId } = useParams();
     const { user } = useAuth();
     const [activeTab, setActiveTab] = useState<ChatTab>('friends');
@@ -73,7 +75,7 @@ export default function ChatPage() {
                         <ChatWindow friendId={friendId} socket={chatSocket} />
                     ) : (
                         <div className="flex h-full items-center justify-center p-6 text-center text-sm text-text-muted">
-                            Event group chat will be available here.
+                            {t('chat.groupPlaceholder', 'Event group chat will be available here.')}
                         </div>
                     )}
                 </section>

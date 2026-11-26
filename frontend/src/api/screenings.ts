@@ -1,3 +1,5 @@
+import { t } from 'i18next';
+import i18n from '../i18n';
 
 export type Friend = {
     id: string;
@@ -6,11 +8,16 @@ export type Friend = {
     avatarUrl: string | null;
 };
 
+export type ScreeningAttachment = {
+    url: string;
+    name: string;
+};
+
 export type Screening = {
     id: string;
     filmTitle: string;
     posterUrl: string | null;
-    attachmentUrl?: string | null;
+    attachments?: ScreeningAttachment[];
     startsAt: string;
     cinemaName?: string;
     isGoing?: boolean;
@@ -27,6 +34,8 @@ export type Screening = {
     runtimeMinutes?: number | null;
     friendsGoingCount?: number;
     friendsGoing?: Friend[];
+    titleTranslations?: Record<string, string> | null;
+    synopsisTranslations?: Record<string, string> | null;
 };
 
 type ApiFetch = (endpoint: string, options?: RequestInit) => Promise<any>;
@@ -51,7 +60,6 @@ export const removeScreening = async (apiFetch: ApiFetch, cinemaId: number, show
     return apiFetch(`/screenings/${cinemaId}/${encodeURIComponent(showId)}`, { method: 'DELETE' });
 };
 
-
 // Upload avec XMLHttpRequest (et pas fetch) pour pouvoir suivre la progression
 export const uploadScreeningFiles = (
     id: string,
@@ -71,13 +79,28 @@ export const uploadScreeningFiles = (
         xhr.onload = () => {
             let data: any = null;
             try { data = JSON.parse(xhr.responseText); } catch { /* réponse non JSON (ex: 413 nginx) */ }
-            if (xhr.status >= 200 && xhr.status < 300) resolve(data);
-            else reject(new Error(data?.message || `Upload failed (${xhr.status})`));
+            if (xhr.status >= 200 && xhr.status < 300) {
+                resolve(data);
+            } else {
+                reject(new Error(data?.message || t('screeningDetails.files.errors.uploadFailedWithStatus', { status: xhr.status })));
+            }
         };
-        xhr.onerror = () => reject(new Error('Network error during upload'));
-        xhr.send(formData);   // pas de Content-Type : le navigateur le met tout seul
+        xhr.onerror = () => reject(new Error(t('screeningDetails.files.errors.networkError')));
+        xhr.send(formData); // pas de Content-Type : le navigateur le met tout seul
     });
 
-export const deleteScreeningFile = async (apiFetch: ApiFetch, id: string, kind: 'poster' | 'attachment'): Promise<Screening> => {
-    return apiFetch(`/screenings/${id}/files/${kind}`, { method: 'DELETE' });
-};
+export async function deleteScreeningFile(
+    apiFetch: ApiFetch,
+    id: string,
+    kind: 'poster' | 'attachment',
+    url?: string,
+): Promise<Screening> {
+    const query = url ? `?url=${encodeURIComponent(url)}` : '';
+    try {
+        return await apiFetch(`/screenings/${id}/files/${kind}${query}`, {
+            method: 'DELETE',
+        });
+    } catch (err: any) {
+        throw new Error(err?.message || i18n.t('screeningDetails.files.errors.deleteFailed'));
+    }
+}

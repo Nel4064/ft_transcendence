@@ -1,20 +1,32 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import RsvpScreeningCard from '../../components/Screenings/RsvpScreeningCard'
 import defaultMovie from '../../assets/default-movie.jpg'
 import { useAuth } from '../../context/AuthContext'
 import { type Screening, getMyRsvpScreenings, rsvp, cancelRsvp } from '../../api/screenings'
+import { getLocalizedValue } from '../../utils/localizedValue'
 import Loader from '../../components/Loader/Loader'
 import Heading from '../../components/Heading/Heading'
 import EmptyState from '../../components/EmptyState/EmptyState'
 
 const ITEMS_PER_PAGE = 5
 
+const LOCALE_MAP: Record<string, string> = {
+    en: 'en-GB',
+    fr: 'fr-FR',
+    zh: 'zh-CN'
+}
+
 export default function ScreeningsList() {
+    const { t, i18n } = useTranslation()
     const [screenings, setScreenings] = useState<Screening[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [activeTab, setActiveTab] = useState<'upcoming' | 'history'>('upcoming')
     const [currentPage, setCurrentPage] = useState(1)
     const { apiFetch } = useAuth()
+
+    const currentLang = i18n.language?.toLowerCase().split('-')[0] || 'en'
+    const dateLocale = LOCALE_MAP[currentLang] || 'en-GB'
 
     useEffect(() => {
         setIsLoading(true)
@@ -55,12 +67,12 @@ export default function ScreeningsList() {
             const isNotFound = error?.status === 404 || errText.includes('404') || errText.includes('Not Found') || errText.includes("La séance n'est plus disponible") || errText.includes("introuvable") || errText.includes("annulée");
             const isBadRequest = error?.status === 400 || errText.includes('passée');
             if (isNotFound) {
-                alert("Sorry, this session has been canceled or is no longer available.");
+                alert(t('myScreenings.errors.notFound'));
                 setScreenings(prev => prev.filter(s => s.id !== screeningId));
             } else if (isBadRequest) {
-                alert("You cannot change the RSVP for a past session.");
+                alert(t('myScreenings.errors.pastSession'));
             } else {
-                alert("An error occurred while saving your RSVP.");
+                alert(t('myScreenings.errors.saveFailed'));
             }
         }
     }
@@ -84,10 +96,10 @@ export default function ScreeningsList() {
         <div className="w-3/4 max-w-[800px] mx-auto py-6 px-4 md:px-0">
             <div className="mb-6 text-left">
                 <Heading className="tracking-tight mb-1">
-                    My Screenings
+                    {t('myScreenings.heading')}
                 </Heading>
                 <p className="text-[14px] text-gray-500 mb-6">
-                    Manage your upcoming movie club sessions and view your past attendances.
+                    {t('myScreenings.subtitle')}
                 </p>
                 <div className="flex gap-4 border-b border-gray-200">
                     <button
@@ -97,7 +109,7 @@ export default function ScreeningsList() {
                             : 'text-gray-400 hover:text-gray-600'
                             }`}
                     >
-                        Upcoming ({upcomingScreenings.length})
+                        {t('myScreenings.tabs.upcoming')} ({upcomingScreenings.length})
                     </button>
                     <button
                         onClick={() => handleTabChange('history')}
@@ -106,40 +118,45 @@ export default function ScreeningsList() {
                             : 'text-gray-400 hover:text-gray-600'
                             }`}
                     >
-                        History ({historyScreenings.length})
+                        {t('myScreenings.tabs.history')} ({historyScreenings.length})
                     </button>
                 </div>
             </div>
             {isLoading ? (
-                <Loader text="Loading screenings..." />
+                <Loader text={t('myScreenings.loading')} />
             ) : displayedScreenings.length === 0 ? (
                 <EmptyState
                     message={activeTab === 'upcoming'
-                        ? "No upcoming screenings yet."
-                        : "You haven't attended any screenings in the past."}
+                        ? t('myScreenings.empty.upcoming')
+                        : t('myScreenings.empty.history')}
                 />
             ) : (
                 <>
                     <div className="flex flex-col gap-3">
                         {paginatedScreenings.map((s) => {
-                            let formattedDate = 'Date TBD';
+                            let formattedDate = t('myScreenings.dateTbd');
                             if (s.startsAt) {
                                 try {
                                     const dateObj = new Date(s.startsAt);
-                                    formattedDate = `${dateObj.toLocaleDateString('en-GB', {
+                                    formattedDate = `${dateObj.toLocaleDateString(dateLocale, {
                                         weekday: 'short', day: 'numeric', month: 'short', year: activeTab === 'history' ? 'numeric' : undefined
-                                    })}, ${dateObj.toLocaleTimeString('en-GB', {
+                                    })}, ${dateObj.toLocaleTimeString(dateLocale, {
                                         hour: '2-digit', minute: '2-digit'
                                     })}`;
                                 } catch (e) { }
                             }
+                            const localizedTitle = getLocalizedValue(
+                                s.titleTranslations,
+                                i18n.language,
+                                s.filmTitle || t('myScreenings.unknownTitle'),
+                            )
                             return (
                                 <RsvpScreeningCard
                                     key={s.id}
                                     id={s.id}
-                                    movie={s.filmTitle || 'Unknown Title'}
+                                    movie={localizedTitle}
                                     image={s.posterUrl ?? defaultMovie}
-                                    cinema={s.cinemaName || 'Unknown Cinema'}
+                                    cinema={s.cinemaName || t('myScreenings.unknownCinema')}
                                     dateFormatted={formattedDate}
                                     initialIsGoing={!!s.isGoing}
                                     initialGoingCount={s.totalGoingCount || 0}
@@ -157,7 +174,7 @@ export default function ScreeningsList() {
                                 disabled={safePage === 1}
                                 className="px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                             >
-                                Previous
+                                {t('myScreenings.pagination.previous')}
                             </button>
 
                             <div className="flex items-center gap-1.5">
@@ -180,7 +197,7 @@ export default function ScreeningsList() {
                                 disabled={safePage === totalPages}
                                 className="px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                             >
-                                Next
+                                {t('myScreenings.pagination.next')}
                             </button>
                         </div>
                     )}

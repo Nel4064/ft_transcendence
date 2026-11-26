@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../context/AuthContext'
 import { getDirectHistory } from '../../api/chat'
 import type { Socket } from 'socket.io-client'
@@ -47,6 +48,7 @@ interface ChatWindowProps {
 }
 
 export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
+	const { t } = useTranslation();
 	const { user, apiFetch } = useAuth();
 	const navigate = useNavigate();
 	const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -72,7 +74,7 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 		if (!friendId) return;
 
 		if (!UUID_REGEX.test(friendId)) {
-			setError("This conversation doesn't exist.");
+			setError(t('chat.errors.notFound', "This conversation doesn't exist."));
 			setLoading(false);
 			return;
 		}
@@ -82,13 +84,6 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 		setError(null);
 
 		const fetchData = async () => {
-			// ---- test status 500 ----
-			// const [historyResult, profileResult] = await Promise.allSettled([
-    		// 	Promise.reject(
-        	// 		Object.assign(new Error('Test error'), { status: 500 })
-    		// 	),
-    		// 	apiFetch(`/users/${friendId}`),
-			// ]);
 			const [historyResult, profileResult] = await Promise.allSettled([
 				getDirectHistory(apiFetch, friendId),
 				apiFetch(`/users/${friendId}`),
@@ -99,8 +94,8 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 				const status = getErrorStatus(profileResult.reason);
 				setError(
 					status === 404 || status === 400
-						? "This conversation doesn't exist."
-						: 'Unable to load this conversation. Please try again.',
+						? t('chat.errors.notFound', "This conversation doesn't exist.")
+						: t('chat.errors.loadFailed', 'Unable to load this conversation. Please try again.'),
 				);
 				setLoading(false);
 				return;
@@ -115,9 +110,9 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 				if (status === 403) {
 					setIsFriend(false);
 				} else if (status === 404 || status === 400) {
-					setError("This conversation doesn't exist.");
+					setError(t('chat.errors.notFound', "This conversation doesn't exist."));
 				} else {
-					setError('Unable to load this conversation. Please try again.');
+					setError(t('chat.errors.loadFailed', 'Unable to load this conversation. Please try again.'));
 				}
 			}
 
@@ -125,7 +120,7 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 		};
 		void fetchData();
 		return () => { isCancelled = true; };
-	}, [friendId, apiFetch]);
+	}, [friendId, apiFetch, t]);
 
 	// listen to the page-scoped websocket connection
 	useEffect(() => {
@@ -162,15 +157,15 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 				if (activeFriendIdRef.current !== targetFriendId) return;
 				setIsSending(false);
 				if (timeoutError) {
-					setSendError('Message could not be sent. Please try again.');
+					setSendError(t('chat.errors.sendFailed', 'Message could not be sent. Please try again.'));
 					return;
 				}
 				if (response?.status !== 'ok') {
-						if (response?.code === 403 || response?.message?.toLowerCase().includes('not friends')) {
-        					setIsFriend(false);
-    					}
-    					setSendError(response?.message || 'Message could not be sent. Please try again.');
-    					return;
+					if (response?.code === 403 || response?.message?.toLowerCase().includes('not friends')) {
+						setIsFriend(false);
+					}
+					setSendError(response?.message || t('chat.errors.sendFailed', 'Message could not be sent. Please try again.'));
+					return;
 				}
 				setInput((currentInput) => currentInput === text ? '' : currentInput);
 			},
@@ -187,16 +182,16 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 					type="button"
 					onClick={() => navigate('/friends')}
 					className="py-1 px-2 text-sm text-text-muted hover:text-text hover:bg-surface rounded-md transition-colors cursor-pointer"
-					title="Back to Friends"
+					title={t('chat.backToFriends', 'Back to Friends')}
 				>
-					← Friends
+					{t('chat.backToFriendsLabel', '← Friends')}
 				</button>
 
 				{/* avatar & friend name */}
 				<div
 					className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
 					onClick={() => friendUser && navigate(`/users/${friendUser.id}`)}
-					title="Click to view profile"
+					title={t('chat.viewProfile', 'Click to view profile')}
 				>
 					{friendUser && (
 						<Avatar
@@ -209,7 +204,7 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 						<h2 className="font-bold text-text text-base leading-snug">
 							{friendUser
 								? friendUser.displayName || friendUser.username
-								: error ? 'Conversation unavailable' : 'Loading...'}
+								: error ? t('chat.unavailable', 'Conversation unavailable') : t('chat.loading', 'Loading...')}
 						</h2>
 						{friendUser?.username && (
 							<p className="text-xs text-text-muted">@{friendUser.username}</p>
@@ -223,7 +218,7 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 
 				{/* loading */}
 				{loading && (
-					<p className="text-center text-text-muted text-sm py-8">Loading...</p>
+					<p className="text-center text-text-muted text-sm py-8">{t('chat.loading', 'Loading...')}</p>
 				)}
 
 				{/* error */}
@@ -233,7 +228,7 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 							{error}
 						</p>
 						<Button variant="secondary" onClick={() => navigate('/friends')}>
-							Back to Friends
+							{t('chat.backToFriends', 'Back to Friends')}
 						</Button>
 					</div>
 				)}
@@ -241,7 +236,9 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 				{/* empty */}
 				{!loading && !error && messages.length === 0 && (
 					<p className="text-center text-text-muted text-sm py-8">
-						{isFriend? "No messages yet. Say hello!" : "No conversation history available."}
+						{isFriend
+							? t('chat.emptyWithFriend', 'No messages yet. Say hello!')
+							: t('chat.emptyNoHistory', 'No conversation history available.')}
 					</p>
 				)}
 
@@ -252,7 +249,7 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 					const nextMessage = messages[index + 1];
 					const showDateSeparator = !previousMessage
 						|| !isSameDate(
-							new Date(previousMessage.createdAt), 
+							new Date(previousMessage.createdAt),
 							new Date(msg.createdAt));
 					const isGrouped = shouldGroupMessage(previousMessage, msg);
 					const groupsWithNext = nextMessage !== undefined && shouldGroupMessage(msg, nextMessage);
@@ -267,7 +264,7 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 									<div className="h-px flex-1 bg-border" />
 								</div>
 							)}
- 							<MessageBubble 
+							<MessageBubble
 								msg={msg}
 								isMe={isMe}
 								isGrouped={isGrouped}
@@ -286,7 +283,7 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 					{sendError}
 				</p>
 			)}
-			{error ? null : isFriend? (
+			{error ? null : isFriend ? (
 				<form
 					onSubmit={(e) => {
 						e.preventDefault();
@@ -301,7 +298,9 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 							disabled={!isFriend || isSending}
 							maxLength={500}
 							onChange={(e) => setInput(e.target.value)}
-							placeholder={isFriend? "Type a message..." : "Messaging disabled"}
+							placeholder={isFriend
+								? t('chat.inputPlaceholder', 'Type a message...')
+								: t('chat.messagingDisabled', 'Messaging disabled')}
 							className="w-full py-2.5 px-6 bg-bg border border-border rounded-full text-sm focus:outline-none focus:border-brand transition-colors"
 						/>
 						{input.length > 400 && (
@@ -316,13 +315,13 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 						disabled={!isFriend || !input.trim() || isSending}
 						className="px-5 py-2.5 bg-brand hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full text-sm font-bold transition-colors"
 					>
-						Send
+						{t('chat.sendButton', 'Send')}
 					</button>
 				</form>
-			):(
+			) : (
 				<div className="p-4 border-t border-border bg-bg flex items-center justify-between px-6 text-sm">
 					<span className="text-text-muted">
-						You cannot send messages because you are not friends.
+						{t('chat.notFriendsNotice', 'You cannot send messages because you are not friends.')}
 					</span>
 					<Button
 						variant="secondary"
@@ -330,7 +329,7 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 						onClick={() => navigate('/friends')}
 						className="text-xs !py-1.5 !px-3"
 					>
-						Go to Friends
+						{t('chat.goToFriends', 'Go to Friends')}
 					</Button>
 				</div>
 			)}

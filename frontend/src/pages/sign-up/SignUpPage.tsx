@@ -1,13 +1,21 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type FormEvent, type ChangeEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation, Trans } from 'react-i18next'
 import { apiFetch, useAuth } from '../../context/AuthContext'
 import Button, { buttonClass } from '../../components/button/Button'
 import Input from '../../components/Input/Input'
 import Heading from '../../components/Heading/Heading'
 
-const linkClass = "text-brand hover:text-brand-hover"
+const linkClass = 'text-brand hover:text-brand-hover'
+
+const LANGUAGES = [
+	{ code: 'en', label: 'English' },
+	{ code: 'fr', label: 'Français' },
+	{ code: 'zh', label: '中文' },
+]
 
 function SignUpPage() {
+	const { t, i18n } = useTranslation()
 	const [username, setUsername] = useState('')
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
@@ -17,51 +25,55 @@ function SignUpPage() {
 	const { login, user } = useAuth()
 	const navigate = useNavigate()
 
+	const currentLang = i18n.language?.split('-')[0] || 'en'
+
+	function handleLanguageChange(e: ChangeEvent<HTMLSelectElement>) {
+		const lang = e.target.value
+		i18n.changeLanguage(lang)
+		localStorage.setItem('i18nextLng', lang)
+	}
+
 	useEffect(() => {
-		// if the user is already logged in, redirect to home page
 		if (user) {
-			// force redirect to home page, replace: true will replace the history, preventing the user from clicking the browser's "back" button and going back to the login page
 			navigate('/', { replace: true })
 		}
 	}, [user, navigate])
 
-	async function handleSubmit(e: React.FormEvent) {
+	async function handleSubmit(e: FormEvent) {
 		e.preventDefault()
 		if (password !== confirmPassword) {
-			setError('Passwords do not match')
+			setError(t('signUp.errors.passwordMismatch'))
 			return
 		}
 		if (!acceptTerms) {
-			setError('You must accept the terms and conditions')
+			setError(t('signUp.errors.mustAcceptTerms'))
 			return
 		}
 		setError('')
 		try {
-			// 1. on crée le compte en base
 			await apiFetch('/auth/register', {
 				method: 'POST',
 				body: JSON.stringify({ username, email, password }),
 			})
-			// 2. on connecte directement l'utilisateur
 			await login(username, password)
 			navigate('/')
 		}
 		catch (err) {
-			setError(err instanceof Error ? err.message : 'Registration failed')
+			setError(err instanceof Error ? err.message : t('signUp.errors.registrationFailed'))
 		}
 	}
 
 	return (
 		<main>
 			<form className="flex flex-col gap-2 max-w-[320px] mx-auto my-[320px]" onSubmit={handleSubmit}>
-				<Heading className="text-center">Create an Account</Heading>
+				<Heading className="text-center">{t('signUp.heading')}</Heading>
 				<div className="relative p-5 bg-surface border border-border rounded-md shadow-card">
 					<div className="flex flex-col gap-2">
 						<Input
 							id="username"
 							type="text"
 							value={username}
-							placeholder="your username"
+							placeholder={t('signUp.placeholders.username')}
 							onChange={(e) => setUsername(e.target.value)}
 							minLength={2}
 							required
@@ -71,7 +83,7 @@ function SignUpPage() {
 							id="email"
 							type="email"
 							value={email}
-							placeholder="Your email"
+							placeholder={t('signUp.placeholders.email')}
 							onChange={(e) => setEmail(e.target.value)}
 							required
 						/>
@@ -80,7 +92,7 @@ function SignUpPage() {
 							id="password"
 							type="password"
 							value={password}
-							placeholder="Your password"
+							placeholder={t('signUp.placeholders.password')}
 							onChange={(e) => setPassword(e.target.value)}
 							required
 							minLength={6}
@@ -90,38 +102,64 @@ function SignUpPage() {
 							id="confirm-password"
 							type="password"
 							value={confirmPassword}
-							placeholder="Confirm your password"
+							placeholder={t('signUp.placeholders.confirmPassword')}
 							onChange={(e) => setConfirmPassword(e.target.value)}
 							required
 							minLength={6}
 						/>
 
-						<label className="mt-3 pb-2 text-body text-text-light">
+						<label className="mt-3 pb-2 text-body text-text-light flex items-start gap-2">
 							<input
 								type="checkbox"
 								checked={acceptTerms}
 								onChange={(e) => setAcceptTerms(e.target.checked)}
+								className="mt-1"
 							/>
 							<span>
-								I accept the <Link to="/termsofservice" target="_blank" className={linkClass}>Terms of Service</Link> and the <Link to="/privacypolicy" target="_blank" className={linkClass}>Privacy Policy</Link>
+								<Trans
+									i18nKey="signUp.acceptTerms"
+									components={{
+										terms: <Link to="/termsofservice" target="_blank" className={linkClass} />,
+										privacy: <Link to="/privacypolicy" target="_blank" className={linkClass} />,
+									}}
+								/>
 							</span>
 						</label>
 
 						{error && <p className="py-2 px-3 rounded-md bg-danger/10 text-danger text-body font-bold text-center">{error}</p>}
 
-						<Button type="submit" size="lg">Sign Up</Button>
+						<Button type="submit" size="lg">{t('signUp.buttons.signUp')}</Button>
 						<a
 							href="/api/auth/oauth/42"
-							className={buttonClass("secondary", "lg")}
+							className={buttonClass('secondary', 'lg')}
 						>
-							Sign in with 42
+							{t('signUp.buttons.signInWith42')}
 						</a>
 
-						<p className="text-text-light">Already have an account? <a href="/signin" className={linkClass}>Sign in</a> </p>
+						<p className="text-text-light">
+							{t('signUp.alreadyHaveAccount')}{' '}
+							<a href="/signin" className={linkClass}>{t('signUp.signIn')}</a>
+						</p>
 					</div>
+				</div>
+
+				<div className="flex justify-end mt-1">
+					<select
+						aria-label="Language"
+						value={currentLang}
+						onChange={handleLanguageChange}
+						className="px-3 py-1.5 text-small bg-surface text-text border border-border rounded-md shadow-card cursor-pointer focus:outline-none focus:border-brand"
+					>
+						{LANGUAGES.map((lang) => (
+							<option key={lang.code} value={lang.code}>
+								{lang.label}
+							</option>
+						))}
+					</select>
 				</div>
 			</form>
 		</main>
 	)
 }
+
 export default SignUpPage

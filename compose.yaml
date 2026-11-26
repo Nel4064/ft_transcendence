@@ -51,6 +51,7 @@ services:
       # --- 42 OAuth (enable with auth module) ---
       - fortytwo_client_id
       - fortytwo_client_secret
+      - tmdb_access_key
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health > /dev/null || exit 1"]
       interval: 5s
@@ -125,4 +126,7 @@ secrets:
   fortytwo_client_id:
     external: true
   fortytwo_client_secret:
+    external: true  
+  # --- TMDB access key
+  tmdb_access_key:
     external: true

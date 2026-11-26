@@ -1,21 +1,62 @@
+import type { ChangeEvent } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useAuth } from '../../context/AuthContext'
 import Heading from '../../components/Heading/Heading'
 
-const textClass = "my-4 text-body text-text"
+const textClass = 'my-4 text-body text-text'
+
+const LANGUAGES = [
+	{ code: 'en', label: 'English' },
+	{ code: 'fr', label: 'Français' },
+	{ code: 'zh', label: '中文' },
+]
 
 function TermsOfServicePage() {
+	const { t, i18n } = useTranslation()
+	const { user } = useAuth()
+
+	const currentLang = i18n.language?.split('-')[0] || 'en'
+
+	function handleLanguageChange(e: ChangeEvent<HTMLSelectElement>) {
+		const lang = e.target.value
+		i18n.changeLanguage(lang)
+		localStorage.setItem('i18nextLng', lang)
+	}
+
 	return (
 		<main className="max-w-[1200px] mx-auto py-12 px-10">
+			{!user && (
+				<div className="flex justify-end mb-4">
+					<select
+						aria-label="Language"
+						value={currentLang}
+						onChange={handleLanguageChange}
+						className="px-3 py-1.5 text-small bg-surface text-text border border-border rounded-md shadow-card cursor-pointer focus:outline-none focus:border-brand"
+					>
+						{LANGUAGES.map((lang) => (
+							<option key={lang.code} value={lang.code}>
+								{lang.label}
+							</option>
+						))}
+					</select>
+				</div>
+			)}
+
 			<section>
-				<Heading>Terms of Service</Heading>
-				<p className={textClass}>These terms govern your use of CineClub, a scheduling and social platform for the members of a local independent-cinema club. By creating an account, you agree to them.</p>
-				<Heading level="subtitle">Membership</Heading>
-				<p className={textClass}>Accounts are for individual club members. You're responsible for keeping your login credentials confidential and for activity under your account.</p>
-				<Heading level="subtitle">Acceptable use</Heading>
-				<p className={textClass}>Be respectful in chat, RSVP honestly, and don't attempt to access another member's account or misuse the schedule.</p>
-				<Heading level="subtitle">Screening data</Heading>
-				<p className={textClass}>Screening times are pulled from the public datacinesindes.fr feed and may occasionally be inaccurate or change without notice on the cinema's side — always double-check before travelling.</p>
-				<Heading level="subtitle">Termination</Heading>
-				<p className={textClass}>You may delete your account at any time. We may suspend accounts that violate these terms.</p>
+				<Heading>{t('termsOfService.heading')}</Heading>
+				<p className={textClass}>{t('termsOfService.intro')}</p>
+
+				<Heading level="subtitle">{t('termsOfService.sections.membership.title')}</Heading>
+				<p className={textClass}>{t('termsOfService.sections.membership.body')}</p>
+
+				<Heading level="subtitle">{t('termsOfService.sections.acceptableUse.title')}</Heading>
+				<p className={textClass}>{t('termsOfService.sections.acceptableUse.body')}</p>
+
+				<Heading level="subtitle">{t('termsOfService.sections.screeningData.title')}</Heading>
+				<p className={textClass}>{t('termsOfService.sections.screeningData.body')}</p>
+
+				<Heading level="subtitle">{t('termsOfService.sections.termination.title')}</Heading>
+				<p className={textClass}>{t('termsOfService.sections.termination.body')}</p>
 			</section>
 		</main>
 	)
