@@ -9,9 +9,16 @@ type CardProps = HTMLAttributes<HTMLDivElement> & {
     imageHeight?: 'md' | 'lg'
     title?: string
     to?: string           // si présent, l'image et le titre deviennent un lien
+    tone?: Tone
 }
 
-const base = "bg-surface border border-border rounded-lg shadow-card"
+type Tone = 'default' | 'danger'
+
+const base = "border rounded-lg shadow-card"
+const tones: Record<Tone, string> = {
+    default: "bg-surface border-border",
+    danger: "bg-danger/5 border-danger/30",   // zone sensible (ex. suppression de compte)
+}
 const paddings = { md: "p-4", lg: "p-6" }
 const imageHeights = { md: "h-48", lg: "h-96" }
 const hoverClass = "transition-transform hover:-translate-y-1"
@@ -24,11 +31,12 @@ function Card({
     imageHeight = 'md',
     title,
     to,
+    tone = 'default',
     className = '',
     children,
     ...props
 }: CardProps) {
-    const classes = `${base} ${paddings[padding]} ${hoverable ? hoverClass : ''} ${className}`
+    const classes = `${base} ${tones[tone]} ${paddings[padding]} ${hoverable ? hoverClass : ''} ${className}`
 
     // L'image et le titre, seulement s'ils sont fournis
     const content = (

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-type Tone = 'neutral' | 'brand' | 'admin' | 'danger'
+type Tone = 'neutral' | 'brand' | 'admin' | 'success' | 'danger'
 
 const base = "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-small font-medium"
 
@@ -8,6 +8,7 @@ const tones: Record<Tone, string> = {
     neutral: "bg-bg text-text-muted",
     brand: "bg-brand/10 text-brand",
     admin: "bg-admin/10 text-admin",
+    success: "bg-success/10 text-success",
     danger: "bg-danger/10 text-danger",
 }
 

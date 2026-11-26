@@ -3,6 +3,10 @@ import Button from '../../components/button/Button'
 import Input from '../../components/Input/Input'
 import Heading from '../../components/Heading/Heading'
 import BackButton from '../../components/BackButton/BackButton'
+import ActionRow from '../../components/ActionRow/ActionRow'
+import Badge from '../../components/Badge/Badge'
+import Card from '../../components/Card/Card'
+import Message from '../../components/Message/Message'
 import { useState, useEffect } from 'react'
 
 function Security2FAPage() {
@@ -76,27 +80,21 @@ function Security2FAPage() {
 
     return (
         <main>
-            <div className="flex flex-col gap-6 max-w-[800px] mx-auto my-[60px]">
+            <div className="flex flex-col gap-6 max-w-[600px] mx-auto my-[60px]">
                 <BackButton />
+                <Heading level="title">Two-factor authentication</Heading>
 
-                {/* Global alert messages */}
-                {error && <p className="py-2 px-3 rounded-md bg-danger/10 text-danger text-small font-bold text-center">{error}</p>}
-                {successMsg && <p className="py-2 px-3 rounded-md bg-green-500/10 text-green-600 text-small font-bold text-center">{successMsg}</p>}
+                {error && <Message tone="danger">{error}</Message>}
+                {successMsg && <Message tone="success">{successMsg}</Message>}
 
-                {/* 2FA management card */}
-                <div className="p-5 bg-surface border border-border rounded-md shadow-card flex flex-col gap-4">
-                    <Heading level="card" as="h2">Two-Factor Authentication (2FA)</Heading>
-
-                    <div className="flex items-center justify-between flex-wrap gap-4">
-                        <div>
-                            <p className="text-text font-medium">
-                                Status: <span className={is2faEnabled ? "text-green-600 font-bold" : "text-text-muted"}>
-                                    {is2faEnabled ? "Enabled" : "Disabled"}
-                                </span>
-                            </p>
-                            <p className="text-small text-text-muted">Secure your account using an authenticator app.</p>
-                        </div>
-
+                <Card className="flex flex-col gap-4">
+                    <ActionRow
+                        title="Authenticator app"
+                        badge={is2faEnabled
+                            ? <Badge tone="success">Enabled</Badge>
+                            : <Badge>Disabled</Badge>}
+                        description="Secure your account using an authenticator app."
+                    >
                         {!is2faEnabled && setupStep === 'idle' && (
                             <Button onClick={handleStart2faSetup}>
                                 Enable 2FA
@@ -108,7 +106,7 @@ function Security2FAPage() {
                                 Disable 2FA
                             </Button>
                         )}
-                    </div>
+                    </ActionRow>
 
                     {/* QR code setup area for enabling 2FA */}
                     {setupStep === 'qr' && (
@@ -165,7 +163,7 @@ function Security2FAPage() {
                             </div>
                         </form>
                     )}
-                </div>
+                </Card>
             </div>
         </main>
     )
