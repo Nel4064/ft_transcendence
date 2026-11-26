@@ -52,6 +52,31 @@ and SIL OFL 1.1 for fonts.
 - Licence: MIT
 - Link: https://tabler.io/icons/icon/id-off
 
+### `frontend/src/assets/shield.png`
+- Author / Source: Tabler Icons by Paweł Kuna (codecalm), icon "shield"
+- Licence: MIT
+- Link: https://tabler.io/icons/icon/shield
+
+### `frontend/src/assets/world.png`
+- Author / Source: Tabler Icons by Paweł Kuna (codecalm), icon "world"
+- Licence: MIT
+- Link: https://tabler.io/icons/icon/world
+
+### `frontend/src/assets/arrow-back.png`
+- Author / Source: Tabler Icons by Paweł Kuna (codecalm), icon "arrow-back"
+- Licence: MIT
+- Link: https://tabler.io/icons/icon/arrow-back
+
+### `frontend/src/assets/check.png`
+- Author / Source: Tabler Icons by Paweł Kuna (codecalm), icon "check"
+- Licence: MIT
+- Link: https://tabler.io/icons/icon/check
+
+### `frontend/src/assets/message-circle.png`
+- Author / Source: Tabler Icons by Paweł Kuna (codecalm), icon "message-circle"
+- Licence: MIT
+- Link: https://tabler.io/icons/icon/message-circle
+
 ### `frontend/src/assets/default-movie.jpg`
 - Author / Source: StockSnap.io, photo "camera vintage"
 - Licence: CC0

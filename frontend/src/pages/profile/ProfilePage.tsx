@@ -1,336 +1,46 @@
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../context/AuthContext'
-import Avatar from '../../components/Avatar/Avatar'
-import Button from '../../components/button/Button'
-import Input from '../../components/Input/Input'
-import Heading from '../../components/Heading/Heading'
-import { useState, useRef, useEffect } from 'react'
+import Button, { buttonClass } from '../../components/button/Button'
+import ProfileSummary from '../../components/Profile/ProfileSummary'
 
 function ProfilePage() {
-    const { user, logout, apiFetch, disable2fa } = useAuth()
-    const { t, i18n } = useTranslation()
-    const navigate = useNavigate()
+	const { user, logout } = useAuth()
+	const { t } = useTranslation()
+	const navigate = useNavigate()
 
-    // 2FA related states
-    const [is2faEnabled, setIs2faEnabled] = useState(user?.twoFactorEnabled || false)
-    const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
-    const [totpCode, setTotpCode] = useState('')
-    const [setupStep, setSetupStep] = useState<'idle' | 'qr' | 'disable'>('idle')
-    const [disableCode, setDisableCode] = useState('')
+	const settingsLinks = [
+		{ to: '/profile/edit', label: t('profile.links.edit', 'Edit profile') },
+		{ to: '/profile/security', label: t('profile.links.security', 'Manage two-factor authentication') },
+		{ to: '/profile/privacy', label: t('profile.links.privacy', 'Download or delete my data (GDPR)') },
+	]
 
-    // Profile editing related states
-    const [displayName, setDisplayName] = useState(user?.displayName || '')
-    const [bio, setBio] = useState(user?.bio || '')
-    const [language, setLanguage] = useState(user?.language || 'EN')
+	function handleLogout() {
+		logout()
+		navigate('/signin')
+	}
 
-    // Avatar upload related states
-    const [uploading, setUploading] = useState(false)
-    const fileInputRef = useRef<HTMLInputElement>(null)
+	if (!user) return null
 
-    const [error, setError] = useState('')
-    const [successMsg, setSuccessMsg] = useState('')
+	return (
+		<main>
+			<div className="flex flex-col gap-6 max-w-[600px] mx-auto my-[60px]">
+				<ProfileSummary profile={user}>
+					<div className="flex flex-col gap-3">
+						{settingsLinks.map((link) => (
+							<Link key={link.to} to={link.to} className={buttonClass('primary', 'lg', 'w-full')}>
+								{link.label}
+							</Link>
+						))}
+					</div>
 
-    // Synchronize local edit box states and UI language when the global user object updates
-    useEffect(() => {
-        if (user) {
-            setDisplayName(user.displayName || '')
-            setBio(user.bio || '')
-            const savedLang = user.language || 'EN'
-            setLanguage(savedLang)
-            setIs2faEnabled(user.twoFactorEnabled || false)
-            i18n.changeLanguage(savedLang.toLowerCase())
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user])
-
-    function handleLogout() {
-        logout()
-        navigate('/signin')
-    }
-
-    // 1. Request backend to generate 2FA QR code
-    async function handleStart2faSetup() {
-        setError('')
-        setSuccessMsg('')
-        try {
-            const data = await apiFetch('/api/auth/2fa/generate', { method: 'POST' })
-            setQrCodeUrl(data.qrCodeUrl || data)
-            setSetupStep('qr')
-        } catch (err: any) {
-            setError(err.message || t('profile.messages.init2faFailed'))
-        }
-    }
-
-    // 2. Verify 6-digit code and officially enable 2FA
-    async function handleVerify2fa(e: React.FormEvent) {
-        e.preventDefault()
-        setError('')
-        setSuccessMsg('')
-        try {
-            await apiFetch('/api/auth/2fa/turn-on', {
-                method: 'POST',
-                body: JSON.stringify({ code: totpCode }),
-            })
-            setIs2faEnabled(true)
-            setSetupStep('idle')
-            setTotpCode('')
-            setSuccessMsg(t('profile.messages.enable2faSuccess'))
-        } catch (err: any) {
-            setError(err.message || t('profile.messages.invalidCode'))
-        }
-    }
-
-    // 3. Verify code and officially disable 2FA
-    async function handleDisable2fa(e: React.FormEvent) {
-        e.preventDefault()
-        setError('')
-        setSuccessMsg('')
-        try {
-            await disable2fa('', disableCode)
-            setIs2faEnabled(false)
-            setSetupStep('idle')
-            setDisableCode('')
-            setSuccessMsg(t('profile.messages.disable2faSuccess'))
-        } catch (err: any) {
-            setError(err.message || t('profile.messages.disable2faFailed'))
-        }
-    }
-
-    // 4. Handle updating profile (DisplayName, Bio, Language)
-    async function handleUpdateProfile(e: React.FormEvent) {
-        e.preventDefault()
-        setError('')
-        setSuccessMsg('')
-        try {
-            await apiFetch('/api/users/me', {
-                method: 'PATCH',
-                body: JSON.stringify({ displayName, bio, language }),
-            })
-            await i18n.changeLanguage(language.toLowerCase())
-            setSuccessMsg(t('profile.messages.updateSuccess'))
-            setTimeout(() => {
-                window.location.href = '/'
-            }, 500)
-        } catch (err: any) {
-            setError(err.message || t('profile.messages.updateFailed'))
-        }
-    }
-
-    // 5. Handle avatar upload
-    async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0]
-        if (!file) return
-
-        setError('')
-        setSuccessMsg('')
-        setUploading(true)
-
-        try {
-            const formData = new FormData()
-            formData.append('file', file)
-
-            const token = localStorage.getItem('jwt_token')
-            const res = await fetch('/api/users/me/avatar', {
-                method: 'POST',
-                headers: {
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                },
-                body: formData,
-            })
-
-            const data = await res.json()
-            if (!res.ok) throw new Error(data.message || t('profile.messages.uploadFailed'))
-
-            setSuccessMsg(t('profile.messages.uploadSuccess'))
-
-            setTimeout(() => {
-                window.location.reload()
-            }, 500)
-        } catch (err: any) {
-            setError(err.message || t('profile.messages.uploadFailed'))
-        } finally {
-            setUploading(false)
-        }
-    }
-
-    return (
-        <main>
-            <div className="flex flex-col gap-6 max-w-[800px] mx-auto my-[60px]">
-                {/* Global alert messages */}
-                {error && <p className="py-2 px-3 rounded-md bg-danger/10 text-danger text-small font-bold text-center">{error}</p>}
-                {successMsg && <p className="py-2 px-3 rounded-md bg-green-500/10 text-green-600 text-small font-bold text-center">{successMsg}</p>}
-
-                {/* User info card */}
-                <div className="flex items-center gap-5 p-5 bg-surface border border-border rounded-md shadow-card">
-                    <div
-                        className="relative cursor-pointer group"
-                        onClick={() => fileInputRef.current?.click()}
-                        title={t('profile.avatar.changeTitle')}
-                    >
-                        <Avatar
-                            src={user?.avatarUrl ? user.avatarUrl : undefined}
-                            size={120}
-                        />
-                        <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-small font-bold">
-                            {uploading ? t('profile.avatar.uploading') : t('profile.avatar.change')}
-                        </div>
-                    </div>
-
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                        accept="image/*"
-                        className="hidden"
-                    />
-
-                    <div>
-                        <h1 className="mb-1 font-serif text-section text-text">{user?.username}</h1>
-                        <p className="text-text-muted">{user?.email}</p>
-                    </div>
-                </div>
-
-                {/* Profile edit card (Display Name, Bio, Language) */}
-                <div className="p-5 bg-surface border border-border rounded-md shadow-card flex flex-col gap-4">
-                    <Heading level="card" as="h2">{t('profile.edit.heading')}</Heading>
-
-                    <form onSubmit={handleUpdateProfile} className="flex flex-col gap-4">
-                        <Input
-                            id="displayName"
-                            size="md"
-                            label={t('profile.edit.displayNameLabel')}
-                            type="text"
-                            value={displayName}
-                            onChange={(e) => setDisplayName(e.target.value)}
-                            placeholder={t('profile.edit.displayNamePlaceholder')}
-                        />
-
-                        <div className="flex flex-col gap-1">
-                            <label className="text-small font-medium text-text">{t('profile.edit.bioLabel')}</label>
-                            <textarea
-                                value={bio}
-                                onChange={(e) => setBio(e.target.value)}
-                                placeholder={t('profile.edit.bioPlaceholder')}
-                                className="py-2 px-3 border border-border rounded-md text-control bg-surface text-text h-[80px] resize-y focus:outline-none focus:border-brand"
-                            />
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                            <label className="text-small font-medium text-text">{t('profile.edit.languageLabel')}</label>
-                            <select
-                                value={language}
-                                onChange={(e) => {
-                                    const nextLang = e.target.value
-                                    setLanguage(nextLang)
-                                    i18n.changeLanguage(nextLang.toLowerCase())
-                                }}
-                                className="py-2 px-3 border border-border rounded-md text-control bg-surface text-text focus:outline-none focus:border-brand"
-                            >
-                                <option value="EN">English (EN)</option>
-                                <option value="FR">Français (FR)</option>
-                                <option value="ZH">中文 (ZH)</option>
-                            </select>
-                        </div>
-
-                        <Button type="submit" className="w-fit">
-                            {t('profile.edit.saveButton')}
-                        </Button>
-                    </form>
-                </div>
-
-                {/* 2FA management card */}
-                <div className="p-5 bg-surface border border-border rounded-md shadow-card flex flex-col gap-4">
-                    <Heading level="card" as="h2">{t('profile.twoFactor.heading')}</Heading>
-
-                    <div className="flex items-center justify-between flex-wrap gap-4">
-                        <div>
-                            <p className="text-text font-medium">
-                                {t('profile.twoFactor.statusLabel')}{' '}
-                                <span className={is2faEnabled ? "text-green-600 font-bold" : "text-text-muted"}>
-                                    {is2faEnabled ? t('profile.twoFactor.enabled') : t('profile.twoFactor.disabled')}
-                                </span>
-                            </p>
-                            <p className="text-small text-text-muted">{t('profile.twoFactor.description')}</p>
-                        </div>
-
-                        {!is2faEnabled && setupStep === 'idle' && (
-                            <Button onClick={handleStart2faSetup}>
-                                {t('profile.twoFactor.enableButton')}
-                            </Button>
-                        )}
-
-                        {is2faEnabled && setupStep === 'idle' && (
-                            <Button variant="danger" onClick={() => setSetupStep('disable')}>
-                                {t('profile.twoFactor.disableButton')}
-                            </Button>
-                        )}
-                    </div>
-
-                    {/* QR code setup area */}
-                    {setupStep === 'qr' && (
-                        <form onSubmit={handleVerify2fa} className="flex flex-col gap-3 mt-2 pt-4 border-t border-border">
-                            <p className="text-small text-text-muted">{t('profile.twoFactor.step1Qr')}</p>
-                            {qrCodeUrl && (
-                                <div className="flex justify-center bg-white p-3 rounded-md w-fit mx-auto border border-border">
-                                    <img src={qrCodeUrl} alt={t('profile.twoFactor.qrAlt')} className="w-[160px] h-[160px]" />
-                                </div>
-                            )}
-                            <p className="text-small text-text-muted">{t('profile.twoFactor.step2Code')}</p>
-                            <div className="flex gap-2">
-                                <Input
-                                    size="md"
-                                    type="text"
-                                    maxLength={6}
-                                    placeholder="123456"
-                                    value={totpCode}
-                                    onChange={(e) => setTotpCode(e.target.value)}
-                                    className="tracking-widest font-mono"
-                                    required
-                                />
-                                <Button type="submit">
-                                    {t('profile.twoFactor.verifyButton')}
-                                </Button>
-                                <Button variant="secondary" onClick={() => setSetupStep('idle')}>
-                                    {t('profile.twoFactor.cancelButton')}
-                                </Button>
-                            </div>
-                        </form>
-                    )}
-
-                    {/* Disable 2FA form */}
-                    {setupStep === 'disable' && (
-                        <form onSubmit={handleDisable2fa} className="flex flex-col gap-3 mt-2 pt-4 border-t border-border">
-                            <p className="text-small text-text-muted">{t('profile.twoFactor.disablePrompt')}</p>
-                            <div className="flex gap-2">
-                                <Input
-                                    size="md"
-                                    type="text"
-                                    maxLength={6}
-                                    placeholder="123456"
-                                    value={disableCode}
-                                    onChange={(e) => setDisableCode(e.target.value)}
-                                    className="tracking-widest font-mono"
-                                    required
-                                />
-                                <Button type="submit" variant="danger">
-                                    {t('profile.twoFactor.confirmDisableButton')}
-                                </Button>
-                                <Button variant="secondary" onClick={() => setSetupStep('idle')}>
-                                    {t('profile.twoFactor.cancelButton')}
-                                </Button>
-                            </div>
-                        </form>
-                    )}
-                </div>
-
-                {/* Logout button */}
-                <Button variant="danger" className="self-end" onClick={handleLogout}>
-                    {t('profile.logoutButton')}
-                </Button>
-            </div>
-        </main>
-    )
+					<Button variant="danger" className="self-end" onClick={handleLogout}>
+						{t('profile.logoutButton')}
+					</Button>
+				</ProfileSummary>
+			</div>
+		</main>
+	)
 }
 
 export default ProfilePage
