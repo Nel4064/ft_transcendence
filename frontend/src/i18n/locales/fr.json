@@ -471,5 +471,39 @@
   },
   "common": {
     "back": "Retour"
+  },
+  "chat": {
+    "groupPlaceholder": "La discussion de groupe de l'événement sera bientôt disponible ici.",
+    "backToFriends": "Retour aux amis",
+    "backToFriendsLabel": "← Amis",
+    "goToFriends": "Aller aux amis",
+    "viewProfile": "Cliquer pour voir le profil",
+    "unavailable": "Conversation indisponible",
+    "loading": "Chargement...",
+    "emptyWithFriend": "Aucun message pour l'instant. Dites bonjour !",
+    "emptyNoHistory": "Aucun historique de conversation disponible.",
+    "inputPlaceholder": "Écrire un message...",
+    "messagingDisabled": "Messagerie désactivée",
+    "sendButton": "Envoyer",
+    "notFriendsNotice": "Vous ne pouvez pas envoyer de messages car vous n'êtes pas amis.",
+    "errors": {
+      "notFound": "Cette conversation n'existe pas.",
+      "loadFailed": "Impossible de charger cette conversation. Veuillez réessayer.",
+      "sendFailed": "Le message n'a pas pu être envoyé. Veuillez réessayer."
+    },
+    "sidebar": {
+      "title": "Discussion",
+      "tabs": {
+        "groups": "Groupes d'événements",
+        "friends": "Messages privés"
+      },
+      "groupsEmpty": "Les discussions de groupe d'événements apparaîtront ici.",
+      "loading": "Chargement des amis...",
+      "loadFailed": "Échec du chargement des amis.",
+      "errorPrefix": "Erreur :",
+      "noFriends": "Vous n'avez pas encore d'amis.",
+      "unreadCount_one": "{{count}} message non lu",
+      "unreadCount_other": "{{count}} messages non lus"
+    }
   }
 }

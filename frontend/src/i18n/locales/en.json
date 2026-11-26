@@ -471,5 +471,39 @@
   },
   "common": {
     "back": "Back"
+  },
+  "chat": {
+    "groupPlaceholder": "Event group chat will be available here.",
+    "backToFriends": "Back to Friends",
+    "backToFriendsLabel": "← Friends",
+    "goToFriends": "Go to Friends",
+    "viewProfile": "Click to view profile",
+    "unavailable": "Conversation unavailable",
+    "loading": "Loading...",
+    "emptyWithFriend": "No messages yet. Say hello!",
+    "emptyNoHistory": "No conversation history available.",
+    "inputPlaceholder": "Type a message...",
+    "messagingDisabled": "Messaging disabled",
+    "sendButton": "Send",
+    "notFriendsNotice": "You cannot send messages because you are not friends.",
+    "errors": {
+      "notFound": "This conversation doesn't exist.",
+      "loadFailed": "Unable to load this conversation. Please try again.",
+      "sendFailed": "Message could not be sent. Please try again."
+    },
+    "sidebar": {
+      "title": "Chat",
+      "tabs": {
+        "groups": "Event Groups",
+        "friends": "Friends DM"
+      },
+      "groupsEmpty": "Event group conversations will appear here.",
+      "loading": "Loading friends...",
+      "loadFailed": "Failed to load friends.",
+      "errorPrefix": "Error:",
+      "noFriends": "You have no friends yet.",
+      "unreadCount_one": "{{count}} unread message",
+      "unreadCount_other": "{{count}} unread messages"
+    }
   }
 }

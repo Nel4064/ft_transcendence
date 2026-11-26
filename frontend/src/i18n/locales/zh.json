@@ -471,5 +471,38 @@
   },
   "common": {
     "back": "返回"
+  },
+  "chat": {
+    "groupPlaceholder": "活动群聊功能将在此处上线。",
+    "backToFriends": "返回好友列表",
+    "backToFriendsLabel": "← 好友",
+    "goToFriends": "前往好友列表",
+    "viewProfile": "点击查看个人主页",
+    "unavailable": "会话不可用",
+    "loading": "加载中...",
+    "emptyWithFriend": "还没有消息，打个招呼吧！",
+    "emptyNoHistory": "暂无历史聊天记录。",
+    "inputPlaceholder": "输入消息...",
+    "messagingDisabled": "已禁用消息发送",
+    "sendButton": "发送",
+    "notFriendsNotice": "你们还不是好友，无法发送消息。",
+    "errors": {
+      "notFound": "该会话不存在。",
+      "loadFailed": "无法加载此会话，请重试。",
+      "sendFailed": "消息发送失败，请重试。"
+    },
+    "sidebar": {
+      "title": "聊天",
+      "tabs": {
+        "groups": "活动群聊",
+        "friends": "好友私信"
+      },
+      "groupsEmpty": "活动群聊会话将显示在这里。",
+      "loading": "正在加载好友...",
+      "loadFailed": "加载好友列表失败。",
+      "errorPrefix": "错误：",
+      "noFriends": "你还没有添加好友。",
+      "unreadCount_other": "{{count}} 条未读消息"
+    }
   }
 }
