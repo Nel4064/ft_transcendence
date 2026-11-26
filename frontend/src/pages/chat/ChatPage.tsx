@@ -6,7 +6,7 @@ import ChatSidebar, { type ChatTab } from '../../components/Chat/ChatSidebar';
 import { useAuth } from '../../context/AuthContext';
 
 export default function ChatPage() {
-    const { friendId } = useParams();
+    const { friendId, screeningId } = useParams();
     const { user } = useAuth();
     const [activeTab, setActiveTab] = useState<ChatTab>('friends');
     const [chatSocket, setChatSocket] = useState<Socket | null>(null);

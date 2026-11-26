@@ -48,6 +48,7 @@ function App() {
 					<Route path="/friends" element={<FriendsPage />} />
 					<Route path="/users/:id" element={<UserProfilePage />} />
 					<Route path="/chat/:friendId" element={<ChatPage />} />
+					<Route path="/chat/group/:screeningId" element={<ChatPage />} />
 					<Route path="/calendar" element={<CalendarPage />} />
 				</Route>
 
