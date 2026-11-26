@@ -36,6 +36,7 @@ export interface MovieTranslationsWithGenres {
 }
 
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+const TMDB_TIMEOUT_MS = 3000;
 
 export async function fetchMovieTranslations(
   filmTitle: string,
@@ -61,7 +62,10 @@ export async function fetchMovieTranslations(
   try {
     // 1. 搜索电影拿到 TMDB movie id
     const searchUrl = `${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(filmTitle)}`;
-    const searchRes = await fetch(searchUrl, { headers });
+    const searchRes = await fetch(searchUrl, {
+      headers,
+      signal: AbortSignal.timeout(TMDB_TIMEOUT_MS),
+    });
     if (!searchRes.ok) return fallback;
 
     const searchData = (await searchRes.json()) as TmdbSearchResponse;
@@ -73,8 +77,8 @@ export async function fetchMovieTranslations(
     const detailsUrl = `${TMDB_BASE_URL}/movie/${movieId}?language=en-US`;
 
     const [transRes, detailsRes] = await Promise.all([
-      fetch(transUrl, { headers }),
-      fetch(detailsUrl, { headers }),
+      fetch(transUrl, { headers, signal: AbortSignal.timeout(TMDB_TIMEOUT_MS) }),
+      fetch(detailsUrl, { headers, signal: AbortSignal.timeout(TMDB_TIMEOUT_MS) }),
     ]);
 
     if (!transRes.ok) return fallback;
