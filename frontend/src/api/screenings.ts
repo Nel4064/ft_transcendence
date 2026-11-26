@@ -1,4 +1,5 @@
 import { t } from 'i18next';
+import i18n from '../i18n';
 
 export type Friend = {
     id: string;
@@ -96,10 +97,10 @@ export async function deleteScreeningFile(
 ): Promise<Screening> {
     const query = url ? `?url=${encodeURIComponent(url)}` : '';
     try {
-        return await apiFetch(`/api/screenings/${id}/files/${kind}${query}`, {
+        return await apiFetch(`/screenings/${id}/files/${kind}${query}`, {
             method: 'DELETE',
         });
     } catch (err: any) {
-        throw new Error(err?.message || t('screeningDetails.files.errors.deleteFailed'));
+        throw new Error(err?.message || i18n.t('screeningDetails.files.errors.deleteFailed'));
     }
 }
