@@ -28,7 +28,7 @@ async function main() {
     // Admins
     {
       username: 'admin',
-      email: 'admin@gmail.com',
+      email: 'admin@cineclub.test',
       passwordHash: hashedPassword,
       displayName: 'System Admin',
       avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
@@ -37,7 +37,7 @@ async function main() {
     },
     {
       username: 'alice_admin',
-      email: 'alice@gmail.com',
+      email: 'alice@cineclub.test',
       passwordHash: hashedPassword,
       displayName: 'Alice Admin',
       // No avatar -> tests initials fallback "AA"
@@ -46,7 +46,7 @@ async function main() {
     },
     {
       username: 'bob_admin',
-      email: 'bob@gmail.com',
+      email: 'bob@cineclub.test',
       passwordHash: hashedPassword,
       displayName: 'Bob Admin',
       avatarUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150',
@@ -57,7 +57,7 @@ async function main() {
     // Test Users
     {
       username: 'wei_test',
-      email: 'wei@gmail.com',
+      email: 'wei@cineclub.test',
       passwordHash: hashedPassword,
       displayName: 'Wei Test',
       avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
@@ -66,7 +66,7 @@ async function main() {
     },
     {
       username: 'david_test',
-      email: 'david@gmail.com',
+      email: 'david@cineclub.test',
       passwordHash: hashedPassword,
       displayName: 'David Test',
       // No avatar
@@ -75,7 +75,7 @@ async function main() {
     },
     {
       username: 'eve_test',
-      email: 'eve@gmail.com',
+      email: 'eve@cineclub.test',
       passwordHash: hashedPassword,
       displayName: 'Eve Test',
       avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
@@ -84,7 +84,7 @@ async function main() {
     },
     {
       username: 'peter_test',
-      email: 'peter_test@gmail.com',
+      email: 'peter_test@cineclub.test',
       passwordHash: hashedPassword,
       displayName: 'Peter Test',
       // No avatar
@@ -93,7 +93,7 @@ async function main() {
     },
     {
       username: 'claire_test',
-      email: 'claire_test@gmail.com',
+      email: 'claire_test@cineclub.test',
       passwordHash: hashedPassword,
       displayName: 'Claire Test',
       twoFactorEnabled: false,
