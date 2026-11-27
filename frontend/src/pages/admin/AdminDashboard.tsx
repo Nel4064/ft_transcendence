@@ -192,7 +192,7 @@ export default function AdminDashboard() {
 					<button
 						type="button"
 						onClick={() => navigate('/status')}
-						className="flex items-center gap -2 text -sm font-medium text-stone-700 bg-white border border-stone-200 px-3 py-1 rounded-full hover:bg-stone-100 transition-colors"
+						className="flex items-center gap-2 text-sm font-medium text-stone-700 bg-white border border-stone-200 px-3 py-1 rounded-full hover:bg-stone-100 transition-colors"
 					>
 						<Activity className="w-4 h-4" />
 						{t('admin.statusButton')}
