@@ -17,8 +17,8 @@ interface AuthenticatedRequest extends Request {
 }
 
 // 42 OAuth URLs come from .env.dev; the redirect URI must match the 42 intra app exactly
-const fortyTwoRedirectUri = () => process.env.FORTYTWO_REDIRECT_URI || 'http://127.0.0.1:1024/api/auth/oauth/42/callback';
-const frontendUri = () => process.env.FRONTEND_OAUTH_URI || 'http://127.0.0.1:1024/';
+const fortyTwoRedirectUri = () => process.env.FORTYTWO_REDIRECT_URI || 'https://127.0.0.1:1024/api/auth/oauth/42/callback';
+const frontendUri = () => process.env.FRONTEND_OAUTH_URI || 'https://127.0.0.1:1024/';
 
 @Controller('auth')
 export class AuthController {
