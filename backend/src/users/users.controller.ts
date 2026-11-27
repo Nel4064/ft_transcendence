@@ -24,10 +24,14 @@ import { MulterErrorFilter } from './multer-error.filter';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '@generated/prisma/client';
+import { MailService } from '../mail/mail.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly mailService: MailService,
+  ) { }
 
   @Get()
   async getAllUsers() {
@@ -49,6 +53,16 @@ export class UsersController {
   async updateProfile(@Req() req: AuthenticatedRequest, @Body() updateDto: UpdateProfileDto) {
     return this.usersService.updateProfile(req.user.userId, updateDto);
   }
+
+  // TEMP: test MailService, remove in step 2
+  @UseGuards(JwtAuthGuard)
+  @Post('me/test-mail')
+  async testMail(@Req() req: AuthenticatedRequest) {
+    const user = await this.usersService.getProfile(req.user.userId);
+    await this.mailService.send(user.email, 'CineClub test', 'MailService works.');
+    return { message: `Test email sent to ${user.email}` };
+  }
+
 
   @UseGuards(JwtAuthGuard)
   @Post('me/avatar')

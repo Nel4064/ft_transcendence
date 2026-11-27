@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAuth } from '../../context/AuthContext'
 import ActionRow from '../../components/ActionRow/ActionRow'
 import BackButton from '../../components/BackButton/BackButton'
 import Button from '../../components/button/Button'
@@ -7,12 +8,27 @@ import Heading from '../../components/Heading/Heading'
 import Message from '../../components/Message/Message'
 
 function PrivacyGDPRPage() {
+    const { apiFetch } = useAuth()
+    const [success, setSuccess] = useState('')
     const [error, setError] = useState('')
 
-    // TODO: call GET /api/users/me/export once the backend endpoint exists
-    function handleExport() {
-        setError('Data export is not available yet.')
+    // // TODO: call GET /api/users/me/export once the backend endpoint exists
+    // function handleExport() {
+    //     setError('Data export is not available yet.')
+    // }
+
+    // TEMP: test MailService, replaced by the real export in step 2
+    async function handleExport() {
+        setError('')
+        setSuccess('')
+        try {
+            const data = await apiFetch('/api/users/me/test-mail', { method: 'POST' })
+            setSuccess(data.message)
+        } catch (err: any) {
+            setError(err.message || 'Test email failed')
+        }
     }
+
 
     // TODO: call DELETE /api/users/me once the backend endpoint exists, then logout
     function handleDelete() {
@@ -32,6 +48,7 @@ function PrivacyGDPRPage() {
                 </p>
 
                 {error && <Message tone="danger">{error}</Message>}
+                {success && <Message tone="success">{success}</Message>}
 
                 <Card>
                     <ActionRow title="Export my data" description="Profile, RSVPs, friends and messages, as a file.">
