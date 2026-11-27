@@ -3,4 +3,4 @@ FROM docker.io/library/nginx:1.30-alpine3.24 AS dev
 
 COPY nginx.dev.conf /etc/nginx/nginx.conf
 
-EXPOSE 80
+EXPOSE 443
