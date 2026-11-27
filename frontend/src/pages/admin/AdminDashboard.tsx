@@ -12,6 +12,7 @@ import {
     RotateCcw,
     ChevronLeft,
     ChevronRight,
+	Activity,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Avatar from '../../components/Avatar/Avatar';
@@ -187,9 +188,19 @@ export default function AdminDashboard() {
                     <ShieldAlert className="w-7 h-7 text-stone-700" />
                     {t('admin.heading')}
                 </h1>
-                <span className="text-sm font-medium text-stone-500 bg-stone-200 px-3 py-1 rounded-full">
-                    {t('admin.badge')}
-                </span>
+				<div className="flex items-center gap-3">
+					<button
+						type="button"
+						onClick={() => navigate('/status')}
+						className="flex items-center gap-2 text-sm font-medium text-stone-700 bg-white border border-stone-200 px-3 py-1 rounded-full hover:bg-stone-100 transition-colors"
+					>
+						<Activity className="w-4 h-4" />
+						{t('admin.statusButton')}
+					</button>
+					<span className="text-sm font-medium text-stone-500 bg-stone-200 px-3 py-1 rounded-full">
+						{t('admin.badge')}
+					</span>
+				</div>
             </div>
 
             {/* 搜索与筛选 */}
