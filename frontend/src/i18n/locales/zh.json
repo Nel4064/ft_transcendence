@@ -307,10 +307,27 @@
       }
     }
   },
+  "status": {
+    "heading": "服务状态",
+    "back": "返回管理页面",
+    "services": {
+      "frontend": "前端",
+      "api": "API",
+      "database": "数据库"
+    },
+    "states": {
+      "checking": "检查中...",
+      "up": "正常运行",
+      "down": "故障",
+      "unknown": "未知"
+    },
+    "lastCheck": "上次检查：{{time}} · 每 {{seconds}} 秒刷新一次"
+  },
   "admin": {
     "loading": "正在加载成员列表...",
     "heading": "俱乐部管理",
     "badge": "仅限管理员",
+	"statusButton": "系统状态",
     "searchPlaceholder": "按名称搜索用户...",
     "filters": {
       "all": "全部用户",

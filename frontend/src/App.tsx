@@ -23,6 +23,7 @@ import ScreeningsList from './pages/screenings/ScreeningsList'
 import CalendarPage from './pages/calendar/CalendarPage'
 import ChatPage from './pages/chat/ChatPage'
 import AdminDashboard from './pages/admin/AdminDashboard'
+import StatusPage from './pages/status/StatusPage'
 
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
 				<Route path="/signup" element={<SignUpPage />} />
 				<Route path="/privacypolicy" element={<PrivacyPolicyPage />} />
 				<Route path="/termsofservice" element={<TermsOfServicePage />} />
+				<Route path="/status" element={<StatusPage />} />
 
 				<Route element={<ProtectedRoute />}>
 					<Route path="/profile" element={<ProfilePage />} />
