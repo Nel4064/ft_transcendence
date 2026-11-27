@@ -1,14 +1,23 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import defaultMovie from '../../assets/default-movie.jpg'
 import { normalizeTitle } from '../../utils/normalizeTitle'
+import { getLocalizedValue } from '../../utils/localizedValue'
 import { apiFetch } from '../../context/AuthContext'
+import BackButton from '../../components/BackButton/BackButton'
 import Button from '../../components/button/Button'
 import Icon from '../../components/Icon/Icon'
 import Loader from '../../components/Loader/Loader'
 import Heading from '../../components/Heading/Heading'
 
 const FEED_URL = 'https://datacinesindes.fr/data-fair/api/v1/datasets/programmation-cinemas/lines'
+
+const LOCALE_MAP: Record<string, string> = {
+	en: 'en-GB',
+	fr: 'fr-FR',
+	zh: 'zh-CN'
+}
 
 type Screening = {
 	showid: string
@@ -25,19 +34,38 @@ type Screening = {
 	filmduration?: number   // en secondes
 }
 
+type MovieTranslations = {
+	titleTranslations?: Record<string, string> | null
+	synopsisTranslations?: Record<string, string> | null
+}
+
 const posterClass = "w-64 shrink-0 self-start rounded-md shadow-card"
 const synopsisClass = "text-body text-text-muted"
 const rowClass = "flex items-center justify-between gap-4 p-4 bg-surface border border-border rounded-lg shadow-card"
 const boxClass = "p-4 bg-surface border border-border rounded-lg shadow-card"
 
 function MovieDetailsPage() {
+	const { t, i18n } = useTranslation()
+	const navigate = useNavigate()
 	const { title = '' } = useParams()
 	const [screenings, setScreenings] = useState<Screening[]>([])
 	const [created, setCreated] = useState<Set<string>>(new Set())
+	const [translations, setTranslations] = useState<MovieTranslations | null>(null)
+
+	const currentLang = i18n.language?.toLowerCase().split('-')[0] || 'en'
+	const dateLocale = LOCALE_MAP[currentLang] || 'en-GB'
+
+	function handleBack() {
+		if (window.history.state?.idx > 0) {
+			navigate(-1)
+		} else {
+			navigate('/select-movies')
+		}
+	}
 
 	async function toggleEvent(s: Screening) {
-		const actualCineId = s.cineid || 0;
-		const key = `${actualCineId}-${s.showid}`;
+		const actualCineId = s.cineid || 0
+		const key = `${actualCineId}-${s.showid}`
 
 		try {
 			if (created.has(key)) {
@@ -58,14 +86,14 @@ function MovieDetailsPage() {
 				setCreated((prev) => new Set(prev).add(key))
 			}
 		} catch (err) {
-			alert(`Could not update event: ${(err as Error).message}`)
+			alert(t('movieDetails.errors.updateFailed', { message: (err as Error).message }))
 		}
 	}
 
 	useEffect(() => {
 		apiFetch('/screenings')
-			.then((list: { externalCinemaId: number, externalShowId: string }[]) =>
-				setCreated(new Set(list.map((e) => `${e.externalCinemaId}-${e.externalShowId}`)))
+			.then((list: { externalCinemaId?: number | null, externalShowId?: string | number }[]) =>
+				setCreated(new Set(list.map((e) => `${e.externalCinemaId ?? 0}-${String(e.externalShowId ?? '')}`)))
 			)
 			.catch(() => { })
 	}, [])
@@ -83,65 +111,109 @@ function MovieDetailsPage() {
 			)))
 	}, [title])
 
+	// 拿到电影信息后，向后端请求 TMDB 多语言翻译
+	useEffect(() => {
+		const first = screenings[0]
+		if (!first?.filmtitle) return
+
+		const rawSynopsis = first.filmstoryline && first.filmstoryline !== 'null' ? first.filmstoryline : ''
+		const params = new URLSearchParams({
+			title: first.filmtitle,
+			synopsis: rawSynopsis,
+		})
+
+		apiFetch(`/screenings/translate?${params.toString()}`)
+			.then((data: MovieTranslations) => setTranslations(data))
+			.catch(() => setTranslations(null))
+	}, [screenings])
+
 	function formatRuntime(minutes: number) {
 		const h = Math.floor(minutes / 60)
 		const m = String(minutes % 60).padStart(2, '0')
 		return `${h}h${m}`
 	}
 
+	const backButton = (
+		<div className="mb-6">
+			<BackButton label={t('movieDetails.back')} onClick={handleBack} />
+		</div>
+	)
+
 	if (screenings.length === 0)
-		return <main className="py-12 px-10"><Loader /></main>
+		return (
+			<main className="max-w-[1000px] mx-auto py-12 px-10">
+				{backButton}
+				<Loader />
+			</main>
+		)
 
 	const first = screenings[0]
 	const poster = first.filmposter?.startsWith('https://') ? first.filmposter : defaultMovie
-	const synopsis = first.filmstoryline && first.filmstoryline !== 'null' ? first.filmstoryline : null
+	const rawSynopsis = first.filmstoryline && first.filmstoryline !== 'null' ? first.filmstoryline : null
 	const trailer = first.filmtrailer?.startsWith('https://') ? first.filmtrailer : null
 	const clean = (v?: string) => (v && v !== 'null' ? v : null)
 	const director = clean(first.filmdirector)
 	const cast = clean(first.filmcast)
 	const minutes = first.filmduration ? Math.round(first.filmduration / 60) : 0
 
+	const displayTitle = getLocalizedValue(translations?.titleTranslations, i18n.language, first.filmtitle)
+	const displaySynopsis = rawSynopsis
+		? getLocalizedValue(translations?.synopsisTranslations, i18n.language, rawSynopsis)
+		: null
+
 	return (
 		<main className="max-w-[1000px] mx-auto py-12 px-10">
+			{backButton}
+
 			<section className="flex flex-col md:flex-row gap-8 mb-12">
-				<img src={poster} alt={first.filmtitle} className={posterClass} />
+				<img src={poster} alt={displayTitle} className={posterClass} />
 				<div>
-					<Heading className="mb-4">{first.filmtitle}</Heading>
+					<Heading className="mb-4">{displayTitle}</Heading>
 					<dl className="mb-4 flex flex-col gap-1 text-body">
 						{director && (
-							<div><dt className="inline font-bold text-text">Director: </dt><dd className="inline text-text-muted">{director}</dd></div>
+							<div>
+								<dt className="inline font-bold text-text">{t('movieDetails.director')} </dt>
+								<dd className="inline text-text-muted">{director}</dd>
+							</div>
 						)}
 						{cast && (
-							<div><dt className="inline font-bold text-text">Cast: </dt><dd className="inline text-text-muted">{cast}</dd></div>
+							<div>
+								<dt className="inline font-bold text-text">{t('movieDetails.cast')} </dt>
+								<dd className="inline text-text-muted">{cast}</dd>
+							</div>
 						)}
 						{minutes > 0 && (
-							<div><dt className="inline font-bold text-text">Duration: </dt><dd className="inline text-text-muted">{formatRuntime(minutes)}</dd></div>
+							<div>
+								<dt className="inline font-bold text-text">{t('movieDetails.duration')} </dt>
+								<dd className="inline text-text-muted">{formatRuntime(minutes)}</dd>
+							</div>
 						)}
 					</dl>
 
-					<p className={synopsisClass}>{synopsis ?? 'No synopsis available.'}</p>
+					<p className={synopsisClass}>{displaySynopsis ?? t('movieDetails.noSynopsis')}</p>
 					{trailer && (
 						<section className="mt-6">
-							<Heading level="section" className="mb-4">Trailer</Heading>
+							<Heading level="section" className="mb-4">{t('movieDetails.trailer')}</Heading>
 							<div className={boxClass}>
 								<video src={trailer} controls className="w-full rounded-md" />
 							</div>
-						</section>)}
+						</section>
+					)}
 				</div>
 			</section>
 
-			<Heading level="section" className="mb-4">Upcoming screenings</Heading>
+			<Heading level="section" className="mb-4">{t('movieDetails.upcomingScreenings')}</Heading>
 			<ul className="flex flex-col gap-4">
 				{screenings.map((s) => {
-					const actualCineId = s.cineid || 0;
-					const key = `${actualCineId}-${s.showid}`;
-					
+					const actualCineId = s.cineid || 0
+					const key = `${actualCineId}-${s.showid}`
+
 					return (
 						<li key={key} className={rowClass}>
 							<div>
 								<p className="flex gap-2 text-body text-text">
 									<Icon name="calendar-event" />
-									{new Date(s.showstart).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+									{new Date(s.showstart).toLocaleString(dateLocale, { dateStyle: 'short', timeStyle: 'short' })}
 								</p>
 								<p className="flex gap-2 text-small text-text-muted">
 									<Icon name="map-pin" />
@@ -149,10 +221,10 @@ function MovieDetailsPage() {
 								</p>
 							</div>
 							<Button variant="admin" size="lg" onClick={() => toggleEvent(s)}>
-								{created.has(key) ? 'Remove Event' : 'Create Event'}
+								{created.has(key) ? t('movieDetails.actions.removeEvent') : t('movieDetails.actions.createEvent')}
 							</Button>
 						</li>
-					);
+					)
 				})}
 			</ul>
 		</main>

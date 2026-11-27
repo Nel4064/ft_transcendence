@@ -7,7 +7,12 @@ import type { MulterOptions } from '@nestjs/platform-express/multer/interfaces/m
 // Types autorisés pour chaque champ, et l'extension qu'on donnera au fichier
 const ALLOWED: Record<string, Record<string, string>> = {
   poster: { 'image/png': '.png', 'image/jpeg': '.jpg', 'image/webp': '.webp' },
-  attachment: { 'application/pdf': '.pdf' },
+  attachment: {
+    'application/pdf': '.pdf',
+    'image/png': '.png',
+    'image/jpeg': '.jpg',
+    'image/webp': '.webp',
+  },
 };
 
 export const screeningUploadOptions: MulterOptions = {
@@ -24,7 +29,7 @@ export const screeningUploadOptions: MulterOptions = {
     }
     cb(null, true);
   },
-  limits: { fileSize: 5 * 1024 * 1024, files: 2 },  // 5 Mo par fichier, 2 fichiers max
+  limits: { fileSize: 5 * 1024 * 1024, files: 11}  // 5 Mo par fichier, 11 fichiers max
 };
 
 // Signature (premiers octets) attendue pour chaque type

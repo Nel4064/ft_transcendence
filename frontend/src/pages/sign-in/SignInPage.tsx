@@ -1,13 +1,20 @@
-import { useState, useEffect, type FormEvent } from 'react'
+import { useState, useEffect, type FormEvent, type ChangeEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/button/Button'
-import Logo from '../../components/Logo/Logo'
 import Input from '../../components/Input/Input'
 import Heading from '../../components/Heading/Heading'
+import Logo from '../../components/Logo/Logo'
 
+const LANGUAGES = [
+  { code: 'en', label: 'English' },
+  { code: 'fr', label: 'Français' },
+  { code: 'zh', label: '中文' },
+]
 
 function SignInPage() {
+  const { t, i18n } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [code, setCode] = useState('')
@@ -20,15 +27,27 @@ function SignInPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
+  const currentLang = i18n.language?.split('-')[0] || 'en'
+
+  function handleLanguageChange(e: ChangeEvent<HTMLSelectElement>) {
+    const lang = e.target.value
+    i18n.changeLanguage(lang)
+    localStorage.setItem('i18nextLng', lang)
+  }
+
   // 1. Core: Perfectly align with the parameter capturing logic of App-test.tsx
   useEffect(() => {
     const token = searchParams.get('token')
-    // Support both string and boolean checks
     const requiresTwoFactor = searchParams.get('requiresTwoFactor') === 'true'
     const callbackUserId = searchParams.get('userId')
     const oauthError = searchParams.get('error')
 
-    console.log('SignInPage detected URL parameters:', { token, requiresTwoFactor, callbackUserId, oauthError })
+    console.log('SignInPage detected URL parameters:', {
+      token,
+      requiresTwoFactor,
+      callbackUserId,
+      oauthError,
+    })
 
     if (token) {
       localStorage.setItem('token', token)
@@ -39,26 +58,27 @@ function SignInPage() {
 
     // If 42 OAuth brings in 2FA parameters, forcefully activate the 2FA state machine
     if (requiresTwoFactor && callbackUserId) {
-      console.log('Successfully captured 42 OAuth 2FA challenge, preparing to show verification code input, userId:', callbackUserId)
+      console.log(
+        'Successfully captured 42 OAuth 2FA challenge, preparing to show verification code input, userId:',
+        callbackUserId,
+      )
       setUserId(callbackUserId)
       setRequires2FA(true)
-      setError('2FA is enabled. Please enter the 6-digit code from your authenticator app.')
+      setError(t('signIn.errors.twoFactorEnabled'))
 
-      // Clean up plaintext parameters in the URL to prevent repeated triggers on refresh
       window.history.replaceState({}, document.title, window.location.pathname)
       return
     }
 
     if (oauthError) {
-      setError('42 OAuth login failed: ' + oauthError)
+      setError(t('signIn.errors.oauthFailed', { error: oauthError }))
       window.history.replaceState({}, document.title, window.location.pathname)
     }
-  }, [searchParams, navigate])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, navigate, t])
 
   useEffect(() => {
-    // if the user is already logged in, redirect to home page
     if (user) {
-    // force redirect to home page, replace: true will replace the history, preventing the user from clicking the browser's "back" button and going back to the login page
       navigate('/', { replace: true })
     }
   }, [user, navigate])
@@ -72,47 +92,55 @@ function SignInPage() {
     try {
       const result = await login(email, password)
 
-      if (result && typeof result === 'object' && 'twoFactorRequired' in result && result.twoFactorRequired) {
+      if (
+        result &&
+        typeof result === 'object' &&
+        'twoFactorRequired' in result &&
+        result.twoFactorRequired
+      ) {
         setUserId(result.userId)
         setRequires2FA(true)
         setCode('')
-        setError('Please enter the 6-digit code')
+        setError(t('signIn.errors.enterCode'))
         return
       }
 
       navigate('/', { replace: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed')
+      setError(
+        err instanceof Error ? err.message : t('signIn.errors.loginFailed'),
+      )
     } finally {
       setSubmitting(false)
     }
   }
 
-  // Step 2: Submit 6-digit code and userId -> Perfectly triggers the /api/auth/2fa/authenticate step
+  // Step 2: Submit 6-digit code and userId -> triggers /api/auth/2fa/authenticate
   async function handleVerify2FA(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError('')
 
     if (!userId) {
-      setError('Missing user ID. Please sign in again.')
+      setError(t('signIn.errors.missingUserId'))
       setRequires2FA(false)
       return
     }
 
     if (!/^\d{6}$/.test(code)) {
-      setError('Please enter a valid 6-digit code')
+      setError(t('signIn.errors.invalidCode'))
       return
     }
 
     setSubmitting(true)
 
     try {
-      // Core: Call the two-parameter method defined in AuthContext
       await authenticate2fa(code, userId)
       navigate('/', { replace: true })
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : '2FA verification failed',
+        err instanceof Error
+          ? err.message
+          : t('signIn.errors.twoFactorFailed'),
       )
     } finally {
       setSubmitting(false)
@@ -120,7 +148,7 @@ function SignInPage() {
   }
 
   function handle42Login() {
-    window.location.href = '/api/auth/oauth/42'   // same origin: nginx sends /api/ to the backend
+    window.location.href = '/api/auth/oauth/42'
   }
 
   function handleBackToLogin() {
@@ -140,7 +168,7 @@ function SignInPage() {
         onSubmit={requires2FA ? handleVerify2FA : handleSubmit}
       >
         <Heading className="text-center">
-          {requires2FA ? 'Two-Factor Authentication' : <Logo />}
+          {requires2FA ? t('signIn.twoFactorHeading') : <Logo />}
         </Heading>
 
         <div className="relative p-5 bg-surface border border-border rounded-md shadow-card">
@@ -151,7 +179,7 @@ function SignInPage() {
                   id="identifier"
                   type="text"
                   value={email}
-                  placeholder="email or username"
+                  placeholder={t('signIn.placeholders.identifier')}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   minLength={2}
@@ -162,7 +190,7 @@ function SignInPage() {
                   id="password"
                   type="password"
                   value={password}
-                  placeholder="password"
+                  placeholder={t('signIn.placeholders.password')}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
@@ -172,14 +200,14 @@ function SignInPage() {
             ) : (
               <>
                 <p className="text-text-light text-small">
-                  Enter the 6-digit code from your authenticator app.
+                  {t('signIn.twoFactorPrompt')}
                 </p>
 
                 <Input
                   id="twoFactorCode"
                   type="text"
                   value={code}
-                  placeholder="6-digit verification code"
+                  placeholder={t('signIn.placeholders.twoFactorCode')}
                   onChange={(e) =>
                     setCode(e.target.value.replace(/\D/g, '').slice(0, 6))
                   }
@@ -204,34 +232,54 @@ function SignInPage() {
 
             <Button type="submit" size="lg" disabled={submitting}>
               {submitting
-                ? 'Please wait...'
+                ? t('signIn.buttons.pleaseWait')
                 : requires2FA
-                  ? 'Verify Code'
-                  : 'Sign In'}
+                  ? t('signIn.buttons.verifyCode')
+                  : t('signIn.buttons.signIn')}
             </Button>
 
             {!requires2FA ? (
               <Button variant="secondary" size="lg" onClick={handle42Login}>
-                Sign in with 42
+                {t('signIn.buttons.signInWith42')}
               </Button>
             ) : (
-              <Button variant="secondary" size="lg" onClick={handleBackToLogin} disabled={submitting}>
-                Back to Sign In
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={handleBackToLogin}
+                disabled={submitting}
+              >
+                {t('signIn.buttons.backToSignIn')}
               </Button>
             )}
           </div>
 
           {!requires2FA && (
             <p className="text-text-light mt-2">
-              New ?{' '}
+              {t('signIn.newUser')}{' '}
               <a
                 href="/signup"
                 className="text-brand hover:text-brand-hover"
               >
-                Create an account
+                {t('signIn.createAccount')}
               </a>
             </p>
           )}
+        </div>
+
+        <div className="flex justify-end mt-1">
+          <select
+            aria-label="Language"
+            value={currentLang}
+            onChange={handleLanguageChange}
+            className="px-3 py-1.5 text-small bg-surface text-text border border-border rounded-md shadow-card cursor-pointer focus:outline-none focus:border-brand"
+          >
+            {LANGUAGES.map((lang) => (
+              <option key={lang.code} value={lang.code}>
+                {lang.label}
+              </option>
+            ))}
+          </select>
         </div>
       </form>
     </main>

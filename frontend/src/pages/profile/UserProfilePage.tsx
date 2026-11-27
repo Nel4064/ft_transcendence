@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import Loader from '../../components/Loader/Loader';
 import Icon from '../../components/Icon/Icon';
@@ -11,6 +12,7 @@ import ProfileSummary, { type PublicProfile } from '../../components/Profile/Pro
 type UserProfile = PublicProfile & { isFriend?: boolean };
 
 export default function UserProfilePage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { apiFetch, user } = useAuth();
@@ -42,7 +44,7 @@ export default function UserProfilePage() {
           }
         }
       } catch (err: any) {
-        setError(err.message || 'Failed to load user profile');
+        setError(err.message || t('userProfile.errors.loadFailed'));
       } finally {
         setLoading(false);
       }
@@ -51,7 +53,7 @@ export default function UserProfilePage() {
     if (id) {
       fetchUserProfile();
     }
-  }, [id, apiFetch, user?.id]);
+  }, [id, apiFetch, user?.id, t]);
 
   const handleGoToChat = async () => {
     if (!profile) return;
@@ -62,7 +64,9 @@ export default function UserProfilePage() {
     }
 
     const shouldSendRequest = window.confirm(
-      `You need to be friends with ${profile.displayName || profile.username} before chatting. Send a friend request now?`
+      t('userProfile.confirmFriendRequest', {
+        name: profile.displayName || profile.username,
+      })
     );
     if (!shouldSendRequest) return;
 
@@ -74,9 +78,9 @@ export default function UserProfilePage() {
         body: JSON.stringify({ receiverId: profile.id }),
       });
       setRequestSent(true);
-      alert('Friend request sent!');
+      alert(t('userProfile.alerts.requestSent'));
     } catch (err: any) {
-      alert(err.message || 'Failed to send friend request');
+      alert(err.message || t('userProfile.errors.sendRequestFailed'));
     } finally {
       setSendingRequest(false);
     }
@@ -90,8 +94,10 @@ export default function UserProfilePage() {
     return (
       <main className="max-w-[500px] mx-auto my-[120px]">
         <Card padding="lg" className="text-center">
-          <p className="text-danger font-bold mb-4">{error || 'User not found'}</p>
-          <Button onClick={() => navigate(-1)}>Go Back</Button>
+          <p className="text-danger font-bold mb-4">
+            {error || t('userProfile.errors.notFound')}
+          </p>
+          <Button onClick={() => navigate(-1)}>{t('userProfile.buttons.goBack')}</Button>
         </Card>
       </main>
     );
@@ -109,18 +115,20 @@ export default function UserProfilePage() {
               disabled={sendingRequest || requestSent}
               className="w-full flex items-center justify-center gap-2"
             >
-                {requestSent ? (
-                  <>
-                    <Icon name="check" size={26} />
-                    Friend Request Sent
-                  </>
-                ) : (
-                  <>
-                    <Icon name="message-circle" size={26} />
-                    {sendingRequest ? 'Sending Request...' : 'Go to Chat'}
-                  </>
-                )}
-              </Button>
+              {requestSent ? (
+                <>
+                  <Icon name="check" size={26} />
+                  {t('userProfile.buttons.requestSent')}
+                </>
+              ) : (
+                <>
+                  <Icon name="message-circle" size={26} />
+                  {sendingRequest
+                    ? t('userProfile.buttons.sendingRequest')
+                    : t('userProfile.buttons.goToChat')}
+                </>
+              )}
+            </Button>
           )}
         </ProfileSummary>
       </div>

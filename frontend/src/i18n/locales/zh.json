@@ -1,0 +1,508 @@
+{
+  "navbar": {
+    "selectMovies": "挑选电影",
+    "manageMembers": "成员管理",
+    "screenings": "观影场次",
+    "calendar": "日历",
+    "friends": "好友",
+    "notifications": "通知",
+    "login": "登录",
+    "toggleMenu": "切换导航菜单"
+  },
+  "signIn": {
+    "twoFactorHeading": "双重身份验证",
+    "twoFactorPrompt": "请输入身份验证器应用中的 6 位验证码。",
+    "newUser": "新用户？",
+    "createAccount": "创建账号",
+    "placeholders": {
+      "identifier": "邮箱或用户名",
+      "password": "密码",
+      "twoFactorCode": "6 位验证码"
+    },
+    "buttons": {
+      "pleaseWait": "请稍候...",
+      "verifyCode": "验证",
+      "signIn": "登录",
+      "signInWith42": "使用 42 登录",
+      "backToSignIn": "返回登录"
+    },
+    "errors": {
+      "twoFactorEnabled": "已启用双重身份验证，请输入身份验证器应用中的 6 位验证码。",
+      "oauthFailed": "42 OAuth 登录失败：{{error}}",
+      "enterCode": "请输入 6 位验证码",
+      "loginFailed": "登录失败",
+      "missingUserId": "缺少用户 ID，请重新登录。",
+      "invalidCode": "请输入有效的 6 位验证码",
+      "twoFactorFailed": "双重身份验证失败"
+    }
+  },
+  "signUp": {
+    "heading": "创建账号",
+    "acceptTerms": "我同意<terms>服务条款</terms>和<privacy>隐私政策</privacy>",
+    "alreadyHaveAccount": "已有账号？",
+    "signIn": "立即登录",
+    "placeholders": {
+      "username": "用户名",
+      "email": "电子邮箱",
+      "password": "密码",
+      "confirmPassword": "确认密码"
+    },
+    "buttons": {
+      "signUp": "注册",
+      "signInWith42": "使用 42 登录"
+    },
+    "errors": {
+      "passwordMismatch": "两次输入的密码不一致",
+      "mustAcceptTerms": "你必须同意服务条款和隐私政策",
+      "registrationFailed": "注册失败"
+    }
+  },
+  "profile": {
+    "links": {
+      "edit": "编辑个人资料",
+      "security": "管理双重身份验证",
+      "privacy": "下载或删除我的数据 (GDPR)"
+    },
+    "avatar": {
+      "changeTitle": "点击更换头像",
+      "uploading": "上传中...",
+      "change": "更换",
+      "changePhoto": "更换头像"
+    },
+    "summary": {
+      "aboutMe": "关于我",
+      "emptyBio": "这里还没有内容。"
+    },
+    "edit": {
+      "heading": "编辑个人资料",
+      "displayNameLabel": "显示名称",
+      "displayNamePlaceholder": "输入你的显示名称",
+      "bioLabel": "关于我",
+      "bioPlaceholder": "写点关于你自己的介绍...",
+      "languageLabel": "语言",
+      "saveButton": "保存更改"
+    },
+    "twoFactor": {
+      "heading": "双重身份验证 (2FA)",
+      "statusLabel": "状态：",
+      "enabled": "已启用",
+      "disabled": "未启用",
+      "description": "使用身份验证器应用保护您的账户安全。",
+      "enableButton": "启用 2FA",
+      "disableButton": "禁用 2FA",
+      "step1Qr": "1. 使用 Google Authenticator 或 Authy 扫描此二维码：",
+      "qrAlt": "2FA 二维码",
+      "step2Code": "2. 输入应用中的 6 位验证码以验证并激活：",
+      "verifyButton": "验证并启用",
+      "disablePrompt": "请输入身份验证器应用中的 6 位验证码以禁用 2FA：",
+      "confirmDisableButton": "确认并禁用",
+      "cancelButton": "取消"
+    },
+    "logoutButton": "退出登录",
+    "messages": {
+      "init2faFailed": "初始化 2FA 失败",
+      "enable2faSuccess": "2FA 已成功启用！",
+      "invalidCode": "验证码无效",
+      "disable2faSuccess": "2FA 已禁用。",
+      "disable2faFailed": "禁用 2FA 失败",
+      "updateSuccess": "个人资料已更新。",
+      "updateFailed": "更新个人资料失败",
+      "uploadPhotoSuccess": "头像已更新。",
+      "uploadSuccess": "头像上传成功！正在刷新...",
+      "uploadFailed": "上传头像失败"
+    }
+  },
+  "home": {
+    "titleLine1": "发现好电影",
+    "titleLine2": "结识新朋友",
+    "subtitle": "创建观影活动，加入讨论，与电影爱好者建立联系。",
+    "upcomingScreenings": "即将上映的场次..."
+  },
+  "selectMovies": {
+    "heading": "为俱乐部挑选观影场次",
+    "searchPlaceholder": "搜索电影",
+    "filters": {
+      "title": "片名",
+      "cinema": "影院",
+      "date": "日期",
+      "genre": "类型"
+    },
+    "selectGenrePlaceholder": "请选择电影类型...",
+    "genres": {
+      "Action": "动作",
+      "Adventure": "冒险",
+      "Animation": "动画",
+      "Comedy": "喜剧",
+      "Crime": "犯罪",
+      "Documentary": "纪录",
+      "Drama": "剧情",
+      "Family": "家庭",
+      "Fantasy": "奇幻",
+      "History": "历史",
+      "Horror": "恐怖",
+      "Music": "音乐",
+      "Mystery": "悬疑",
+      "Romance": "爱情",
+      "Science Fiction": "科幻",
+      "Thriller": "惊悚",
+      "War": "战争",
+      "Western": "西部"
+    },
+    "searchButton": "搜索",
+    "pagination": {
+      "previous": "上一页",
+      "next": "下一页",
+      "pageInfo": "第 {{page}} / {{totalPages}} 页"
+    }
+  },
+  "myScreenings": {
+    "heading": "我的观影场次",
+    "subtitle": "管理你即将参加的电影俱乐部场次，并查看历史观影记录。",
+    "tabs": {
+      "upcoming": "即将开始",
+      "history": "历史记录"
+    },
+    "loading": "正在加载场次...",
+    "empty": {
+      "upcoming": "暂无即将开始的观影场次。",
+      "history": "你还没有参加过任何历史场次。"
+    },
+    "dateTbd": "日期待定",
+    "unknownTitle": "未知影片",
+    "unknownCinema": "未知影院",
+    "pagination": {
+      "previous": "上一页",
+      "next": "下一页"
+    },
+    "errors": {
+      "notFound": "抱歉，该场次已取消或不再可用。",
+      "pastSession": "无法修改已结束场次的报名状态。",
+      "saveFailed": "保存报名状态时发生错误。"
+    }
+  },
+  "calendar": {
+    "loading": "正在加载你的日历...",
+    "heading": "我的观影日历",
+    "subtitle": "回顾过往场次，查看即将到来的电影俱乐部活动。",
+    "prev": "上个月",
+    "next": "下个月",
+    "weekdays": {
+      "mon": "周一",
+      "tue": "周二",
+      "wed": "周三",
+      "thu": "周四",
+      "fri": "周五",
+      "sat": "周六",
+      "sun": "周日"
+    },
+    "eventTooltip": "{{title}} {{time}}"
+  },
+  "friends": {
+    "tabs": {
+      "myFriends": "我的好友",
+      "requests": "好友请求",
+      "addFriends": "添加好友"
+    },
+    "loading": {
+      "friends": "正在加载好友列表...",
+      "requests": "正在加载好友请求..."
+    },
+    "empty": {
+      "friends": "还没有好友，快去添加吧！",
+      "requests": "暂无新的好友请求"
+    },
+    "requestSubtitle": "请求添加你为好友",
+    "actions": {
+      "chat": "聊天",
+      "remove": "删除",
+      "accept": "接受",
+      "reject": "拒绝",
+      "addFriend": "添加好友",
+      "hideResult": "隐藏此结果"
+    },
+    "search": {
+      "placeholder": "输入用户名或昵称...",
+      "button": "搜索",
+      "noResults": "未找到匹配的用户",
+      "enterKeywords": "输入关键词开始搜索"
+    },
+    "confirmRemove": "确定要将 {{name}} 从好友列表中移除吗？",
+    "notifications": {
+      "requestAcceptedByOther": "有人接受了你的好友请求！",
+      "requestSent": "好友请求发送成功！",
+      "requestAccepted": "已接受好友请求",
+      "requestRejected": "已拒绝好友请求",
+      "friendRemoved": "已成功移除好友",
+      "redirectChat": "正在跳转到与 {{username}} 的聊天"
+    },
+    "errors": {
+      "loadFriends": "无法加载好友列表，请稍后重试。",
+      "loadRequests": "无法加载好友请求，请稍后重试。",
+      "searchFailed": "搜索失败，请重试",
+      "sendFailed": "发送请求失败",
+      "operationFailed": "操作失败",
+      "removeFailed": "移除好友失败"
+    },
+    "pageTitle": "好友",
+    "viewProfile": "查看资料"
+  },
+  "screeningDetails": {
+    "unavailable": {
+      "heading": "场次不可用",
+      "message": "该场次不存在或已被移除。",
+      "backButton": "返回场次列表"
+    },
+    "director": "导演：",
+    "cast": "主演：",
+    "duration": "片长：",
+    "noSynopsis": "暂无简介。",
+    "trailer": "预告片",
+    "dateAtTime": "{{date}} {{time}}",
+    "goingCount": "{{count}} 人参加",
+    "friendsGoing": "{{count}} 位好友参加：",
+    "noFriendsGoing": "暂无好友参加",
+    "chatPlaceholder": "在此添加聊天室",
+    "actions": {
+      "going": "已报名 ✓",
+      "rsvp": "报名参加",
+      "removeEvent": "删除场次",
+      "createEvent": "创建场次"
+    },
+    "calendar": {
+      "google": "+ Google 日历",
+      "ics": "+ Apple/Outlook (.ics)",
+      "defaultDescription": "电影俱乐部观影场次。",
+      "reminder": "提醒"
+    },
+    "errors": {
+      "notFound": "抱歉，该场次已取消或不再可用。",
+      "pastSession": "无法修改已结束场次的报名状态。",
+      "saveFailed": "保存报名状态时发生错误。"
+    },
+    "moreInformation": "更多信息：",
+    "back": "返回",
+    "files": {
+      "heading": "文件管理（管理员）",
+      "posterLabel": "海报（PNG、JPG、WebP · 最大 5 MB）",
+      "changePoster": "更换海报",
+      "posterPreviewAlt": "海报预览",
+      "restorePoster": "复原原海报",
+      "confirmRestorePoster": "确定要复原原来的海报吗？",
+      "attachmentsLabel": "宣传单与图片（PDF、PNG、JPG、WebP · 单文件最大 5 MB）",
+      "addAttachments": "添加宣传单或图片",
+      "noFileSelected": "未选择文件",
+      "filesSelected": "已选择 {{count}} 个文件",
+      "remove": "移除",
+      "delete": "删除",
+      "confirmDeleteFile": "确定要删除这个文件吗？",
+      "upload": "上传",
+      "uploading": "上传中… {{progress}}%",
+      "errors": {
+        "wrongType": "{{name}}：文件类型不支持",
+        "tooLarge": "{{name}}：文件大小超过 5 MB",
+        "tooManyFiles": "单次最多只能上传 {{max}} 个文件",
+        "uploadFailedWithStatus": "上传失败（{{status}}）",
+        "networkError": "上传时发生网络错误",
+        "deleteFailed": "删除失败"
+      }
+    }
+  },
+  "admin": {
+    "loading": "正在加载成员列表...",
+    "heading": "俱乐部管理",
+    "badge": "仅限管理员",
+    "searchPlaceholder": "按名称搜索用户...",
+    "filters": {
+      "all": "全部用户",
+      "admins": "仅管理员",
+      "members": "仅普通成员",
+      "banned": "仅已封禁"
+    },
+    "table": {
+      "users": "用户",
+      "role": "角色",
+      "joinedDate": "加入日期",
+      "activity": "活跃度 (报名记录)",
+      "actions": "操作"
+    },
+    "roles": {
+      "banned": "已封禁",
+      "admin": "管理员",
+      "member": "成员"
+    },
+    "activity": {
+      "attended": "已参加 {{count}} 场",
+      "upcoming": "即将参加 {{count}} 场"
+    },
+    "actions": {
+      "resign": "卸任（取消我的管理员权限）",
+      "cannotEditCoAdmin": "无法编辑其他管理员",
+      "unban": "解封",
+      "makeAdmin": "设为管理员"
+    },
+    "tooltips": {
+      "viewProfile": "点击查看资料",
+      "permanentlyRemove": "永久移除用户",
+      "banUser": "封禁用户",
+      "removeUser": "移除用户"
+    },
+    "empty": "未找到符合条件的用户。",
+    "pagination": {
+      "showing": "显示第 {{start}} 至 {{end}} 条，共 {{total}} 位用户",
+      "rowsPerPage": "每页行数",
+      "perPage": "{{count}} 条 / 页",
+      "prev": "上一页",
+      "next": "下一页"
+    },
+    "confirm": {
+      "makeAdmin": "确定要将该用户提升为管理员吗？",
+      "remove": "确定要将该用户永久移出俱乐部吗？",
+      "ban": "确定要封禁该用户吗？",
+      "unban": "确定要解封该用户吗？",
+      "resign": "确定要取消自己的管理员权限吗？之后你将无法访问此管理面板。"
+    },
+    "errors": {
+      "makeAdmin": "提升管理员失败。",
+      "remove": "移除用户失败。",
+      "ban": "封禁用户失败。",
+      "unban": "解封用户失败。",
+      "lastAdmin": "⚠️ 你是俱乐部最后一名管理员！请先将其他成员设为管理员后再卸任。",
+      "resign": "卸任失败。"
+    }
+  },
+  "notifications": {
+    "heading": "通知",
+    "empty": "暂无通知。",
+    "types": {
+      "clubPick": "<b>{{actor}}</b> 挑选了 <b>{{film}}</b> ({{date}})",
+      "clubPickRemoved": "<b>{{actor}}</b> 移除了 <b>{{film}}</b> ({{date}})",
+      "friendRequest": "<b>{{actor}}</b> 向你发送了好友请求",
+      "friendAccepted": "<b>{{actor}}</b> 接受了你的好友请求",
+      "friendRsvp": "<b>{{actor}}</b> 将参加 <b>{{film}}</b> ({{date}})",
+      "unknown": "新的未知通知"
+    }
+  },
+  "movieDetails": {
+    "director": "导演：",
+    "cast": "主演：",
+    "duration": "片长：",
+    "noSynopsis": "暂无简介。",
+    "trailer": "预告片",
+    "upcomingScreenings": "即将上映的场次",
+    "actions": {
+      "removeEvent": "删除场次",
+      "createEvent": "创建场次"
+    },
+    "errors": {
+      "updateFailed": "无法更新场次：{{message}}"
+    },
+    "back": "返回"
+  },
+  "screenings": {
+    "emptyUpcoming": "暂无即将开始的观影场次"
+  },
+  "privacyPolicy": {
+    "heading": "隐私政策",
+    "intro": "CineClub 是一个面向本地独立电影俱乐部成员的观影排期与社交平台。本页面说明我们收集哪些个人数据、收集原因以及成员对这些数据的控制权。",
+    "sections": {
+      "collect": {
+        "title": "我们收集的信息",
+        "body": "账号信息（电子邮箱、显示名称、头像、个人简介）、活动数据（场次报名记录、好友关系、聊天消息），以及（如使用）你的 42 Intra 登录信息或双因素认证密钥。"
+      },
+      "purpose": {
+        "title": "我们为何收集这些信息",
+        "body": "用于维护俱乐部的共享观影日程、方便成员互相识别和发送消息、生成个人日历导出文件，以及保障你的账号安全。"
+      },
+      "thirdParties": {
+        "title": "第三方服务",
+        "body": "放映时间来自公开的 datacinesindes.fr 数据源。电影翻译通过 The Movie Database (TMDB) 提供。本产品使用 TMDB API，但未获得 TMDB 的认可或认证。我们不会向广告商出售或共享您的数据。"
+      },
+      "rights": {
+        "title": "你的权利",
+        "body": "你可以随时在个人资料设置中导出我们保存的所有账号数据副本，或申请永久删除账号。"
+      }
+    }
+  },
+  "termsOfService": {
+    "heading": "服务条款",
+    "intro": "本条款适用于你对 CineClub（一个面向本地独立电影俱乐部成员的观影排期与社交平台）的使用。创建账号即表示你同意遵守以下条款。",
+    "sections": {
+      "membership": {
+        "title": "成员资格",
+        "body": "账号仅供俱乐部个人成员使用。你有责任妥善保管登录凭据，并对你账号下的所有活动负责。"
+      },
+      "acceptableUse": {
+        "title": "合理使用规范",
+        "body": "请在聊天中保持尊重，如实进行场次报名，不得尝试访问他人账号或滥用观影排期功能。"
+      },
+      "screeningData": {
+        "title": "场次数据说明",
+        "body": "放映时间数据来自公开的 datacinesindes.fr 数据源，影院方面可能会在未提前通知的情况下临时调整或出现偏差——出行前请务必再次核对。"
+      },
+      "termination": {
+        "title": "账号终止",
+        "body": "你可以随时删除自己的账号。对于违反本条款的账号，我们有权予以停用。"
+      }
+    }
+  },
+  "userProfile": {
+    "aboutMe": "关于我",
+    "emptyBio": "这个人很懒，什么都没写~",
+    "confirmFriendRequest": "聊天前需要先成为 {{name}} 的好友，现在发送好友申请吗？",
+    "roles": {
+      "admin": "管理员",
+      "member": "成员"
+    },
+    "buttons": {
+      "back": "← 返回",
+      "goBack": "返回",
+      "goToChat": "开始聊天",
+      "sendingRequest": "发送中...",
+      "requestSent": "已发送好友申请"
+    },
+    "alerts": {
+      "requestSent": "好友申请已发送！"
+    },
+    "errors": {
+      "loadFailed": "加载用户资料失败",
+      "notFound": "未找到该用户",
+      "sendRequestFailed": "发送好友申请失败"
+    }
+  },
+  "common": {
+    "back": "返回"
+  },
+  "chat": {
+    "groupPlaceholder": "活动群聊功能将在此处上线。",
+    "backToFriends": "返回好友列表",
+    "backToFriendsLabel": "← 好友",
+    "goToFriends": "前往好友列表",
+    "viewProfile": "点击查看个人主页",
+    "unavailable": "会话不可用",
+    "loading": "加载中...",
+    "emptyWithFriend": "还没有消息，打个招呼吧！",
+    "emptyNoHistory": "暂无历史聊天记录。",
+    "inputPlaceholder": "输入消息...",
+    "messagingDisabled": "已禁用消息发送",
+    "sendButton": "发送",
+    "notFriendsNotice": "你们还不是好友，无法发送消息。",
+    "errors": {
+      "notFound": "该会话不存在。",
+      "loadFailed": "无法加载此会话，请重试。",
+      "sendFailed": "消息发送失败，请重试。"
+    },
+    "sidebar": {
+      "title": "聊天",
+      "tabs": {
+        "groups": "活动群聊",
+        "friends": "好友私信"
+      },
+      "groupsEmpty": "活动群聊会话将显示在这里。",
+      "loading": "正在加载好友...",
+      "loadFailed": "加载好友列表失败。",
+      "errorPrefix": "错误：",
+      "noFriends": "你还没有添加好友。",
+      "unreadCount_other": "{{count}} 条未读消息"
+    }
+  }
+}

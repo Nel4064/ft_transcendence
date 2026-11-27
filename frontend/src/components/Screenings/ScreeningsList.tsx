@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import ScreeningsCard from './ScreeningsCard'
 import EmptyState from '../EmptyState/EmptyState'
 import defaultMovie from '../../assets/default-movie.jpg'
@@ -8,6 +9,7 @@ type Screening = {
 	startsAt: string | number | Date
 	id: string
 	filmTitle: string
+	titleTranslations?: Record<string, string> | null
 	posterUrl: string | null
 }
 
@@ -16,7 +18,19 @@ interface ScreeningsListProps {
 }
 
 function ScreeningsList({ upcomingOnly = false }: ScreeningsListProps) {
+	const { t, i18n } = useTranslation()
 	const [screenings, setScreenings] = useState<Screening[]>([])
+
+	const currentLang = i18n.language?.split('-')[0] || 'en'
+
+	const getLocalizedTitle = (s: Screening) => {
+		if (!s.titleTranslations) return s.filmTitle
+		return (
+			s.titleTranslations[currentLang] ||
+			(currentLang === 'zh' ? s.titleTranslations.zh : undefined) ||
+			s.filmTitle
+		)
+	}
 
 	useEffect(() => {
 		apiFetch('/screenings')
@@ -39,7 +53,11 @@ function ScreeningsList({ upcomingOnly = false }: ScreeningsListProps) {
 	if (screenings.length === 0)
 		return (
 			<EmptyState
-				message={upcomingOnly ? "No upcoming screenings yet." : "No screenings yet."}
+				message={
+					upcomingOnly
+						? t('screenings.emptyUpcoming', 'No upcoming screenings yet.')
+						: t('screenings.empty', 'No screenings yet.')
+				}
 			/>
 		)
 
@@ -49,7 +67,7 @@ function ScreeningsList({ upcomingOnly = false }: ScreeningsListProps) {
 				<ScreeningsCard
 					key={s.id}
 					id={s.id}
-					movie={s.filmTitle}
+					movie={getLocalizedTitle(s)}
 					image={s.posterUrl ?? defaultMovie}
 				/>
 			))}

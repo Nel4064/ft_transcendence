@@ -58,7 +58,7 @@ export class UpdateProfileDto {
   bio?: string;
 
   @IsOptional()
-  @IsEnum(Language) // 👈 允许接收 EN, FR, ES 等枚举值
+  @IsEnum(Language) // 👈 允许接收 EN, FR, ZH 等枚举值
   language?: Language;
 }
 

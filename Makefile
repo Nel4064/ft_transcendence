@@ -4,6 +4,7 @@ COMPOSE = podman-compose -p development -f compose.yaml -f compose.dev.yaml --en
 # generated: random values created here / manual: filled in by hand from the 42 intra
 GENERATED_SECRETS = jwt_secret postgres_backend_user_pw postgres_superuser_pw
 MANUAL_SECRETS = fortytwo_client_id fortytwo_client_secret smtp_user smtp_pw
+OPTIONAL_SECRETS = tmdb_access_key
 
 # 32 random bytes as hex: only 0-9a-f, so safe inside DATABASE_URL (no trailing newline)
 RANDOM_SECRET = openssl rand -hex 32 | tr -d '\n'
@@ -96,10 +97,23 @@ secrets:
 		touch secrets/$$s.txt; \
 		test -s secrets/$$s.txt || echo "⚠️  secrets/$$s.txt is empty (fill it manually for 42OAuth and SMTP)"; \
 	done
+	@for s in $(OPTIONAL_SECRETS); do \
+		touch secrets/$$s.txt; \
+		test -s secrets/$$s.txt || echo "⚠️  secrets/$$s.txt is empty (needed for TMDB translations, optional)"; \
+	done
 	@chmod 600 secrets/*.txt
 	@for s in $(GENERATED_SECRETS) $(MANUAL_SECRETS); do \
 		if ! podman secret exists $$s && test -s secrets/$$s.txt; then \
 			podman secret create $$s secrets/$$s.txt; \
+		fi; \
+	done
+	@for s in $(OPTIONAL_SECRETS); do \
+		if ! podman secret exists $$s; then \
+			if test -s secrets/$$s.txt; then \
+				podman secret create $$s secrets/$$s.txt; \
+			else \
+				printf "placeholder" | podman secret create $$s -; \
+			fi; \
 		fi; \
 	done
 	@echo "🔑 Secrets are ready."

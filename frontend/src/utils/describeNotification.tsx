@@ -1,3 +1,4 @@
+import { Trans } from 'react-i18next'
 import type { NotificationItem } from '../api/notifications'
 import { formatDateTime } from './formatDateTime'
 
@@ -5,19 +6,50 @@ import { formatDateTime } from './formatDateTime'
 export function describeNotification(n: NotificationItem) {
 	const actorName = n.actor?.displayName ?? 'CineClub'
 	const { filmTitle, startsAt } = n.payload
+	const date = startsAt ? formatDateTime(startsAt) : ''
 
 	switch (n.type) {
 		case 'CLUB_PICK':
-			return <><strong>{actorName}</strong> picked <strong>{filmTitle}</strong> ({formatDateTime(startsAt)})</>
+			return (
+				<Trans
+					i18nKey="notifications.types.clubPick"
+					values={{ actor: actorName, film: filmTitle, date }}
+					components={{ b: <strong /> }}
+				/>
+			)
 		case 'CLUB_PICK_REMOVED':
-			return <><strong>{actorName}</strong> unpicked <strong>{filmTitle}</strong> ({formatDateTime(startsAt)})</>
+			return (
+				<Trans
+					i18nKey="notifications.types.clubPickRemoved"
+					values={{ actor: actorName, film: filmTitle, date }}
+					components={{ b: <strong /> }}
+				/>
+			)
 		case 'FRIEND_REQUEST':
-			return <><strong>{actorName}</strong> sent you a friend request</>
+			return (
+				<Trans
+					i18nKey="notifications.types.friendRequest"
+					values={{ actor: actorName }}
+					components={{ b: <strong /> }}
+				/>
+			)
 		case 'FRIEND_ACCEPTED':
-			return <><strong>{actorName}</strong> accepted your friend request</>
+			return (
+				<Trans
+					i18nKey="notifications.types.friendAccepted"
+					values={{ actor: actorName }}
+					components={{ b: <strong /> }}
+				/>
+			)
 		case 'FRIEND_RSVP':
-			return <><strong>{actorName}</strong> is going to <strong>{filmTitle}</strong> ({formatDateTime(startsAt)})</>
+			return (
+				<Trans
+					i18nKey="notifications.types.friendRsvp"
+					values={{ actor: actorName, film: filmTitle, date }}
+					components={{ b: <strong /> }}
+				/>
+			)
 		default:
-			return 'New unknown notification'
+			return <Trans i18nKey="notifications.types.unknown" />
 	}
 }

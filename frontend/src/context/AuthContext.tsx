@@ -5,6 +5,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import i18n from '../i18n'
 
 export type User = {
   id: string
@@ -38,10 +39,13 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
+const SUPPORTED_LANGS = ['en', 'fr', 'zh']
+
 // Change default value to an empty string ''
 const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL || ''
 ).replace(/\/+$/, '')
+
 function normalizeApiPath(path: string): string {
   const cleanPath = path.startsWith('/') ? path : `/${path}`
 
@@ -88,10 +92,10 @@ export async function apiFetch(
   if (!response.ok) {
     const error: any = new Error(
       data?.message || `API request failed (${response.status})`
-    );
-    error.status = response.status;
-    error.data = data;
-    throw error;
+    )
+    error.status = response.status
+    error.data = data
+    throw error
   }
 
   return data
@@ -121,9 +125,41 @@ export function AuthProvider({
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
+  async function applyPreferredLanguage(userData: User): Promise<User> {
+    const serverLang = userData.language?.split('-')[0]?.toLowerCase()
+
+    // 1. 已登录且服务端有语言偏好：以服务端为准，不同步覆盖数据库
+    if (serverLang && SUPPORTED_LANGS.includes(serverLang)) {
+      localStorage.setItem('i18nextLng', serverLang)
+      if (i18n.language !== serverLang) {
+        await i18n.changeLanguage(serverLang)
+      }
+      return userData
+    }
+
+    // 2. 服务端未设置语言时：若本地已有有效语种，应用并回填一次服务端
+    const saved = localStorage.getItem('i18nextLng')?.split('-')[0]?.toLowerCase()
+    if (saved && SUPPORTED_LANGS.includes(saved)) {
+      if (i18n.language !== saved) {
+        await i18n.changeLanguage(saved)
+      }
+
+      try {
+        const updated = await apiFetch('/users/me', {
+          method: 'PATCH',
+          body: JSON.stringify({ language: saved.toUpperCase() }),
+        })
+        return getUser(updated)
+      } catch {
+        return userData
+      }
+    }
+
+    return userData
+  }
+
   useEffect(() => {
     let cancelled = false
-
     async function initializeAuth() {
       try {
         const params = new URLSearchParams(window.location.search)
@@ -151,9 +187,10 @@ export function AuthProvider({
         }
 
         const profile = await apiFetch('/users/me')
+        const syncedUser = await applyPreferredLanguage(getUser(profile))
 
         if (!cancelled) {
-          setUser(getUser(profile))
+          setUser(syncedUser)
         }
       } catch (error) {
         localStorage.removeItem('token')
@@ -198,7 +235,6 @@ export function AuthProvider({
         throw new Error('2FA response did not contain userId')
       }
 
-      // Fix point: When returning 2FA state, userId must be provided simultaneously
       return {
         twoFactorRequired: true,
         userId: String(payload.userId),
@@ -217,10 +253,10 @@ export function AuthProvider({
 
     try {
       const profile = await apiFetch('/users/me')
-      const userData = getUser(profile)
+      const syncedUser = await applyPreferredLanguage(getUser(profile))
 
-      setUser(userData)
-      return userData
+      setUser(syncedUser)
+      return syncedUser
     } catch (error) {
       localStorage.removeItem('token')
       localStorage.removeItem('jwt_token')
@@ -258,10 +294,10 @@ export function AuthProvider({
 
     try {
       const profile = await apiFetch('/users/me')
-      const userData = getUser(profile)
+      const syncedUser = await applyPreferredLanguage(getUser(profile))
 
-      setUser(userData)
-      return userData
+      setUser(syncedUser)
+      return syncedUser
     } catch (error) {
       localStorage.removeItem('token')
       localStorage.removeItem('jwt_token')
@@ -284,7 +320,6 @@ export function AuthProvider({
       body: JSON.stringify({ password, code }),
     })
 
-    // Update 2FA status in local user state
     if (user) {
       setUser({
         ...user,

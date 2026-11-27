@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import Avatar from '../Avatar/Avatar'
 import Card from '../Card/Card'
 import Heading from '../Heading/Heading'
@@ -17,11 +18,12 @@ export type PublicProfile = {
 
 type ProfileSummaryProps = {
     profile: PublicProfile
-    children?: ReactNode    // what the page adds below the cards (chat button, settings menu...)
+    children?: ReactNode // what the page adds below the cards (chat button, settings menu...)
 }
 
 // Display only: no fetching, no auth. Each page decides where the profile comes from.
 function ProfileSummary({ profile, children }: ProfileSummaryProps) {
+    const { t } = useTranslation()
     const name = profile.displayName || profile.username
 
     return (
@@ -38,9 +40,13 @@ function ProfileSummary({ profile, children }: ProfileSummaryProps) {
                 </div>
             </Card>
 
-            <Card padding="lg" title="About Me" className="flex flex-col gap-3">
+            <Card
+                padding="lg"
+                title={t('profile.summary.aboutMe', 'About Me')}
+                className="flex flex-col gap-3"
+            >
                 <p className="text-body text-text whitespace-pre-wrap">
-                    {profile.bio || 'Nothing here yet.'}
+                    {profile.bio || t('profile.summary.emptyBio', 'Nothing here yet.')}
                 </p>
             </Card>
 

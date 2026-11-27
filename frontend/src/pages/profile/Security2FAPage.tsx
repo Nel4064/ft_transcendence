@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/button/Button'
 import Input from '../../components/Input/Input'
@@ -7,9 +9,9 @@ import ActionRow from '../../components/ActionRow/ActionRow'
 import Badge from '../../components/Badge/Badge'
 import Card from '../../components/Card/Card'
 import Message from '../../components/Message/Message'
-import { useState, useEffect } from 'react'
 
 function Security2FAPage() {
+    const { t } = useTranslation()
     const { user, apiFetch, disable2fa } = useAuth()
 
     // 2FA related states
@@ -38,7 +40,7 @@ function Security2FAPage() {
             setQrCodeUrl(data.qrCodeUrl || data)
             setSetupStep('qr')
         } catch (err: any) {
-            setError(err.message || 'Failed to initialize 2FA')
+            setError(err.message || t('profile.messages.init2faFailed', 'Failed to initialize 2FA'))
         }
     }
 
@@ -55,9 +57,9 @@ function Security2FAPage() {
             setIs2faEnabled(true)
             setSetupStep('idle')
             setTotpCode('')
-            setSuccessMsg('2FA successfully enabled!')
+            setSuccessMsg(t('profile.messages.enable2faSuccess', '2FA successfully enabled!'))
         } catch (err: any) {
-            setError(err.message || 'Invalid verification code')
+            setError(err.message || t('profile.messages.invalidCode', 'Invalid verification code'))
         }
     }
 
@@ -72,9 +74,9 @@ function Security2FAPage() {
             setIs2faEnabled(false)
             setSetupStep('idle')
             setDisableCode('')
-            setSuccessMsg('2FA has been disabled.')
+            setSuccessMsg(t('profile.messages.disable2faSuccess', '2FA has been disabled.'))
         } catch (err: any) {
-            setError(err.message || 'Failed to disable 2FA')
+            setError(err.message || t('profile.messages.disable2faFailed', 'Failed to disable 2FA'))
         }
     }
 
@@ -82,28 +84,28 @@ function Security2FAPage() {
         <main>
             <div className="flex flex-col gap-6 max-w-[600px] mx-auto my-[60px]">
                 <BackButton />
-                <Heading level="title">Two-factor authentication</Heading>
+                <Heading level="title">{t('profile.twoFactor.heading', 'Two-Factor Authentication (2FA)')}</Heading>
 
                 {error && <Message tone="danger">{error}</Message>}
                 {successMsg && <Message tone="success">{successMsg}</Message>}
 
                 <Card className="flex flex-col gap-4">
                     <ActionRow
-                        title="Authenticator app"
+                        title={t('profile.twoFactor.appTitle', 'Authenticator app')}
                         badge={is2faEnabled
-                            ? <Badge tone="success">Enabled</Badge>
-                            : <Badge>Disabled</Badge>}
-                        description="Secure your account using an authenticator app."
+                            ? <Badge tone="success">{t('profile.twoFactor.enabled', 'Enabled')}</Badge>
+                            : <Badge>{t('profile.twoFactor.disabled', 'Disabled')}</Badge>}
+                        description={t('profile.twoFactor.description', 'Secure your account using an authenticator app.')}
                     >
                         {!is2faEnabled && setupStep === 'idle' && (
                             <Button onClick={handleStart2faSetup}>
-                                Enable 2FA
+                                {t('profile.twoFactor.enableButton', 'Enable 2FA')}
                             </Button>
                         )}
 
                         {is2faEnabled && setupStep === 'idle' && (
                             <Button variant="danger" onClick={() => setSetupStep('disable')}>
-                                Disable 2FA
+                                {t('profile.twoFactor.disableButton', 'Disable 2FA')}
                             </Button>
                         )}
                     </ActionRow>
@@ -111,13 +113,21 @@ function Security2FAPage() {
                     {/* QR code setup area for enabling 2FA */}
                     {setupStep === 'qr' && (
                         <form onSubmit={handleVerify2fa} className="flex flex-col gap-3 mt-2 pt-4 border-t border-border">
-                            <p className="text-small text-text-muted">1. Scan this QR code with Google Authenticator or Authy:</p>
+                            <p className="text-small text-text-muted">
+                                {t('profile.twoFactor.step1Qr', '1. Scan this QR code with Google Authenticator or Authy:')}
+                            </p>
                             {qrCodeUrl && (
                                 <div className="flex justify-center bg-white p-3 rounded-md w-fit mx-auto border border-border">
-                                    <img src={qrCodeUrl} alt="2FA QR Code" className="w-[160px] h-[160px]" />
+                                    <img
+                                        src={qrCodeUrl}
+                                        alt={t('profile.twoFactor.qrAlt', '2FA QR Code')}
+                                        className="w-[160px] h-[160px]"
+                                    />
                                 </div>
                             )}
-                            <p className="text-small text-text-muted">2. Enter the 6-digit code from your app to verify and activate:</p>
+                            <p className="text-small text-text-muted">
+                                {t('profile.twoFactor.step2Code', '2. Enter the 6-digit code from your app to verify and activate:')}
+                            </p>
                             <div className="flex gap-2">
                                 <Input
                                     size="md"
@@ -130,10 +140,10 @@ function Security2FAPage() {
                                     required
                                 />
                                 <Button type="submit">
-                                    Verify & Turn On
+                                    {t('profile.twoFactor.verifyButton', 'Verify & Turn On')}
                                 </Button>
                                 <Button variant="secondary" onClick={() => setSetupStep('idle')}>
-                                    Cancel
+                                    {t('profile.twoFactor.cancelButton', 'Cancel')}
                                 </Button>
                             </div>
                         </form>
@@ -142,7 +152,9 @@ function Security2FAPage() {
                     {/* Form requiring code input to disable 2FA */}
                     {setupStep === 'disable' && (
                         <form onSubmit={handleDisable2fa} className="flex flex-col gap-3 mt-2 pt-4 border-t border-border">
-                            <p className="text-small text-text-muted">Enter the 6-digit code from your authenticator app to disable 2FA:</p>
+                            <p className="text-small text-text-muted">
+                                {t('profile.twoFactor.disablePrompt', 'Enter the 6-digit code from your authenticator app to disable 2FA:')}
+                            </p>
                             <div className="flex gap-2">
                                 <Input
                                     size="md"
@@ -155,10 +167,10 @@ function Security2FAPage() {
                                     required
                                 />
                                 <Button type="submit" variant="danger">
-                                    Confirm & Disable
+                                    {t('profile.twoFactor.confirmDisableButton', 'Confirm & Disable')}
                                 </Button>
                                 <Button variant="secondary" onClick={() => setSetupStep('idle')}>
-                                    Cancel
+                                    {t('profile.twoFactor.cancelButton', 'Cancel')}
                                 </Button>
                             </div>
                         </form>

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import Icon from '../Icon/Icon'
 
 interface RsvpCardProps {
@@ -11,7 +12,7 @@ interface RsvpCardProps {
     initialIsGoing: boolean;
     initialGoingCount: number;
     onRsvp: (id: string) => Promise<void>;
-    disabled?: boolean; 
+    disabled?: boolean;
 }
 
 export default function RsvpScreeningCard({
@@ -25,6 +26,7 @@ export default function RsvpScreeningCard({
     onRsvp,
     disabled
 }: RsvpCardProps) {
+    const { t } = useTranslation();
     const [isGoing, setIsGoing] = useState(initialIsGoing);
     const [goingCount, setGoingCount] = useState(initialGoingCount);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -71,7 +73,9 @@ export default function RsvpScreeningCard({
             </Link>
 
             <div className="flex flex-col items-end shrink-0 pl-4 border-l border-border">
-                <p className="text-sm text-gray-400 mb-2">{goingCount} going</p>
+                <p className="text-sm text-gray-400 mb-2">
+                    {t('screeningDetails.goingCount', { count: goingCount })}
+                </p>
                 <button
                     onClick={handleClick}
                     disabled={isProcessing || disabled}
@@ -82,7 +86,9 @@ export default function RsvpScreeningCard({
                             : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
                         }`}
                 >
-                    {isProcessing ? '...' : (isGoing ? 'Going ✓' : 'RSVP')}
+                    {isProcessing
+                        ? '...'
+                        : (isGoing ? t('screeningDetails.actions.going') : t('screeningDetails.actions.rsvp'))}
                 </button>
             </div>
         </div>

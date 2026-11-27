@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
     Search,
     Shield,
@@ -21,9 +22,8 @@ import {
     resignAdmin,
     banMember,
     unbanMember,
-} from '../../api/admin'; // 如果你的文件名是 admin.ts，请改为 '../../api/admin'
+} from '../../api/admin';
 
-// --- 类型定义（与 Prisma Schema 对齐） ---
 type Role = 'ADMIN' | 'USER';
 
 interface UserStat {
@@ -41,20 +41,19 @@ interface UserStat {
 }
 
 export default function AdminDashboard() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [users, setUsers] = useState<UserStat[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState<'ALL' | Role | 'BANNED'>('ALL');
 
-    // 分页状态
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
 
     const { user, apiFetch } = useAuth();
     const CURRENT_USER_ID = user?.id;
 
-    // 拉取成员列表
     useEffect(() => {
         const fetchMembers = async () => {
             try {
@@ -69,70 +68,67 @@ export default function AdminDashboard() {
         fetchMembers();
     }, [apiFetch]);
 
-    // 搜索条件、筛选角色或每页数量变化时，重置回第一页
     useEffect(() => {
         setCurrentPage(1);
     }, [searchQuery, roleFilter, pageSize]);
 
-    // --- 操作函数 ---
     const handleMakeAdmin = async (id: string) => {
-        if (!window.confirm('Are you sure you want to promote this user to Admin?')) return;
+        if (!window.confirm(t('admin.confirm.makeAdmin'))) return;
 
         try {
             await updateMemberRole(apiFetch, id, 'ADMIN');
             setUsers(users.map(u => (u.id === id ? { ...u, role: 'ADMIN' } : u)));
         } catch (error) {
             console.error(error);
-            alert('Failed to promote user to Admin.');
+            alert(t('admin.errors.makeAdmin'));
         }
     };
 
     const handleRemove = async (id: string) => {
-        if (!window.confirm('Are you sure you want to permanently remove this user from the club?')) return;
+        if (!window.confirm(t('admin.confirm.remove'))) return;
 
         try {
             await removeMember(apiFetch, id);
             setUsers(users.filter(u => u.id !== id));
         } catch (error) {
             console.error(error);
-            alert('Failed to remove user.');
+            alert(t('admin.errors.remove'));
         }
     };
 
     const handleBan = async (id: string) => {
-        if (!window.confirm('Are you sure you want to ban this user?')) return;
+        if (!window.confirm(t('admin.confirm.ban'))) return;
 
         try {
             await banMember(apiFetch, id);
             setUsers(users.map(u => (u.id === id ? { ...u, isBanned: true } : u)));
         } catch (error) {
             console.error(error);
-            alert('Failed to ban user.');
+            alert(t('admin.errors.ban'));
         }
     };
 
     const handleUnban = async (id: string) => {
-        if (!window.confirm('Are you sure you want to unban this user?')) return;
+        if (!window.confirm(t('admin.confirm.unban'))) return;
 
         try {
             await unbanMember(apiFetch, id);
             setUsers(users.map(u => (u.id === id ? { ...u, isBanned: false } : u)));
         } catch (error) {
             console.error(error);
-            alert('Failed to unban user.');
+            alert(t('admin.errors.unban'));
         }
     };
 
-    // 辞职（自我降级）与最后一名管理员保护逻辑
     const handleResign = async (id: string) => {
         const adminCount = users.filter(u => u.role === 'ADMIN').length;
 
         if (adminCount <= 1) {
-            alert('⚠️ You are the last admin in the club! Please promote another member to Admin before resigning.');
+            alert(t('admin.errors.lastAdmin'));
             return;
         }
 
-        if (!window.confirm('Are you sure you want to remove your own Admin rights? You will lose access to this dashboard.')) return;
+        if (!window.confirm(t('admin.confirm.resign'))) return;
 
         try {
             await resignAdmin(apiFetch, id);
@@ -140,11 +136,10 @@ export default function AdminDashboard() {
             navigate('/');
         } catch (error) {
             console.error(error);
-            alert('Failed to resign.');
+            alert(t('admin.errors.resign'));
         }
     };
 
-    // --- 过滤逻辑 ---
     const filteredUsers = users.filter(u => {
         const matchesSearch =
             u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -160,7 +155,6 @@ export default function AdminDashboard() {
         return matchesSearch && matchesFilter;
     });
 
-    // --- 分页计算逻辑 ---
     const totalItems = filteredUsers.length;
     const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
     const safeCurrentPage = Math.min(currentPage, totalPages);
@@ -168,7 +162,6 @@ export default function AdminDashboard() {
     const endIndex = Math.min(startIndex + pageSize, totalItems);
     const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
 
-    // 生成页码按钮列表（页数较多时自动折叠为省略号）
     const getPageNumbers = (): (number | '...')[] => {
         if (totalPages <= 7) {
             return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -183,7 +176,7 @@ export default function AdminDashboard() {
     };
 
     if (isLoading) {
-        return <div className="min-h-screen flex items-center justify-center text-stone-500">Loading members...</div>;
+        return <div className="min-h-screen flex items-center justify-center text-stone-500">{t('admin.loading')}</div>;
     }
 
     return (
@@ -192,10 +185,10 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between mb-8">
                 <h1 className="text-2xl font-bold text-stone-900 flex items-center gap-2">
                     <ShieldAlert className="w-7 h-7 text-stone-700" />
-                    Club Administration
+                    {t('admin.heading')}
                 </h1>
                 <span className="text-sm font-medium text-stone-500 bg-stone-200 px-3 py-1 rounded-full">
-                    Admin Only
+                    {t('admin.badge')}
                 </span>
             </div>
 
@@ -205,7 +198,7 @@ export default function AdminDashboard() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
                     <input
                         type="text"
-                        placeholder="Search user by name..."
+                        placeholder={t('admin.searchPlaceholder')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400 bg-white"
@@ -216,10 +209,10 @@ export default function AdminDashboard() {
                     onChange={(e) => setRoleFilter(e.target.value as 'ALL' | Role | 'BANNED')}
                     className="py-2 px-4 border border-stone-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-stone-400 text-stone-700"
                 >
-                    <option value="ALL">All Users</option>
-                    <option value="ADMIN">Admins Only</option>
-                    <option value="USER">Members Only</option>
-                    <option value="BANNED">Banned Only</option>
+                    <option value="ALL">{t('admin.filters.all')}</option>
+                    <option value="ADMIN">{t('admin.filters.admins')}</option>
+                    <option value="USER">{t('admin.filters.members')}</option>
+                    <option value="BANNED">{t('admin.filters.banned')}</option>
                 </select>
             </div>
 
@@ -229,11 +222,11 @@ export default function AdminDashboard() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-stone-100/50 border-b border-stone-200 text-sm text-stone-500">
-                                <th className="py-4 px-6 font-medium">USERS</th>
-                                <th className="py-4 px-6 font-medium">ROLE</th>
-                                <th className="py-4 px-6 font-medium">JOINED DATE</th>
-                                <th className="py-4 px-6 font-medium">ACTIVITY (RSVPs)</th>
-                                <th className="py-4 px-6 font-medium text-right">ACTIONS</th>
+                                <th className="py-4 px-6 font-medium">{t('admin.table.users')}</th>
+                                <th className="py-4 px-6 font-medium">{t('admin.table.role')}</th>
+                                <th className="py-4 px-6 font-medium">{t('admin.table.joinedDate')}</th>
+                                <th className="py-4 px-6 font-medium">{t('admin.table.activity')}</th>
+                                <th className="py-4 px-6 font-medium text-right">{t('admin.table.actions')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-stone-100">
@@ -252,7 +245,7 @@ export default function AdminDashboard() {
                                             <div
                                                 onClick={() => navigate(`/users/${member.id}`)}
                                                 className="cursor-pointer hover:opacity-80 transition-opacity shrink-0"
-                                                title="Click to view profile"
+                                                title={t('admin.tooltips.viewProfile')}
                                             >
                                                 <Avatar src={member.avatar || undefined} name={member.username} size={40} />
                                             </div>
@@ -262,7 +255,7 @@ export default function AdminDashboard() {
                                                     className={`font-semibold cursor-pointer hover:underline ${
                                                         member.isBanned ? 'text-stone-500 line-through' : 'text-stone-900'
                                                     }`}
-                                                    title="Click to view profile"
+                                                    title={t('admin.tooltips.viewProfile')}
                                                 >
                                                     {member.username}
                                                 </p>
@@ -276,7 +269,7 @@ export default function AdminDashboard() {
                                         {member.isBanned ? (
                                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
                                                 <Ban className="w-3.5 h-3.5" />
-                                                Banned
+                                                {t('admin.roles.banned')}
                                             </span>
                                         ) : (
                                             <span
@@ -287,7 +280,7 @@ export default function AdminDashboard() {
                                                 }`}
                                             >
                                                 {member.role === 'ADMIN' && <Shield className="w-3.5 h-3.5" />}
-                                                {member.role === 'ADMIN' ? 'Admin' : 'Member'}
+                                                {member.role === 'ADMIN' ? t('admin.roles.admin') : t('admin.roles.member')}
                                             </span>
                                         )}
                                     </td>
@@ -302,11 +295,11 @@ export default function AdminDashboard() {
                                         <div className="flex flex-col gap-1 text-sm">
                                             <span className="flex items-center gap-1.5 text-stone-700">
                                                 <Film className="w-4 h-4 text-stone-400" />
-                                                {member.rsvps.attended} Attended
+                                                {t('admin.activity.attended', { count: member.rsvps.attended })}
                                             </span>
                                             <span className="flex items-center gap-1.5 text-stone-500">
                                                 <CalendarClock className="w-4 h-4 text-stone-400" />
-                                                {member.rsvps.upcoming} Upcoming
+                                                {t('admin.activity.upcoming', { count: member.rsvps.upcoming })}
                                             </span>
                                         </div>
                                     </td>
@@ -320,11 +313,11 @@ export default function AdminDashboard() {
                                                         onClick={() => handleResign(member.id)}
                                                         className="text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors"
                                                     >
-                                                        Resign (Remove my Admin)
+                                                        {t('admin.actions.resign')}
                                                     </button>
                                                 ) : (
                                                     <span className="text-xs text-stone-400 italic px-3 py-1.5">
-                                                        Cannot edit co-admin
+                                                        {t('admin.actions.cannotEditCoAdmin')}
                                                     </span>
                                                 )
                                             ) : member.isBanned ? (
@@ -334,14 +327,17 @@ export default function AdminDashboard() {
                                                         className="inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
                                                     >
                                                         <RotateCcw className="w-4 h-4" />
-                                                        Unban
+                                                        {t('admin.actions.unban')}
                                                     </button>
                                                     <button
                                                         onClick={() => handleRemove(member.id)}
-                                                        className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        title="Permanently Remove User"
+                                                        aria-label={t('admin.tooltips.permanentlyRemove')}
+                                                        className="relative group p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                     >
                                                         <Trash2 className="w-5 h-5" />
+                                                        <span className="pointer-events-none absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-md bg-stone-800 px-2.5 py-1 text-xs font-medium text-white opacity-0 shadow-md transition-opacity duration-150 group-hover:opacity-100 z-10">
+                                                            {t('admin.tooltips.permanentlyRemove')}
+                                                        </span>
                                                     </button>
                                                 </>
                                             ) : (
@@ -350,21 +346,27 @@ export default function AdminDashboard() {
                                                         onClick={() => handleMakeAdmin(member.id)}
                                                         className="text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
                                                     >
-                                                        Make Admin
+                                                        {t('admin.actions.makeAdmin')}
                                                     </button>
                                                     <button
                                                         onClick={() => handleBan(member.id)}
-                                                        className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        title="Ban User"
+                                                        aria-label={t('admin.tooltips.banUser')}
+                                                        className="relative group p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                     >
                                                         <Ban className="w-5 h-5" />
+                                                        <span className="pointer-events-none absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-md bg-stone-800 px-2.5 py-1 text-xs font-medium text-white opacity-0 shadow-md transition-opacity duration-150 group-hover:opacity-100 z-10">
+                                                            {t('admin.tooltips.banUser')}
+                                                        </span>
                                                     </button>
                                                     <button
                                                         onClick={() => handleRemove(member.id)}
-                                                        className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        title="Remove User"
+                                                        aria-label={t('admin.tooltips.removeUser')}
+                                                        className="relative group p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                     >
                                                         <Trash2 className="w-5 h-5" />
+                                                        <span className="pointer-events-none absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-md bg-stone-800 px-2.5 py-1 text-xs font-medium text-white opacity-0 shadow-md transition-opacity duration-150 group-hover:opacity-100 z-10">
+                                                            {t('admin.tooltips.removeUser')}
+                                                        </span>
                                                     </button>
                                                 </>
                                             )}
@@ -378,7 +380,7 @@ export default function AdminDashboard() {
                     {/* 空状态处理 */}
                     {totalItems === 0 && (
                         <div className="text-center py-12 text-stone-500">
-                            No users found matching your criteria.
+                            {t('admin.empty')}
                         </div>
                     )}
                 </div>
@@ -389,19 +391,21 @@ export default function AdminDashboard() {
                         {/* 左侧：数据统计 + 每页条数切换 */}
                         <div className="flex items-center gap-3">
                             <span>
-                                Showing <strong className="font-semibold text-stone-900">{startIndex + 1}</strong> to{' '}
-                                <strong className="font-semibold text-stone-900">{endIndex}</strong> of{' '}
-                                <strong className="font-semibold text-stone-900">{totalItems}</strong> users
+                                {t('admin.pagination.showing', {
+                                    start: startIndex + 1,
+                                    end: endIndex,
+                                    total: totalItems,
+                                })}
                             </span>
                             <select
                                 value={pageSize}
                                 onChange={(e) => setPageSize(Number(e.target.value))}
                                 className="py-1 px-2 border border-stone-200 rounded-md bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-stone-400"
-                                aria-label="Rows per page"
+                                aria-label={t('admin.pagination.rowsPerPage')}
                             >
-                                <option value={5}>5 / page</option>
-                                <option value={10}>10 / page</option>
-                                <option value={20}>20 / page</option>
+                                <option value={5}>{t('admin.pagination.perPage', { count: 5 })}</option>
+                                <option value={10}>{t('admin.pagination.perPage', { count: 10 })}</option>
+                                <option value={20}>{t('admin.pagination.perPage', { count: 20 })}</option>
                             </select>
                         </div>
 
@@ -413,7 +417,7 @@ export default function AdminDashboard() {
                                 className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-stone-200 bg-white text-stone-700 hover:bg-stone-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                             >
                                 <ChevronLeft className="w-4 h-4" />
-                                Prev
+                                {t('admin.pagination.prev')}
                             </button>
 
                             {getPageNumbers().map((page, index) =>
@@ -441,7 +445,7 @@ export default function AdminDashboard() {
                                 disabled={safeCurrentPage === totalPages}
                                 className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-stone-200 bg-white text-stone-700 hover:bg-stone-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                             >
-                                Next
+                                {t('admin.pagination.next')}
                                 <ChevronRight className="w-4 h-4" />
                             </button>
                         </div>

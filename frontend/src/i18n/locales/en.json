@@ -1,0 +1,509 @@
+{
+  "navbar": {
+    "selectMovies": "Select Movies",
+    "manageMembers": "Manage Members",
+    "screenings": "Screenings",
+    "calendar": "Calendar",
+    "friends": "Friends",
+    "notifications": "Notifications",
+    "login": "Login",
+    "toggleMenu": "Toggle navigation menu"
+  },
+  "signUp": {
+    "heading": "Create an Account",
+    "acceptTerms": "I accept the <terms>Terms of Service</terms> and the <privacy>Privacy Policy</privacy>",
+    "alreadyHaveAccount": "Already have an account?",
+    "signIn": "Sign in",
+    "placeholders": {
+      "username": "Your username",
+      "email": "Your email",
+      "password": "Your password",
+      "confirmPassword": "Confirm your password"
+    },
+    "buttons": {
+      "signUp": "Sign Up",
+      "signInWith42": "Sign in with 42"
+    },
+    "errors": {
+      "passwordMismatch": "Passwords do not match",
+      "mustAcceptTerms": "You must accept the terms and conditions",
+      "registrationFailed": "Registration failed"
+    }
+  },
+  "signIn": {
+    "twoFactorHeading": "Two-Factor Authentication",
+    "twoFactorPrompt": "Enter the 6-digit code from your authenticator app.",
+    "newUser": "New?",
+    "createAccount": "Create an account",
+    "placeholders": {
+      "identifier": "Email or username",
+      "password": "Password",
+      "twoFactorCode": "6-digit verification code"
+    },
+    "buttons": {
+      "pleaseWait": "Please wait...",
+      "verifyCode": "Verify Code",
+      "signIn": "Sign In",
+      "signInWith42": "Sign in with 42",
+      "backToSignIn": "Back to Sign In"
+    },
+    "errors": {
+      "twoFactorEnabled": "2FA is enabled. Please enter the 6-digit code from your authenticator app.",
+      "oauthFailed": "42 OAuth login failed: {{error}}",
+      "enterCode": "Please enter the 6-digit code",
+      "loginFailed": "Login failed",
+      "missingUserId": "Missing user ID. Please sign in again.",
+      "invalidCode": "Please enter a valid 6-digit code",
+      "twoFactorFailed": "2FA verification failed"
+    }
+  },
+  "profile": {
+    "links": {
+      "edit": "Edit profile",
+      "security": "Manage two-factor authentication",
+      "privacy": "Download or delete my data (GDPR)"
+    },
+    "avatar": {
+      "changeTitle": "Click to change avatar",
+      "uploading": "Uploading...",
+      "change": "Change",
+      "changePhoto": "Change photo"
+    },
+    "summary": {
+      "aboutMe": "About Me",
+      "emptyBio": "Nothing here yet."
+    },
+    "edit": {
+      "heading": "Edit Profile",
+      "displayNameLabel": "Display Name",
+      "displayNamePlaceholder": "Enter your display name",
+      "bioLabel": "About Me",
+      "bioPlaceholder": "Write something about yourself...",
+      "languageLabel": "Language",
+      "saveButton": "Save Profile Changes"
+    },
+    "twoFactor": {
+      "heading": "Two-Factor Authentication (2FA)",
+      "statusLabel": "Status:",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "description": "Secure your account using an authenticator app.",
+      "enableButton": "Enable 2FA",
+      "disableButton": "Disable 2FA",
+      "step1Qr": "1. Scan this QR code with Google Authenticator or Authy:",
+      "qrAlt": "2FA QR Code",
+      "step2Code": "2. Enter the 6-digit code from your app to verify and activate:",
+      "verifyButton": "Verify & Turn On",
+      "disablePrompt": "Enter the 6-digit code from your authenticator app to disable 2FA:",
+      "confirmDisableButton": "Confirm & Disable",
+      "cancelButton": "Cancel"
+    },
+    "logoutButton": "Logout",
+    "messages": {
+      "init2faFailed": "Failed to initialize 2FA",
+      "enable2faSuccess": "2FA successfully enabled!",
+      "invalidCode": "Invalid verification code",
+      "disable2faSuccess": "2FA has been disabled.",
+      "disable2faFailed": "Failed to disable 2FA",
+      "updateSuccess": "Profile updated successfully!",
+      "updateFailed": "Failed to update profile",
+      "uploadPhotoSuccess": "Photo updated.",
+      "uploadSuccess": "Avatar uploaded successfully! Refreshing...",
+      "uploadFailed": "Failed to upload avatar"
+    }
+  },
+  "home": {
+    "titleLine1": "Discover movies",
+    "titleLine2": "Meet people",
+    "subtitle": "Create movie events, join discussions, and connect with movie lovers.",
+    "upcomingScreenings": "Upcoming Screenings..."
+  },
+  "selectMovies": {
+    "heading": "Pick screening(s) for the club",
+    "searchPlaceholder": "Search for a movie",
+    "filters": {
+      "title": "Title",
+      "cinema": "Cinema",
+      "date": "Date",
+      "genre": "Genre"
+    },
+    "selectGenrePlaceholder": "Select a genre...",
+    "genres": {
+      "Action": "Action",
+      "Adventure": "Adventure",
+      "Animation": "Animation",
+      "Comedy": "Comedy",
+      "Crime": "Crime",
+      "Documentary": "Documentary",
+      "Drama": "Drama",
+      "Family": "Family",
+      "Fantasy": "Fantasy",
+      "History": "History",
+      "Horror": "Horror",
+      "Music": "Music",
+      "Mystery": "Mystery",
+      "Romance": "Romance",
+      "Science Fiction": "Science Fiction",
+      "Thriller": "Thriller",
+      "War": "War",
+      "Western": "Western"
+    },
+    "searchButton": "Search",
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "pageInfo": "Page {{page}} / {{totalPages}}"
+    }
+  },
+  "myScreenings": {
+    "heading": "My Screenings",
+    "subtitle": "Manage your upcoming movie club sessions and view your past attendances.",
+    "tabs": {
+      "upcoming": "Upcoming",
+      "history": "History"
+    },
+    "loading": "Loading screenings...",
+    "empty": {
+      "upcoming": "No upcoming screenings yet.",
+      "history": "You haven't attended any screenings in the past."
+    },
+    "dateTbd": "Date TBD",
+    "unknownTitle": "Unknown Title",
+    "unknownCinema": "Unknown Cinema",
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "errors": {
+      "notFound": "Sorry, this session has been canceled or is no longer available.",
+      "pastSession": "You cannot change the RSVP for a past session.",
+      "saveFailed": "An error occurred while saving your RSVP."
+    }
+  },
+  "screenings": {
+    "emptyUpcoming": "No upcoming screenings yet."
+  },
+  "calendar": {
+    "loading": "Loading your calendar...",
+    "heading": "My Screening Calendar",
+    "subtitle": "Review past sessions and see upcoming movie club events.",
+    "prev": "Prev",
+    "next": "Next",
+    "weekdays": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "eventTooltip": "{{title}} at {{time}}"
+  },
+  "friends": {
+    "tabs": {
+      "myFriends": "My Friends",
+      "requests": "Friend Requests",
+      "addFriends": "Add Friends"
+    },
+    "loading": {
+      "friends": "Loading friends...",
+      "requests": "Loading requests..."
+    },
+    "empty": {
+      "friends": "No friends yet, go add some!",
+      "requests": "No new friend requests"
+    },
+    "requestSubtitle": "Wants to add you as a friend",
+    "actions": {
+      "chat": "Chat",
+      "remove": "Remove",
+      "accept": "Accept",
+      "reject": "Reject",
+      "addFriend": "Add Friend",
+      "hideResult": "Hide this result"
+    },
+    "search": {
+      "placeholder": "Enter username or display name...",
+      "button": "Search",
+      "noResults": "No matching users found",
+      "enterKeywords": "Enter keywords to start searching"
+    },
+    "confirmRemove": "Are you sure you want to remove {{name}} from your friends?",
+    "notifications": {
+      "requestAcceptedByOther": "Someone accepted your friend request!",
+      "requestSent": "Friend request sent successfully!",
+      "requestAccepted": "Friend request accepted",
+      "requestRejected": "Friend request rejected",
+      "friendRemoved": "Friend removed successfully",
+      "redirectChat": "Redirecting to chat with {{username}}"
+    },
+    "errors": {
+      "loadFriends": "Could not load your friends. Please try again later.",
+      "loadRequests": "Could not load your friend requests. Please try again later.",
+      "searchFailed": "Search failed, please try again",
+      "sendFailed": "Failed to send request",
+      "operationFailed": "Operation failed",
+      "removeFailed": "Failed to remove friend"
+    },
+    "pageTitle": "Friends",
+    "viewProfile": "View profile"
+  },
+  "screeningDetails": {
+    "unavailable": {
+      "heading": "Screening Unavailable",
+      "message": "This screening no longer exists or has been removed.",
+      "backButton": "Back to Screenings"
+    },
+    "director": "Director:",
+    "cast": "Cast:",
+    "duration": "Duration:",
+    "noSynopsis": "No synopsis available.",
+    "trailer": "Trailer",
+    "dateAtTime": "{{date}} at {{time}}",
+    "goingCount": "{{count}} going",
+    "friendsGoing": "{{count}} friends going:",
+    "noFriendsGoing": "No friends going yet",
+    "chatPlaceholder": "Add chat here",
+    "actions": {
+      "going": "Going ✓",
+      "rsvp": "RSVP",
+      "removeEvent": "Remove Event",
+      "createEvent": "Create Event"
+    },
+    "calendar": {
+      "google": "+ Google Calendar",
+      "ics": "+ Apple/Outlook (.ics)",
+      "defaultDescription": "Movie screening session.",
+      "reminder": "Reminder"
+    },
+    "errors": {
+      "notFound": "Sorry, this session has been canceled or is no longer available.",
+      "pastSession": "You cannot modify the RSVP for a past session.",
+      "saveFailed": "An error occurred while saving your RSVP."
+    },
+    "moreInformation": "More information:",
+    "back": "Back",
+    "files": {
+      "heading": "Files (admin)",
+      "posterLabel": "Poster (PNG, JPG, WebP · 5 MB max)",
+      "changePoster": "Change poster",
+      "posterPreviewAlt": "Poster preview",
+      "restorePoster": "Restore original poster",
+      "confirmRestorePoster": "Restore the original poster?",
+      "attachmentsLabel": "Flyers & Images (PDF, PNG, JPG, WebP · 5 MB max each)",
+      "addAttachments": "Add flyers or images",
+      "noFileSelected": "No file selected",
+      "filesSelected": "{{count}} file(s) selected",
+      "remove": "Remove",
+      "delete": "Delete",
+      "confirmDeleteFile": "Delete this file?",
+      "upload": "Upload",
+      "uploading": "Uploading… {{progress}}%",
+      "errors": {
+        "wrongType": "{{name}}: wrong file type",
+        "tooLarge": "{{name}}: file is larger than 5 MB",
+        "tooManyFiles": "Maximum {{max}} files allowed at once",
+        "uploadFailedWithStatus": "Upload failed ({{status}})",
+        "networkError": "Network error during upload",
+        "deleteFailed": "Delete failed"
+      }
+    }
+  },
+  "admin": {
+    "loading": "Loading members...",
+    "heading": "Club Administration",
+    "badge": "Admin Only",
+    "searchPlaceholder": "Search user by name...",
+    "filters": {
+      "all": "All Users",
+      "admins": "Admins Only",
+      "members": "Members Only",
+      "banned": "Banned Only"
+    },
+    "table": {
+      "users": "USERS",
+      "role": "ROLE",
+      "joinedDate": "JOINED DATE",
+      "activity": "ACTIVITY (RSVPs)",
+      "actions": "ACTIONS"
+    },
+    "roles": {
+      "banned": "Banned",
+      "admin": "Admin",
+      "member": "Member"
+    },
+    "activity": {
+      "attended": "{{count}} Attended",
+      "upcoming": "{{count}} Upcoming"
+    },
+    "actions": {
+      "resign": "Resign (Remove my Admin)",
+      "cannotEditCoAdmin": "Cannot edit co-admin",
+      "unban": "Unban",
+      "makeAdmin": "Make Admin"
+    },
+    "tooltips": {
+      "viewProfile": "Click to view profile",
+      "permanentlyRemove": "Permanently Remove User",
+      "banUser": "Ban User",
+      "removeUser": "Remove User"
+    },
+    "empty": "No users found matching your criteria.",
+    "pagination": {
+      "showing": "Showing {{start}} to {{end}} of {{total}} users",
+      "rowsPerPage": "Rows per page",
+      "perPage": "{{count}} / page",
+      "prev": "Prev",
+      "next": "Next"
+    },
+    "confirm": {
+      "makeAdmin": "Are you sure you want to promote this user to Admin?",
+      "remove": "Are you sure you want to permanently remove this user from the club?",
+      "ban": "Are you sure you want to ban this user?",
+      "unban": "Are you sure you want to unban this user?",
+      "resign": "Are you sure you want to remove your own Admin rights? You will lose access to this dashboard."
+    },
+    "errors": {
+      "makeAdmin": "Failed to promote user to Admin.",
+      "remove": "Failed to remove user.",
+      "ban": "Failed to ban user.",
+      "unban": "Failed to unban user.",
+      "lastAdmin": "⚠️ You are the last admin in the club! Please promote another member to Admin before resigning.",
+      "resign": "Failed to resign."
+    }
+  },
+  "notifications": {
+    "heading": "Notifications",
+    "empty": "No notifications yet.",
+    "types": {
+      "clubPick": "<b>{{actor}}</b> picked <b>{{film}}</b> ({{date}})",
+      "clubPickRemoved": "<b>{{actor}}</b> unpicked <b>{{film}}</b> ({{date}})",
+      "friendRequest": "<b>{{actor}}</b> sent you a friend request",
+      "friendAccepted": "<b>{{actor}}</b> accepted your friend request",
+      "friendRsvp": "<b>{{actor}}</b> is going to <b>{{film}}</b> ({{date}})",
+      "unknown": "New unknown notification"
+    }
+  },
+  "movieDetails": {
+    "director": "Director:",
+    "cast": "Cast:",
+    "duration": "Duration:",
+    "noSynopsis": "No synopsis available.",
+    "trailer": "Trailer",
+    "upcomingScreenings": "Upcoming screenings",
+    "actions": {
+      "removeEvent": "Remove Event",
+      "createEvent": "Create Event"
+    },
+    "errors": {
+      "updateFailed": "Could not update event: {{message}}"
+    },
+    "back": "back"
+  },
+  "privacyPolicy": {
+    "heading": "Privacy Policy",
+    "intro": "CineClub is a scheduling and social platform for members of a local independent-cinema club. This page explains what personal data we collect, why, and what control members have over it.",
+    "sections": {
+      "collect": {
+        "title": "What we collect",
+        "body": "Account data (email, display name, avatar, bio), activity data (RSVPs, friend connections, chat messages), and — if used — your 42 Intra login or two-factor authentication secret."
+      },
+      "purpose": {
+        "title": "Why we collect it",
+        "body": "To operate the club's shared screening schedule, let members recognise and message each other, generate your personal calendar export, and secure your account."
+      },
+      "thirdParties": {
+        "title": "Third parties",
+        "body": "Screening times come from the public datacinesindes.fr feed. Movie information and translations are provided via The Movie Database (TMDB). This product uses the TMDB API but is not endorsed or certified by TMDB. We do not sell or share your data with advertisers."
+      },
+      "rights": {
+        "title": "Your rights",
+        "body": "You can export a copy of everything we hold about your account, or request permanent deletion, at any time from your profile settings."
+      }
+    }
+  },
+  "termsOfService": {
+    "heading": "Terms of Service",
+    "intro": "These terms govern your use of CineClub, a scheduling and social platform for the members of a local independent-cinema club. By creating an account, you agree to them.",
+    "sections": {
+      "membership": {
+        "title": "Membership",
+        "body": "Accounts are for individual club members. You're responsible for keeping your login credentials confidential and for activity under your account."
+      },
+      "acceptableUse": {
+        "title": "Acceptable use",
+        "body": "Be respectful in chat, RSVP honestly, and don't attempt to access another member's account or misuse the schedule."
+      },
+      "screeningData": {
+        "title": "Screening data",
+        "body": "Screening times are pulled from the public datacinesindes.fr feed and may occasionally be inaccurate or change without notice on the cinema's side — always double-check before travelling."
+      },
+      "termination": {
+        "title": "Termination",
+        "body": "You may delete your account at any time. We may suspend accounts that violate these terms."
+      }
+    }
+  },
+  "userProfile": {
+    "aboutMe": "About Me",
+    "emptyBio": "This user is lazy and hasn’t written anything yet~",
+    "confirmFriendRequest": "You need to be friends with {{name}} before chatting. Send a friend request now?",
+    "roles": {
+      "admin": "Admin",
+      "member": "Member"
+    },
+    "buttons": {
+      "back": "← Back",
+      "goBack": "Go Back",
+      "goToChat": "Go to Chat",
+      "sendingRequest": "Sending Request...",
+      "requestSent": "Friend Request Sent"
+    },
+    "alerts": {
+      "requestSent": "Friend request sent!"
+    },
+    "errors": {
+      "loadFailed": "Failed to load user profile",
+      "notFound": "User not found",
+      "sendRequestFailed": "Failed to send friend request"
+    }
+  },
+  "common": {
+    "back": "Back"
+  },
+  "chat": {
+    "groupPlaceholder": "Event group chat will be available here.",
+    "backToFriends": "Back to Friends",
+    "backToFriendsLabel": "← Friends",
+    "goToFriends": "Go to Friends",
+    "viewProfile": "Click to view profile",
+    "unavailable": "Conversation unavailable",
+    "loading": "Loading...",
+    "emptyWithFriend": "No messages yet. Say hello!",
+    "emptyNoHistory": "No conversation history available.",
+    "inputPlaceholder": "Type a message...",
+    "messagingDisabled": "Messaging disabled",
+    "sendButton": "Send",
+    "notFriendsNotice": "You cannot send messages because you are not friends.",
+    "errors": {
+      "notFound": "This conversation doesn't exist.",
+      "loadFailed": "Unable to load this conversation. Please try again.",
+      "sendFailed": "Message could not be sent. Please try again."
+    },
+    "sidebar": {
+      "title": "Chat",
+      "tabs": {
+        "groups": "Event Groups",
+        "friends": "Friends DM"
+      },
+      "groupsEmpty": "Event group conversations will appear here.",
+      "loading": "Loading friends...",
+      "loadFailed": "Failed to load friends.",
+      "errorPrefix": "Error:",
+      "noFriends": "You have no friends yet.",
+      "unreadCount_one": "{{count}} unread message",
+      "unreadCount_other": "{{count}} unread messages"
+    }
+  }
+}

@@ -10,7 +10,6 @@ import BottomNav from './components/BottomNav/BottomNav'
 import PrivacyPolicyPage from './pages/privacy-policy/PrivacyPolicyPage'
 import TermsOfServicePage from './pages/terms-of-service/TermsOfServicePage'
 import FriendsPage from './pages/friends/FriendsPage'
-import ManageMembersPage from './pages/manage-members/ManageMembersPage'
 import { AuthProvider } from './context/AuthContext'
 import ProfilePage from './pages/profile/ProfilePage'
 import EditProfilePage from './pages/profile/EditProfilePage'
@@ -57,7 +56,6 @@ function App() {
 
 				<Route element={<ProtectedRoute adminOnly />}>
 					<Route path="/select-movies" element={<SelectMoviesPage />} />
-					<Route path="/manage-members" element={<ManageMembersPage />} />
 					<Route path="/admin" element={<AdminDashboard />} />
 				</Route>
 
