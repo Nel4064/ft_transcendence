@@ -310,10 +310,27 @@
       }
     }
   },
+   "status": {
+    "heading": "État des services",
+    "back": "Retour à l'administration",
+    "services": {
+      "frontend": "Frontend",
+      "api": "API",
+      "database": "Base de données"
+    },
+    "states": {
+      "checking": "Vérification...",
+      "up": "Opérationnel",
+      "down": "En panne",
+      "unknown": "Inconnu"
+    },
+    "lastCheck": "Dernière vérification : {{time}} · actualisé toutes les {{seconds}} s"
+  },
   "admin": {
     "loading": "Chargement des membres...",
     "heading": "Administration du club",
     "badge": "Admin uniquement",
+	"statusButton": "État du système",
     "searchPlaceholder": "Rechercher un utilisateur par nom...",
     "filters": {
       "all": "Tous les utilisateurs",

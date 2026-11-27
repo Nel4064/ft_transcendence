@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react"
+import { Link } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import Heading from "../../components/Heading/Heading"
+import { useAuth } from "../../context/AuthContext"
 
-//public page: asks /api/health every 10s and shows the state of each service
+// status page, linked from the Administration page: asks /api/health every 10s and shows the state of each service
+// the route stays public so the page still works when the backend (and so the login check) is down
 type State = 'checking' | 'up' | 'down' | 'unknown'
-type Health = { api: State; database: State; checkedAt: Date | null}
+type Health = { api: State; database: State; checkedAt: Date | null }
 
 const REFRESH_MS = 10_000
 
@@ -17,14 +21,9 @@ const dotClass: Record<State, string> = {
 	unknown: 'bg-border',
 }
 
-const label: Record<State, string> = {
-	checking: 'Checking...',
-	up: 'Operational',
-	down: 'Down',
-	unknown: 'Unknown',
-}
-
 function StatusPage() {
+	const { t, i18n } = useTranslation()
+	const { user } = useAuth()
 	const [health, setHealth] = useState<Health>({ api: 'checking', database: 'checking', checkedAt: null })
 
 	useEffect(() => {
@@ -34,11 +33,11 @@ function StatusPage() {
 			let next: Pick<Health, 'api' | 'database'>
 			try {
 				const res = await fetch('/api/health', { cache: 'no-store', signal: AbortSignal.timeout(5000) })
-				if (res.ok) next = { api: 'up', database: 'up'}
-				else if (res.status === 503) next = { api: 'up', database: 'down'}
-				else next = { api: 'down', database: 'unknown'}
+				if (res.ok) next = { api: 'up', database: 'up' }
+				else if (res.status === 503) next = { api: 'up', database: 'down' }
+				else next = { api: 'down', database: 'unknown' }
 			} catch {
-				next = { api: 'down', database: 'unknown'}
+				next = { api: 'down', database: 'unknown' }
 			}
 			if (!cancelled) setHealth({ ...next, checkedAt: new Date() })
 		}
@@ -51,30 +50,38 @@ function StatusPage() {
 		}
 	}, [])
 
-	//if this code runs, the frontend works: its light is always green
-	const services: { name: string; state: State }[] = [
-		{ name: 'Frontend', state: 'up'},
-		{ name: 'API', state: health.api },
-		{ name: 'Database', state: health.database },
+	// if this code runs, the frontend works: its light is always green
+	const services: { key: 'frontend' | 'api' | 'database'; state: State }[] = [
+		{ key: 'frontend', state: 'up' },
+		{ key: 'api', state: health.api },
+		{ key: 'database', state: health.database },
 	]
 
 	return (
 		<main className="max-w-[800px] mx-auto py-12 px-4">
-			<Heading className="mb-5">Service status</Heading>
+			{user?.role === 'ADMIN' && (
+				<Link to="/admin" className="inline-block mb-4 text-sm text-text-muted hover:text-text transition-colors">
+					← {t('status.back')}
+				</Link>
+			)}
+			<Heading className="mb-5">{t('status.heading')}</Heading>
 			<ul className="space-y-3">
-			{services.map((s) => (
-					<li key={s.name} className={rowClass}>
-						<span className="font-semibold">{s.name}</span>
+				{services.map((s) => (
+					<li key={s.key} className={rowClass}>
+						<span className="font-semibold">{t(`status.services.${s.key}`)}</span>
 						<span className={stateClass}>
 							<span className={`w-3 h-3 rounded-full ${dotClass[s.state]}`} aria-hidden="true" />
-							{label[s.state]}
+							{t(`status.states.${s.state}`)}
 						</span>
 					</li>
 				))}
 			</ul>
 			{health.checkedAt && (
 				<p className="mt-4 text-xs text-text-muted">
-					Last check: {health.checkedAt.toLocaleTimeString('en-GB')} · refreshed every {REFRESH_MS / 1000} s
+					{t('status.lastCheck', {
+						time: health.checkedAt.toLocaleTimeString(i18n.language),
+						seconds: REFRESH_MS / 1000,
+					})}
 				</p>
 			)}
 		</main>
