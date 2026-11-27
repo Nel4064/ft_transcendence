@@ -32,6 +32,9 @@ export class ScreeningsService {
     });
     const friendIds = friendships.map(f => f.friendId);
     const screenings = await this.prisma.screening.findMany({
+      where: {
+        rsvps: { some: { userId } },
+      },
       include: {
         _count: {
           select: { rsvps: true },

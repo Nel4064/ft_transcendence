@@ -91,7 +91,7 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 			// ]);
 			const [historyResult, profileResult] = await Promise.allSettled([
 				getDirectHistory(apiFetch, friendId),
-				apiFetch(`/users/${friendId}`),
+				apiFetch(`/users/${friendId}`), // can be moved to api/friends.ts
 			]);
 			if (isCancelled) return;
 
