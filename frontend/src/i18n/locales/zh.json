@@ -84,7 +84,7 @@
     },
     "twoFactor": {
       "heading": "双重身份验证 (2FA)",
-      "statusLabel": "状态：",
+      "appTitle": "身份验证器应用",
       "enabled": "已启用",
       "disabled": "未启用",
       "description": "使用身份验证器应用保护您的账户安全。",

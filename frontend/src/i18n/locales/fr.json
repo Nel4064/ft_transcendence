@@ -84,7 +84,7 @@
     },
     "twoFactor": {
       "heading": "Authentification à deux facteurs (2FA)",
-      "statusLabel": "Statut :",
+      "appTitle": "Application d'authentification",
       "enabled": "Activée",
       "disabled": "Désactivée",
       "description": "Sécurisez votre compte à l'aide d'une application d'authentification.",
