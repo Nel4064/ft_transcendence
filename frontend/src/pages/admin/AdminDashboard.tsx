@@ -100,6 +100,7 @@ export default function AdminDashboard() {
 			filter === 'ALL' || u.role === filter
 		return matchesSearch && matchesFilter
 	})
+    .sort((a, b) => Number(b.role === 'ADMIN') - Number(a.role === 'ADMIN'))
 
 	const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE))
 	const safePage = Math.min(page, totalPages)
