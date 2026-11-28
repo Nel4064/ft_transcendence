@@ -23,10 +23,9 @@ up: env certs secrets
 down:
 	$(COMPOSE) down
 
-# also removes the volumes: database data and node_modules are lost
+# also removes the volumes: database data and node_modules are lost (add rm -rf certs if you want to delete certs for demo.)
 clean:
 	$(COMPOSE) down -v
-	rm -rf certs
 
 re: clean all
 
