@@ -56,7 +56,7 @@ function toLocalDay(iso: string) {
 }
 
 function MoviesList({ searchTerm = '', filter = 'title', perPage }: MoviesListProps) {
-	const { t, i18n } = useTranslation()
+	const { i18n } = useTranslation()
 	const [searchParams, setSearchParams] = useSearchParams()
 	const [rows, setRows] = useState<FeedRow[]>([])
 	const [translations, setTranslations] = useState<Record<string, Record<string, string>>>({})
