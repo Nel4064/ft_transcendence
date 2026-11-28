@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { normalizeTitle } from '../../utils/normalizeTitle'
 import { getLocalizedValue } from '../../utils/localizedValue'
 import { apiFetch } from '../../context/AuthContext'
-import Button from '../button/Button'
+import Pagination from '../Pagination/Pagination'
 
 const FEED_URL = 'https://datacinesindes.fr/data-fair/api/v1/datasets/programmation-cinemas/lines'
 const DAYS_AHEAD = 7
@@ -27,7 +27,7 @@ type MoviesListProps = {
 	perPage?: number
 }
 
-// 模块级缓存，翻页或返回列表时不用重复请求 TMDB
+// Module-level cache: avoids re-fetching TMDB data when changing page or coming back to the list
 const titleCache = new Map<string, Record<string, string>>()
 const genreCache = new Map<string, string[]>()
 
@@ -56,7 +56,7 @@ function toLocalDay(iso: string) {
 }
 
 function MoviesList({ searchTerm = '', filter = 'title', perPage }: MoviesListProps) {
-	const { t, i18n } = useTranslation()
+	const { i18n } = useTranslation()
 	const [searchParams, setSearchParams] = useSearchParams()
 	const [rows, setRows] = useState<FeedRow[]>([])
 	const [translations, setTranslations] = useState<Record<string, Record<string, string>>>({})
@@ -121,14 +121,14 @@ function MoviesList({ searchTerm = '', filter = 'title', perPage }: MoviesListPr
 		return true
 	})
 
-	// 所有去重片名（用于按 genre 筛选时补全未缓存的电影元数据）
+	// All unique titles (used to fetch missing movie metadata when filtering by genre)
 	const allUniqueTitles = Array.from(new Set(rows.map((r) => r.filmtitle)))
 
 	const totalPages = perPage ? Math.max(1, Math.ceil(uniqueMovies.length / perPage)) : 1
 	const page = rows.length > 0 ? Math.min(rawPage, totalPages) : rawPage
 	const visible = perPage ? uniqueMovies.slice((page - 1) * perPage, page * perPage) : uniqueMovies
 
-	// 按 genre 筛选时拉取所有去重影片的元数据；其他模式只拉当前页
+	// When filtering by genre, fetch metadata for all unique movies; otherwise only for the current page
 	const targetTitles = filter === 'genre' && term !== ''
 		? allUniqueTitles
 		: visible.map((r) => r.filmtitle)
@@ -152,7 +152,7 @@ function MoviesList({ searchTerm = '', filter = 'title', perPage }: MoviesListPr
 					genreCache.set(title, parsedGenres)
 					return { title, titleTranslations: parsedTranslations, genres: parsedGenres }
 				} catch {
-					// 忽略单条失败，保留原标题
+					// Ignore a single failure and keep the original title
 					return null
 				}
 			})
@@ -190,16 +190,14 @@ function MoviesList({ searchTerm = '', filter = 'title', perPage }: MoviesListPr
 					/>
 				)
 			})}
-			{perPage && totalPages > 1 && (
-				<div className="col-span-full flex items-center justify-center gap-4 mt-4">
-					<Button variant="admin" onClick={() => setPage(page - 1)} disabled={page === 1}>
-						{t('selectMovies.pagination.previous')}
-					</Button>
-					<span>{t('selectMovies.pagination.pageInfo', { page, totalPages })}</span>
-					<Button variant="admin" onClick={() => setPage(page + 1)} disabled={page === totalPages}>
-						{t('selectMovies.pagination.next')}
-					</Button>
-				</div>
+			{perPage && (
+				<Pagination
+					page={page}
+					totalPages={totalPages}
+					onPageChange={setPage}
+					variant="admin"
+					className="col-span-full"
+				/>
 			)}
 		</>
 	)

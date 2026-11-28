@@ -1,468 +1,202 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { useAuth } from '../../context/AuthContext'
+import { useDialog } from '../../context/DialogContext'
+import AvatarLink from '../../components/Avatar/AvatarLink'
+import Icon from '../../components/Icon/Icon'
+import Heading from '../../components/Heading/Heading'
+import RoleBadge from '../../components/Badge/RoleBadge'
+import Input from '../../components/Input/Input'
+import Select from '../../components/Select/Select'
+import Button, { buttonClass } from '../../components/button/Button'
+import Loader from '../../components/Loader/Loader'
+import EmptyState from '../../components/EmptyState/EmptyState'
+import Pagination from '../../components/Pagination/Pagination'
 import {
-    Search,
-    Shield,
-    Ban,
-    Film,
-    CalendarClock,
-    Trash2,
-    ShieldAlert,
-    RotateCcw,
-    ChevronLeft,
-    ChevronRight,
-	Activity,
-} from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import Avatar from '../../components/Avatar/Avatar';
-import {
-    getAdminMembers,
-    updateMemberRole,
-    removeMember,
-    resignAdmin,
-    banMember,
-    unbanMember,
-} from '../../api/admin';
+	getAdminMembers,
+	updateMemberRole,
+	removeMember,
+	resignAdmin,
+} from '../../api/admin'
 
-type Role = 'ADMIN' | 'USER';
+const PAGE_SIZE = 10
+
+type Role = 'ADMIN' | 'USER'
+type Filter = 'ALL' | Role
+type Action = 'makeAdmin' | 'remove' | 'resign'
 
 interface UserStat {
-    id: string;
-    username: string;
-    handle: string;
-    avatar: string | null;
-    role: Role;
-    isBanned: boolean;
-    joinedDate: string;
-    rsvps: {
-        attended: number;
-        upcoming: number;
-    };
+	id: string
+	username: string
+	handle: string
+	avatar: string | null
+	role: Role
+	joinedDate: string
+	rsvps: { attended: number; upcoming: number }
 }
 
+const cellClass = 'py-4 px-6'
+
 export default function AdminDashboard() {
-    const { t } = useTranslation();
-    const navigate = useNavigate();
-    const [users, setUsers] = useState<UserStat[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [roleFilter, setRoleFilter] = useState<'ALL' | Role | 'BANNED'>('ALL');
+	const { t } = useTranslation()
+	const navigate = useNavigate()
+	const { user, apiFetch } = useAuth()
+	const { confirm, alert } = useDialog()
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+	const [users, setUsers] = useState<UserStat[]>([])
+	const [isLoading, setIsLoading] = useState(true)
+	const [searchQuery, setSearchQuery] = useState('')
+	const [filter, setFilter] = useState<Filter>('ALL')
+	const [page, setPage] = useState(1)
 
-    const { user, apiFetch } = useAuth();
-    const CURRENT_USER_ID = user?.id;
+	useEffect(() => {
+		getAdminMembers(apiFetch)
+			.then(setUsers)
+			.catch((error) => console.error('Failed to fetch members', error))
+			.finally(() => setIsLoading(false))
+	}, [apiFetch])
 
-    useEffect(() => {
-        const fetchMembers = async () => {
-            try {
-                const data = await getAdminMembers(apiFetch);
-                setUsers(data);
-            } catch (error) {
-                console.error('Failed to fetch members', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchMembers();
-    }, [apiFetch]);
+	// Shared flow for every action: confirm -> API call -> update the list, or alert on failure
+	async function runAction(action: Action, request: () => Promise<unknown>, update: (list: UserStat[]) => UserStat[]) {
+		const confirmed = await confirm(t(`admin.confirm.${action}`), {
+			danger: true,   // every admin action changes someone's rights: always a red confirm button
+			confirmLabel: t(`admin.actions.${action}`),
+		})
+		if (!confirmed) return false
+		try {
+			await request()
+			setUsers(update)
+			return true
+		} catch (error) {
+			console.error(error)
+			await alert(t(`admin.errors.${action}`), { tone: 'error' })
+			return false
+		}
+	}
 
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchQuery, roleFilter, pageSize]);
+	// Returns a list updater that merges `changes` into the user with this id
+	const patch = (id: string, changes: Partial<UserStat>) => (list: UserStat[]) =>
+		list.map((u) => (u.id === id ? { ...u, ...changes } : u))
 
-    const handleMakeAdmin = async (id: string) => {
-        if (!window.confirm(t('admin.confirm.makeAdmin'))) return;
+	const handleMakeAdmin = (id: string) =>
+		runAction('makeAdmin', () => updateMemberRole(apiFetch, id, 'ADMIN'), patch(id, { role: 'ADMIN' }))
+	const handleRemove = (id: string) =>
+		runAction('remove', () => removeMember(apiFetch, id), (list) => list.filter((u) => u.id !== id))
 
-        try {
-            await updateMemberRole(apiFetch, id, 'ADMIN');
-            setUsers(users.map(u => (u.id === id ? { ...u, role: 'ADMIN' } : u)));
-        } catch (error) {
-            console.error(error);
-            alert(t('admin.errors.makeAdmin'));
-        }
-    };
+	async function handleResign(id: string) {
+		if (users.filter((u) => u.role === 'ADMIN').length <= 1) {
+			await alert(t('admin.errors.lastAdmin'), { tone: 'error' })
+			return
+		}
+		if (await runAction('resign', () => resignAdmin(apiFetch, id), patch(id, { role: 'USER' })))
+			navigate('/')
+	}
 
-    const handleRemove = async (id: string) => {
-        if (!window.confirm(t('admin.confirm.remove'))) return;
+	const query = searchQuery.toLowerCase()
+	const filteredUsers = users.filter((u) => {
+		const matchesSearch = u.username.toLowerCase().includes(query) || u.handle.toLowerCase().includes(query)
+		const matchesFilter =
+			filter === 'ALL' || u.role === filter
+		return matchesSearch && matchesFilter
+	})
+    .sort((a, b) => Number(b.role === 'ADMIN') - Number(a.role === 'ADMIN'))
 
-        try {
-            await removeMember(apiFetch, id);
-            setUsers(users.filter(u => u.id !== id));
-        } catch (error) {
-            console.error(error);
-            alert(t('admin.errors.remove'));
-        }
-    };
+	const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE))
+	const safePage = Math.min(page, totalPages)
+	const visibleUsers = filteredUsers.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
 
-    const handleBan = async (id: string) => {
-        if (!window.confirm(t('admin.confirm.ban'))) return;
+	function renderActions(member: UserStat) {
+		if (member.role === 'ADMIN') {
+			if (member.id !== user?.id)
+				return <span className="text-small text-text-light italic">{t('admin.actions.cannotEditCoAdmin')}</span>
+			return <Button variant="danger" onClick={() => handleResign(member.id)}>{t('admin.actions.resign')}</Button>
+		}
+		return (
+			<>
+				<Button variant="admin" onClick={() => handleMakeAdmin(member.id)}>{t('admin.actions.makeAdmin')}</Button>
+				<Button variant="danger" onClick={() => handleRemove(member.id)}>{t('admin.actions.remove')}</Button>
+			</>
+		)
+	}
 
-        try {
-            await banMember(apiFetch, id);
-            setUsers(users.map(u => (u.id === id ? { ...u, isBanned: true } : u)));
-        } catch (error) {
-            console.error(error);
-            alert(t('admin.errors.ban'));
-        }
-    };
+	if (isLoading) return <Loader text={t('admin.loading')} />
 
-    const handleUnban = async (id: string) => {
-        if (!window.confirm(t('admin.confirm.unban'))) return;
+	return (
+		<main className="max-w-6xl mx-auto py-12 px-4">
+			<div className="flex items-center justify-between gap-4 mb-6">
+				<Heading className="tracking-tight">{t('admin.heading')}</Heading>
+				<Link to="/status" className={buttonClass('secondary', 'md', 'inline-flex items-center gap-1.5')}>
+					<Icon name="bolt" size={16} />
+					{t('admin.statusButton')}
+				</Link>
+			</div>
 
-        try {
-            await unbanMember(apiFetch, id);
-            setUsers(users.map(u => (u.id === id ? { ...u, isBanned: false } : u)));
-        } catch (error) {
-            console.error(error);
-            alert(t('admin.errors.unban'));
-        }
-    };
+			<div className="flex flex-col sm:flex-row gap-4 mb-6">
+				<Input
+					placeholder={t('admin.searchPlaceholder')}
+					value={searchQuery}
+					onChange={(e) => { setSearchQuery(e.target.value); setPage(1) }}
+					className="flex-1"
+				/>
+				<Select value={filter} onChange={(e) => { setFilter(e.target.value as Filter); setPage(1) }}>
+					<option value="ALL">{t('admin.filters.all')}</option>
+					<option value="ADMIN">{t('admin.filters.admins')}</option>
+					<option value="USER">{t('admin.filters.members')}</option>
+				</Select>
+			</div>
 
-    const handleResign = async (id: string) => {
-        const adminCount = users.filter(u => u.role === 'ADMIN').length;
-
-        if (adminCount <= 1) {
-            alert(t('admin.errors.lastAdmin'));
-            return;
-        }
-
-        if (!window.confirm(t('admin.confirm.resign'))) return;
-
-        try {
-            await resignAdmin(apiFetch, id);
-            setUsers(users.map(u => (u.id === id ? { ...u, role: 'USER' } : u)));
-            navigate('/');
-        } catch (error) {
-            console.error(error);
-            alert(t('admin.errors.resign'));
-        }
-    };
-
-    const filteredUsers = users.filter(u => {
-        const matchesSearch =
-            u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            u.handle.toLowerCase().includes(searchQuery.toLowerCase());
-
-        const matchesFilter =
-            roleFilter === 'ALL'
-                ? true
-                : roleFilter === 'BANNED'
-                ? u.isBanned
-                : u.role === roleFilter;
-
-        return matchesSearch && matchesFilter;
-    });
-
-    const totalItems = filteredUsers.length;
-    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-    const safeCurrentPage = Math.min(currentPage, totalPages);
-    const startIndex = (safeCurrentPage - 1) * pageSize;
-    const endIndex = Math.min(startIndex + pageSize, totalItems);
-    const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
-
-    const getPageNumbers = (): (number | '...')[] => {
-        if (totalPages <= 7) {
-            return Array.from({ length: totalPages }, (_, i) => i + 1);
-        }
-        if (safeCurrentPage <= 3) {
-            return [1, 2, 3, 4, '...', totalPages];
-        }
-        if (safeCurrentPage >= totalPages - 2) {
-            return [1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
-        }
-        return [1, '...', safeCurrentPage - 1, safeCurrentPage, safeCurrentPage + 1, '...', totalPages];
-    };
-
-    if (isLoading) {
-        return <div className="min-h-screen flex items-center justify-center text-stone-500">{t('admin.loading')}</div>;
-    }
-
-    return (
-        <div className="max-w-6xl mx-auto p-6 bg-stone-50 min-h-screen">
-            {/* 头部区域 */}
-            <div className="flex items-center justify-between mb-8">
-                <h1 className="text-2xl font-bold text-stone-900 flex items-center gap-2">
-                    <ShieldAlert className="w-7 h-7 text-stone-700" />
-                    {t('admin.heading')}
-                </h1>
-				<div className="flex items-center gap-3">
-					<button
-						type="button"
-						onClick={() => navigate('/status')}
-						className="flex items-center gap-2 text-sm font-medium text-stone-700 bg-white border border-stone-200 px-3 py-1 rounded-full hover:bg-stone-100 transition-colors"
-					>
-						<Activity className="w-4 h-4" />
-						{t('admin.statusButton')}
-					</button>
-					<span className="text-sm font-medium text-stone-500 bg-stone-200 px-3 py-1 rounded-full">
-						{t('admin.badge')}
-					</span>
+			{filteredUsers.length === 0 ? (
+				<EmptyState message={t('admin.empty')} />
+			) : (
+				<div className="bg-surface border border-border rounded-lg shadow-card overflow-x-auto">
+					<table className="w-full text-left">
+						<thead className="text-small text-text-muted">
+							<tr>
+								<th className={cellClass}>{t('admin.table.users')}</th>
+								<th className={cellClass}>{t('admin.table.role')}</th>
+								<th className={cellClass}>{t('admin.table.joinedDate')}</th>
+								<th className={cellClass}>{t('admin.table.activity')}</th>
+								<th className={cellClass}>{t('admin.table.actions')}</th>
+							</tr>
+						</thead>
+						<tbody>
+							{visibleUsers.map((member) => (
+								<tr key={member.id} className="border-t border-border">
+									<td className={cellClass}>
+										<div className="flex items-center gap-3">
+											<AvatarLink userId={member.id} src={member.avatar} name={member.username} size={40} />
+											<div>
+												<p className="font-semibold text-text">{member.username}</p>
+												<p className="text-small text-text-muted">{member.handle}</p>
+											</div>
+										</div>
+									</td>
+									<td className={cellClass}>
+										<RoleBadge role={member.role} />
+									</td>
+									<td className={`${cellClass} text-small text-text-muted`}>{member.joinedDate}</td>
+									<td className={`${cellClass} text-small`}>
+										<p className="flex items-center gap-1.5 text-text">
+											<Icon name="movie" size={16} />
+											{t('admin.activity.attended', { count: member.rsvps.attended })}
+										</p>
+										<p className="flex items-center gap-1.5 text-text-muted">
+											<Icon name="calendar-clock" size={16} />
+											{t('admin.activity.upcoming', { count: member.rsvps.upcoming })}
+										</p>
+									</td>
+									<td className={cellClass}>
+										<div className="flex items-center gap-2">{renderActions(member)}</div>
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
 				</div>
-            </div>
+			)}
 
-            {/* 搜索与筛选 */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
-                    <input
-                        type="text"
-                        placeholder={t('admin.searchPlaceholder')}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400 bg-white"
-                    />
-                </div>
-                <select
-                    value={roleFilter}
-                    onChange={(e) => setRoleFilter(e.target.value as 'ALL' | Role | 'BANNED')}
-                    className="py-2 px-4 border border-stone-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-stone-400 text-stone-700"
-                >
-                    <option value="ALL">{t('admin.filters.all')}</option>
-                    <option value="ADMIN">{t('admin.filters.admins')}</option>
-                    <option value="USER">{t('admin.filters.members')}</option>
-                    <option value="BANNED">{t('admin.filters.banned')}</option>
-                </select>
-            </div>
-
-            {/* 用户列表表格 */}
-            <div className="bg-white border border-stone-200 rounded-xl overflow-hidden shadow-sm">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-stone-100/50 border-b border-stone-200 text-sm text-stone-500">
-                                <th className="py-4 px-6 font-medium">{t('admin.table.users')}</th>
-                                <th className="py-4 px-6 font-medium">{t('admin.table.role')}</th>
-                                <th className="py-4 px-6 font-medium">{t('admin.table.joinedDate')}</th>
-                                <th className="py-4 px-6 font-medium">{t('admin.table.activity')}</th>
-                                <th className="py-4 px-6 font-medium text-right">{t('admin.table.actions')}</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-stone-100">
-                            {paginatedUsers.map((member) => (
-                                <tr
-                                    key={member.id}
-                                    className={
-                                        member.isBanned
-                                            ? 'bg-red-50/30 hover:bg-red-50/50 transition-colors'
-                                            : 'hover:bg-stone-50/50 transition-colors'
-                                    }
-                                >
-                                    {/* 用户信息 */}
-                                    <td className="py-4 px-6">
-                                        <div className="flex items-center gap-3">
-                                            <div
-                                                onClick={() => navigate(`/users/${member.id}`)}
-                                                className="cursor-pointer hover:opacity-80 transition-opacity shrink-0"
-                                                title={t('admin.tooltips.viewProfile')}
-                                            >
-                                                <Avatar src={member.avatar || undefined} name={member.username} size={40} />
-                                            </div>
-                                            <div>
-                                                <p
-                                                    onClick={() => navigate(`/users/${member.id}`)}
-                                                    className={`font-semibold cursor-pointer hover:underline ${
-                                                        member.isBanned ? 'text-stone-500 line-through' : 'text-stone-900'
-                                                    }`}
-                                                    title={t('admin.tooltips.viewProfile')}
-                                                >
-                                                    {member.username}
-                                                </p>
-                                                <p className="text-sm text-stone-500">{member.handle}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    {/* 角色与封禁状态 */}
-                                    <td className="py-4 px-6">
-                                        {member.isBanned ? (
-                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                                                <Ban className="w-3.5 h-3.5" />
-                                                {t('admin.roles.banned')}
-                                            </span>
-                                        ) : (
-                                            <span
-                                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                                                    member.role === 'ADMIN'
-                                                        ? 'bg-amber-100 text-amber-800'
-                                                        : 'bg-stone-100 text-stone-700'
-                                                }`}
-                                            >
-                                                {member.role === 'ADMIN' && <Shield className="w-3.5 h-3.5" />}
-                                                {member.role === 'ADMIN' ? t('admin.roles.admin') : t('admin.roles.member')}
-                                            </span>
-                                        )}
-                                    </td>
-
-                                    {/* 加入时间 */}
-                                    <td className="py-4 px-6 text-sm text-stone-600">
-                                        {member.joinedDate}
-                                    </td>
-
-                                    {/* 活跃度 (RSVPs) */}
-                                    <td className="py-4 px-6">
-                                        <div className="flex flex-col gap-1 text-sm">
-                                            <span className="flex items-center gap-1.5 text-stone-700">
-                                                <Film className="w-4 h-4 text-stone-400" />
-                                                {t('admin.activity.attended', { count: member.rsvps.attended })}
-                                            </span>
-                                            <span className="flex items-center gap-1.5 text-stone-500">
-                                                <CalendarClock className="w-4 h-4 text-stone-400" />
-                                                {t('admin.activity.upcoming', { count: member.rsvps.upcoming })}
-                                            </span>
-                                        </div>
-                                    </td>
-
-                                    {/* 操作按钮组 */}
-                                    <td className="py-4 px-6">
-                                        <div className="flex items-center justify-end gap-2">
-                                            {member.role === 'ADMIN' ? (
-                                                member.id === CURRENT_USER_ID ? (
-                                                    <button
-                                                        onClick={() => handleResign(member.id)}
-                                                        className="text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors"
-                                                    >
-                                                        {t('admin.actions.resign')}
-                                                    </button>
-                                                ) : (
-                                                    <span className="text-xs text-stone-400 italic px-3 py-1.5">
-                                                        {t('admin.actions.cannotEditCoAdmin')}
-                                                    </span>
-                                                )
-                                            ) : member.isBanned ? (
-                                                <>
-                                                    <button
-                                                        onClick={() => handleUnban(member.id)}
-                                                        className="inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
-                                                    >
-                                                        <RotateCcw className="w-4 h-4" />
-                                                        {t('admin.actions.unban')}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleRemove(member.id)}
-                                                        aria-label={t('admin.tooltips.permanentlyRemove')}
-                                                        className="relative group p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                    >
-                                                        <Trash2 className="w-5 h-5" />
-                                                        <span className="pointer-events-none absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-md bg-stone-800 px-2.5 py-1 text-xs font-medium text-white opacity-0 shadow-md transition-opacity duration-150 group-hover:opacity-100 z-10">
-                                                            {t('admin.tooltips.permanentlyRemove')}
-                                                        </span>
-                                                    </button>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <button
-                                                        onClick={() => handleMakeAdmin(member.id)}
-                                                        className="text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
-                                                    >
-                                                        {t('admin.actions.makeAdmin')}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleBan(member.id)}
-                                                        aria-label={t('admin.tooltips.banUser')}
-                                                        className="relative group p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                    >
-                                                        <Ban className="w-5 h-5" />
-                                                        <span className="pointer-events-none absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-md bg-stone-800 px-2.5 py-1 text-xs font-medium text-white opacity-0 shadow-md transition-opacity duration-150 group-hover:opacity-100 z-10">
-                                                            {t('admin.tooltips.banUser')}
-                                                        </span>
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleRemove(member.id)}
-                                                        aria-label={t('admin.tooltips.removeUser')}
-                                                        className="relative group p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                    >
-                                                        <Trash2 className="w-5 h-5" />
-                                                        <span className="pointer-events-none absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-md bg-stone-800 px-2.5 py-1 text-xs font-medium text-white opacity-0 shadow-md transition-opacity duration-150 group-hover:opacity-100 z-10">
-                                                            {t('admin.tooltips.removeUser')}
-                                                        </span>
-                                                    </button>
-                                                </>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-
-                    {/* 空状态处理 */}
-                    {totalItems === 0 && (
-                        <div className="text-center py-12 text-stone-500">
-                            {t('admin.empty')}
-                        </div>
-                    )}
-                </div>
-
-                {/* 底部分页栏 */}
-                {totalItems > 0 && (
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 bg-stone-50/70 border-t border-stone-200 text-sm text-stone-600">
-                        {/* 左侧：数据统计 + 每页条数切换 */}
-                        <div className="flex items-center gap-3">
-                            <span>
-                                {t('admin.pagination.showing', {
-                                    start: startIndex + 1,
-                                    end: endIndex,
-                                    total: totalItems,
-                                })}
-                            </span>
-                            <select
-                                value={pageSize}
-                                onChange={(e) => setPageSize(Number(e.target.value))}
-                                className="py-1 px-2 border border-stone-200 rounded-md bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-stone-400"
-                                aria-label={t('admin.pagination.rowsPerPage')}
-                            >
-                                <option value={5}>{t('admin.pagination.perPage', { count: 5 })}</option>
-                                <option value={10}>{t('admin.pagination.perPage', { count: 10 })}</option>
-                                <option value={20}>{t('admin.pagination.perPage', { count: 20 })}</option>
-                            </select>
-                        </div>
-
-                        {/* 右侧：翻页控件 */}
-                        <div className="flex items-center gap-1">
-                            <button
-                                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                                disabled={safeCurrentPage === 1}
-                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-stone-200 bg-white text-stone-700 hover:bg-stone-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                            >
-                                <ChevronLeft className="w-4 h-4" />
-                                {t('admin.pagination.prev')}
-                            </button>
-
-                            {getPageNumbers().map((page, index) =>
-                                page === '...' ? (
-                                    <span key={`ellipsis-${index}`} className="px-2 py-1 text-stone-400">
-                                        ...
-                                    </span>
-                                ) : (
-                                    <button
-                                        key={page}
-                                        onClick={() => setCurrentPage(page)}
-                                        className={`min-w-[34px] px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                                            safeCurrentPage === page
-                                                ? 'bg-stone-800 text-white'
-                                                : 'border border-stone-200 bg-white text-stone-700 hover:bg-stone-100'
-                                        }`}
-                                    >
-                                        {page}
-                                    </button>
-                                ),
-                            )}
-
-                            <button
-                                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                                disabled={safeCurrentPage === totalPages}
-                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-stone-200 bg-white text-stone-700 hover:bg-stone-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                            >
-                                {t('admin.pagination.next')}
-                                <ChevronRight className="w-4 h-4" />
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
+			<Pagination page={safePage} totalPages={totalPages} onPageChange={setPage} variant="admin" className="mt-6" />
+		</main>
+	)
 }

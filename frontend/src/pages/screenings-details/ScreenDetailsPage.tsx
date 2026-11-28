@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import defaultMovie from '../../assets/default-movie.jpg'
 import { useAuth } from '../../context/AuthContext'
 import BackButton from '../../components/BackButton/BackButton'
 import Button from '../../components/button/Button'
-import Avatar from '../../components/Avatar/Avatar'
+import AvatarLink from '../../components/Avatar/AvatarLink'
 import Icon from '../../components/Icon/Icon'
 import type { Screening } from '../../api/screenings'
 import { getScreening, rsvp, cancelRsvp, removeScreening } from '../../api/screenings'
@@ -309,16 +309,12 @@ function ScreenDetailsPage() {
                         <ul className="flex flex-wrap gap-2 mt-3">
                             {friendsList.map((friend) => (
                                 <li key={friend.id} title={friend.username}>
-                                    <Link
-                                        to={`/users/${friend.id}`}
-                                        className="block hover:opacity-80 hover:scale-105 transition-all duration-200 cursor-pointer"
-                                    >
-                                        <Avatar
-                                            name={friend.displayName || friend.username}
-                                            src={friend.avatarUrl}
-                                            size={40}
-                                        />
-                                    </Link>
+                                    <AvatarLink
+                                        userId={friend.id}
+                                        name={friend.displayName || friend.username}
+                                        src={friend.avatarUrl}
+                                        size={40}
+                                    />
                                 </li>
                             ))}
                         </ul>

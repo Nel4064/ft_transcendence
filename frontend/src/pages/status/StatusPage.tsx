@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import Heading from "../../components/Heading/Heading"
-import { useAuth } from "../../context/AuthContext"
+import BackButton from "../../components/BackButton/BackButton"
+import Badge, { type Tone } from "../../components/Badge/Badge"
 
 // status page, linked from the Administration page: asks /api/health every 10s and shows the state of each service
 // the route stays public so the page still works when the backend (and so the login check) is down
@@ -12,18 +12,18 @@ type Health = { api: State; database: State; checkedAt: Date | null }
 const REFRESH_MS = 10_000
 
 const rowClass = "flex items-center justify-between p-4 bg-surface border border-border rounded-md"
-const stateClass = "flex items-center gap-2 text-sm text-text-muted"
+// fixed width so every badge has the same size, whatever the state label
+const stateBadgeClass = "w-36 justify-center"
 
-const dotClass: Record<State, string> = {
-	checking: 'bg-border',
-	up: 'bg-success',
-	down: 'bg-danger',
-	unknown: 'bg-border',
+const stateTone: Record<State, Tone> = {
+	checking: 'neutral',
+	up: 'success',
+	down: 'danger',
+	unknown: 'neutral',
 }
 
 function StatusPage() {
 	const { t, i18n } = useTranslation()
-	const { user } = useAuth()
 	const [health, setHealth] = useState<Health>({ api: 'checking', database: 'checking', checkedAt: null })
 
 	useEffect(() => {
@@ -59,20 +59,17 @@ function StatusPage() {
 
 	return (
 		<main className="max-w-[800px] mx-auto py-12 px-4">
-			{user?.role === 'ADMIN' && (
-				<Link to="/admin" className="inline-block mb-4 text-sm text-text-muted hover:text-text transition-colors">
-					← {t('status.back')}
-				</Link>
-			)}
+			<div className="mb-4">
+				<BackButton />
+			</div>
 			<Heading className="mb-5">{t('status.heading')}</Heading>
 			<ul className="space-y-3">
 				{services.map((s) => (
 					<li key={s.key} className={rowClass}>
 						<span className="font-semibold">{t(`status.services.${s.key}`)}</span>
-						<span className={stateClass}>
-							<span className={`w-3 h-3 rounded-full ${dotClass[s.state]}`} aria-hidden="true" />
+						<Badge tone={stateTone[s.state]} className={stateBadgeClass}>
 							{t(`status.states.${s.state}`)}
-						</span>
+						</Badge>
 					</li>
 				))}
 			</ul>

@@ -8,6 +8,7 @@ import { getLocalizedValue } from '../../utils/localizedValue'
 import Loader from '../../components/Loader/Loader'
 import Heading from '../../components/Heading/Heading'
 import EmptyState from '../../components/EmptyState/EmptyState'
+import Pagination from '../../components/Pagination/Pagination'
 
 const ITEMS_PER_PAGE = 5
 
@@ -17,7 +18,7 @@ const LOCALE_MAP: Record<string, string> = {
     zh: 'zh-CN'
 }
 
-export default function ScreeningsList() {
+export default function ScreeningsPage() {
     const { t, i18n } = useTranslation()
     const [screenings, setScreenings] = useState<Screening[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -167,40 +168,13 @@ export default function ScreeningsList() {
                         })}
                     </div>
 
-                    {totalPages > 1 && (
-                        <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
-                            <button
-                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                disabled={safePage === 1}
-                                className="px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                            >
-                                {t('myScreenings.pagination.previous')}
-                            </button>
+                    <Pagination
+                        page={safePage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                        className="pt-4 border-t border-gray-200"
+                    />
 
-                            <div className="flex items-center gap-1.5">
-                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                                    <button
-                                        key={page}
-                                        onClick={() => setCurrentPage(page)}
-                                        className={`w-8 h-8 text-sm font-medium rounded-md transition-colors ${safePage === page
-                                            ? 'bg-brand text-white'
-                                            : 'text-gray-600 hover:bg-gray-100'
-                                            }`}
-                                    >
-                                        {page}
-                                    </button>
-                                ))}
-                            </div>
-
-                            <button
-                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                disabled={safePage === totalPages}
-                                className="px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                            >
-                                {t('myScreenings.pagination.next')}
-                            </button>
-                        </div>
-                    )}
                 </>
             )}
         </div>

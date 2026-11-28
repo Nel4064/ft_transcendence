@@ -1,6 +1,5 @@
-import { useNavigate } from 'react-router-dom';
 import type { Message } from './ChatWindow';
-import Avatar from '../Avatar/Avatar';
+import AvatarLink from '../Avatar/AvatarLink';
 import { formatMessageTime } from '../../utils/formatMessageTime';
 
 interface MessageBubbleProps {
@@ -10,25 +9,18 @@ interface MessageBubbleProps {
 }
 
 export default function MessageBubble({ msg, isMe, isGrouped }: MessageBubbleProps) {
-	const navigate = useNavigate();
-
 	return (
 		<div className={`flex ${isMe ? 'justify-end' : 'justify-start items-start gap-2.5'}`}>
 			{/* sender avatar */}
 			{!isMe && (
 				!isGrouped ? (
-					<button
-						type="button"
-						onClick={() => navigate(`/users/${msg.sender.id}`)}
-						className="h-8 w-8 flex-shrink-0 self-end overflow-hidden rounded-full transition-opacity hover:opacity-80 cursor-pointer"
-						aria-label={`View ${msg.sender.displayName || msg.sender.username}'s profile`}
-					>
-						<Avatar
-							src={msg.sender.avatarUrl}
-							name={msg.sender.displayName || msg.sender.username}
-							size={32}
-						/>
-					</button>
+					<AvatarLink
+						userId={msg.sender.id}
+						src={msg.sender.avatarUrl}
+						name={msg.sender.displayName || msg.sender.username}
+						size={32}
+						className="self-end"
+					/>
 				) : (
 					<div aria-hidden="true" className="w-8 flex-shrink-0" />
 				)

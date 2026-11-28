@@ -11,6 +11,7 @@ import PrivacyPolicyPage from './pages/privacy-policy/PrivacyPolicyPage'
 import TermsOfServicePage from './pages/terms-of-service/TermsOfServicePage'
 import FriendsPage from './pages/friends/FriendsPage'
 import { AuthProvider } from './context/AuthContext'
+import { DialogProvider } from './context/DialogContext'
 import ProfilePage from './pages/profile/ProfilePage'
 import EditProfilePage from './pages/profile/EditProfilePage'
 import Security2FAPage from './pages/profile/Security2FAPage'
@@ -19,7 +20,7 @@ import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
 import MovieDetailsPage from './pages/movie-details/MovieDetailsPage'
 import ScreenDetailsPage from './pages/screenings-details/ScreenDetailsPage'
 import UserProfilePage from './pages/profile/UserProfilePage'
-import ScreeningsList from './pages/screenings/ScreeningsList'
+import ScreeningsPage from './pages/screenings/ScreeningsPage'
 import CalendarPage from './pages/calendar/CalendarPage'
 import ChatPage from './pages/chat/ChatPage'
 import AdminDashboard from './pages/admin/AdminDashboard'
@@ -29,6 +30,7 @@ import StatusPage from './pages/status/StatusPage'
 function App() {
 	return (
 		<AuthProvider>
+		<DialogProvider>
 			<BrowserRouter>
 			<div className="min-h-screen flex flex-col">
 			<Navbar />
@@ -44,7 +46,7 @@ function App() {
 				<Route element={<ProtectedRoute />}>
 					<Route path="/profile" element={<ProfilePage />} />
 					<Route path="/notifications" element={<NotificationsPage />} />
-					<Route path="/screenings" element={<ScreeningsList />} />
+					<Route path="/screenings" element={<ScreeningsPage />} />
 					<Route path="/movies/:title" element={<MovieDetailsPage />} />
 					<Route path="/screenings/:id" element={<ScreenDetailsPage />} />
 					<Route path="/friends" element={<FriendsPage />} />
@@ -71,6 +73,7 @@ function App() {
 			<BottomNav />
 			</div>
 			</BrowserRouter>
+		</DialogProvider>
 		</AuthProvider>
 	)
 }

@@ -4,10 +4,10 @@ import MoviesList from '../../components/movies/MoviesList'
 import Button from '../../components/button/Button'
 import Input from '../../components/Input/Input'
 import Heading from '../../components/Heading/Heading'
+import Select from '../../components/Select/Select'
 import { useSearchParams } from 'react-router-dom'
 
 const boxClass = "flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full max-w-[1000px] mx-auto mb-10 sm:mb-16 lg:mb-24 p-4 sm:p-6 lg:p-8 bg-surface border border-border rounded-lg shadow-card"
-const selectClass = "w-full sm:w-auto py-3.5 sm:py-4 px-4 sm:px-5 border border-border rounded-md text-control bg-surface cursor-pointer"
 
 const GENRE_OPTIONS = [
 	'Action',
@@ -66,17 +66,18 @@ function SelectMoviesPage() {
 
 	return (
 		<main className="w-full max-w-[1600px] mx-auto py-8 px-4 sm:py-10 sm:px-6 lg:py-12 lg:px-10">
-			<Heading level="section" as="h1" className="mb-6 text-center sm:text-left">
+			<Heading className="tracking-tight mb-6">
 				{t('selectMovies.heading')}
 			</Heading>
 
 			<section className={boxClass}>
 				{filter === 'genre' ? (
-					<select
+					<Select
 						id="search"
+						size="xl"
 						value={searchTerm}
 						onChange={(e) => setSearchTerm(e.target.value)}
-						className={`${selectClass} w-full sm:flex-1`}
+						className="w-full sm:flex-1 cursor-pointer"
 					>
 						<option value="">{t('selectMovies.selectGenrePlaceholder')}</option>
 						{GENRE_OPTIONS.map((genre) => (
@@ -84,7 +85,7 @@ function SelectMoviesPage() {
 								{t(`selectMovies.genres.${genre}`, genre)}
 							</option>
 						))}
-					</select>
+					</Select>
 				) : (
 					<Input
 						id="search"
@@ -98,16 +99,17 @@ function SelectMoviesPage() {
 					/>
 				)}
 
-				<select
+				<Select
+					size="xl"
 					value={filter}
 					onChange={(e) => handleFilterChange(e.target.value)}
-					className={selectClass}
+					className="w-full sm:w-auto cursor-pointer"
 				>
 					<option value="title">{t('selectMovies.filters.title')}</option>
 					<option value="cinema">{t('selectMovies.filters.cinema')}</option>
 					<option value="date">{t('selectMovies.filters.date')}</option>
 					<option value="genre">{t('selectMovies.filters.genre')}</option>
-				</select>
+				</Select>
 
 				<Button variant="admin" size="lg" onClick={handleSearch}>
 					{t('selectMovies.searchButton')}
