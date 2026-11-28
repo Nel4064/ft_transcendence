@@ -148,12 +148,7 @@
       "War": "War",
       "Western": "Western"
     },
-    "searchButton": "Search",
-    "pagination": {
-      "previous": "Previous",
-      "next": "Next",
-      "pageInfo": "Page {{page}} / {{totalPages}}"
-    }
+    "searchButton": "Search"
   },
   "myScreenings": {
     "heading": "My Screenings",
@@ -170,10 +165,6 @@
     "dateTbd": "Date TBD",
     "unknownTitle": "Unknown Title",
     "unknownCinema": "Unknown Cinema",
-    "pagination": {
-      "previous": "Previous",
-      "next": "Next"
-    },
     "errors": {
       "notFound": "Sorry, this session has been canceled or is no longer available.",
       "pastSession": "You cannot change the RSVP for a past session.",
@@ -246,8 +237,7 @@
       "operationFailed": "Operation failed",
       "removeFailed": "Failed to remove friend"
     },
-    "pageTitle": "Friends",
-    "viewProfile": "View profile"
+    "pageTitle": "Friends"
   },
   "screeningDetails": {
     "unavailable": {
@@ -312,8 +302,7 @@
   },
   "admin": {
     "loading": "Loading members...",
-    "heading": "Club Administration",
-    "badge": "Admin Only",
+    "heading": "Manage Members",
     "searchPlaceholder": "Search user by name...",
     "filters": {
       "all": "All Users",
@@ -329,34 +318,21 @@
       "actions": "ACTIONS"
     },
     "roles": {
-      "banned": "Banned",
-      "admin": "Admin",
-      "member": "Member"
+      "banned": "Banned"
     },
     "activity": {
       "attended": "{{count}} Attended",
       "upcoming": "{{count}} Upcoming"
     },
     "actions": {
-      "resign": "Resign (Remove my Admin)",
+      "resign": "Give up admin rights",
       "cannotEditCoAdmin": "Cannot edit co-admin",
       "unban": "Unban",
-      "makeAdmin": "Make Admin"
-    },
-    "tooltips": {
-      "viewProfile": "Click to view profile",
-      "permanentlyRemove": "Permanently Remove User",
-      "banUser": "Ban User",
-      "removeUser": "Remove User"
+      "makeAdmin": "Make Admin",
+      "ban": "Ban",
+      "remove": "Remove"
     },
     "empty": "No users found matching your criteria.",
-    "pagination": {
-      "showing": "Showing {{start}} to {{end}} of {{total}} users",
-      "rowsPerPage": "Rows per page",
-      "perPage": "{{count}} / page",
-      "prev": "Prev",
-      "next": "Next"
-    },
     "confirm": {
       "makeAdmin": "Are you sure you want to promote this user to Admin?",
       "remove": "Are you sure you want to permanently remove this user from the club?",
@@ -470,14 +446,19 @@
     }
   },
   "common": {
-    "back": "Back"
+    "back": "Back",
+    "viewProfile": "View profile",
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "pageInfo": "Page {{page}} / {{totalPages}}"
+    }
   },
   "chat": {
     "groupPlaceholder": "Event group chat will be available here.",
     "backToFriends": "Back to Friends",
     "backToFriendsLabel": "← Friends",
     "goToFriends": "Go to Friends",
-    "viewProfile": "Click to view profile",
     "unavailable": "Conversation unavailable",
     "loading": "Loading...",
     "emptyWithFriend": "No messages yet. Say hello!",

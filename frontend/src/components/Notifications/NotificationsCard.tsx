@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
-import Avatar from '../Avatar/Avatar'
+import AvatarLink from '../Avatar/AvatarLink'
 import chairDirector from '../../assets/chair-director.png'
 
 type NotificationsCardProps = {
     message: ReactNode
     time: string    // already formatted, e.g. "2 hours ago"
-    actor?: { displayName: string; avatarUrl: string | null } | null
+    actor?: { id: string; displayName: string; avatarUrl: string | null } | null
     unread?: boolean
     onClick?: () => void
 }
@@ -24,7 +24,7 @@ function NotificationsCard({ message, time, actor, unread = false}: Notification
     return (
         <div className={`${cardClass} ${unread ? unreadClass : readClass}`}>
             {actor
-                ? <Avatar src={actor.avatarUrl} name={actor.displayName} size={36} />
+                ? <AvatarLink userId={actor.id} src={actor.avatarUrl} name={actor.displayName} size={36} />
                 : <div className={fallbackClass}><img src={chairDirector} alt="CineClub" className={fallbackIconClass} /></div>}
             <div>
                 <p className={`${messageClass} ${unread ? unreadMessageClass : readMessageClass}`}>{message}</p>

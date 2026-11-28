@@ -148,12 +148,7 @@
       "War": "Guerre",
       "Western": "Western"
     },
-    "searchButton": "Rechercher",
-    "pagination": {
-      "previous": "Précédent",
-      "next": "Suivant",
-      "pageInfo": "Page {{page}} / {{totalPages}}"
-    }
+    "searchButton": "Rechercher"
   },
   "myScreenings": {
     "heading": "Mes séances",
@@ -170,10 +165,6 @@
     "dateTbd": "Date à confirmer",
     "unknownTitle": "Titre inconnu",
     "unknownCinema": "Cinéma inconnu",
-    "pagination": {
-      "previous": "Précédent",
-      "next": "Suivant"
-    },
     "errors": {
       "notFound": "Désolé, cette séance a été annulée ou n'est plus disponible.",
       "pastSession": "Vous ne pouvez pas modifier votre participation pour une séance passée.",
@@ -246,8 +237,7 @@
       "operationFailed": "L'opération a échoué",
       "removeFailed": "Impossible de retirer cet ami"
     },
-    "pageTitle": "Amis",
-    "viewProfile": "Voir le profil"
+    "pageTitle": "Amis"
   },
   "screeningDetails": {
     "unavailable": {
@@ -312,8 +302,7 @@
   },
   "admin": {
     "loading": "Chargement des membres...",
-    "heading": "Administration du club",
-    "badge": "Admin uniquement",
+    "heading": "Gérer les membres",
     "searchPlaceholder": "Rechercher un utilisateur par nom...",
     "filters": {
       "all": "Tous les utilisateurs",
@@ -329,34 +318,21 @@
       "actions": "ACTIONS"
     },
     "roles": {
-      "banned": "Banni",
-      "admin": "Admin",
-      "member": "Membre"
+      "banned": "Banni"
     },
     "activity": {
       "attended": "{{count}} participées",
       "upcoming": "{{count}} à venir"
     },
     "actions": {
-      "resign": "Démissionner (Retirer mon rôle Admin)",
+      "resign": "Renoncer aux droits d'admin",
       "cannotEditCoAdmin": "Impossible de modifier un co-admin",
       "unban": "Débannir",
-      "makeAdmin": "Nommer Admin"
-    },
-    "tooltips": {
-      "viewProfile": "Cliquer pour voir le profil",
-      "permanentlyRemove": "Supprimer définitivement l'utilisateur",
-      "banUser": "Bannir l'utilisateur",
-      "removeUser": "Supprimer l'utilisateur"
+      "makeAdmin": "Nommer Admin",
+      "ban": "Bannir",
+      "remove": "Supprimer"
     },
     "empty": "Aucun utilisateur ne correspond à vos critères.",
-    "pagination": {
-      "showing": "Affichage de {{start}} à {{end}} sur {{total}} utilisateurs",
-      "rowsPerPage": "Lignes par page",
-      "perPage": "{{count}} / page",
-      "prev": "Préc.",
-      "next": "Suiv."
-    },
     "confirm": {
       "makeAdmin": "Voulez-vous vraiment promouvoir cet utilisateur en tant qu'Admin ?",
       "remove": "Voulez-vous vraiment supprimer définitivement cet utilisateur du club ?",
@@ -470,14 +446,19 @@
     }
   },
   "common": {
-    "back": "Retour"
+    "back": "Retour",
+    "viewProfile": "Voir le profil",
+    "pagination": {
+      "previous": "Précédent",
+      "next": "Suivant",
+      "pageInfo": "Page {{page}} / {{totalPages}}"
+    }
   },
   "chat": {
     "groupPlaceholder": "La discussion de groupe de l'événement sera bientôt disponible ici.",
     "backToFriends": "Retour aux amis",
     "backToFriendsLabel": "← Amis",
     "goToFriends": "Aller aux amis",
-    "viewProfile": "Cliquer pour voir le profil",
     "unavailable": "Conversation indisponible",
     "loading": "Chargement...",
     "emptyWithFriend": "Aucun message pour l'instant. Dites bonjour !",

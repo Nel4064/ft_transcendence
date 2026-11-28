@@ -77,6 +77,16 @@ and SIL OFL 1.1 for fonts.
 - Licence: MIT
 - Link: https://tabler.io/icons/icon/message-circle
 
+### `frontend/src/assets/calendar-clock.png`
+- Author / Source: Tabler Icons by Paweł Kuna (codecalm), icon "calendar-clock"
+- Licence: MIT
+- Link: https://tabler.io/icons/icon/calendar-clock
+
+### `frontend/src/assets/movie.png`
+- Author / Source: Tabler Icons by Paweł Kuna (codecalm), icon "movie"
+- Licence: MIT
+- Link: https://tabler.io/icons/icon/movie
+
 ### `frontend/src/assets/default-movie.jpg`
 - Author / Source: StockSnap.io, photo "camera vintage"
 - Licence: CC0

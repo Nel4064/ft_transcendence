@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../context/AuthContext'
 import { getDirectHistory } from '../../api/chat'
 import type { Socket } from 'socket.io-client'
-import Avatar from '../../components/Avatar/Avatar'
+import AvatarLink from '../../components/Avatar/AvatarLink'
 import Button from '../../components/button/Button'
 import MessageBubble from './MessageBubble'
 import { isSameDate, getMessageDateLabel } from '../../utils/formatMessageTime'
@@ -188,13 +188,10 @@ export default function ChatWindow({ friendId, socket }: ChatWindowProps) {
 				</button>
 
 				{/* avatar & friend name */}
-				<div
-					className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
-					onClick={() => friendUser && navigate(`/users/${friendUser.id}`)}
-					title={t('chat.viewProfile', 'Click to view profile')}
-				>
+				<div className="flex items-center gap-3">
 					{friendUser && (
-						<Avatar
+						<AvatarLink
+							userId={friendUser.id}
 							src={friendUser.avatarUrl}
 							name={friendUser.displayName || friendUser.username}
 							size={42}
