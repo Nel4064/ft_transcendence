@@ -9,7 +9,7 @@ type DialogProps = {
     open: boolean
     kind: DialogKind
     message: string
-    tone?: DialogTone
+    tone?: DialogTone         // 'error': red OK button
     danger?: boolean          // red confirm button, for destructive actions
     confirmLabel?: string     // defaults to "Confirm" (confirm) or "OK" (alert)
     onClose: (confirmed: boolean) => void
@@ -20,10 +20,7 @@ type DialogProps = {
 const dialogClass =
     "m-auto w-[calc(100%-2rem)] max-w-md p-6 rounded-lg border border-border bg-surface text-text shadow-card " +
     "backdrop:bg-black/40"
-const toneClass: Record<DialogTone, string> = {
-    info: "text-body text-text",
-    error: "text-body text-danger font-medium",
-}
+const messageClass = "text-body text-text"
 
 function Dialog({ open, kind, message, tone = 'info', danger = false, confirmLabel, onClose }: DialogProps) {
     const { t } = useTranslation()
@@ -44,14 +41,14 @@ function Dialog({ open, kind, message, tone = 'info', danger = false, confirmLab
             // Esc: let React close it, so the answer is "cancel" and the state stays in sync
             onCancel={(e) => { e.preventDefault(); onClose(false) }}
         >
-            <p className={toneClass[tone]}>{message}</p>
+            <p className={messageClass}>{message}</p>
             <div className="flex justify-end gap-2 mt-6">
                 {kind === 'confirm' && (
                     <Button variant="secondary" onClick={() => onClose(false)}>
                         {t('common.cancel')}
                     </Button>
                 )}
-                <Button variant={danger ? 'danger' : 'primary'} onClick={() => onClose(true)} autoFocus>
+                <Button variant={danger || tone === 'error' ? 'danger' : 'primary'} onClick={() => onClose(true)} autoFocus>
                     {confirmLabel ?? (kind === 'confirm' ? t('common.confirm') : t('common.ok'))}
                 </Button>
             </div>
