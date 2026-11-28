@@ -17,13 +17,13 @@ all : build up
 build: env
 	$(COMPOSE) build
 
-up: env secrets
+up: env certs secrets
 	$(COMPOSE) up -d
 
 down:
 	$(COMPOSE) down
 
-# also removes the volumes: database data and node_modules are lost
+# also removes the volumes: database data and node_modules are lost (add rm -rf certs if you want to delete certs for demo.)
 clean:
 	$(COMPOSE) down -v
 
@@ -88,6 +88,22 @@ env:
 	@test -f .env.dev || cp .env.dev.example .env.dev
 	@mkdir -p backups && chmod 700 backups
 
+certs:
+	@mkdir -p certs && chmod 700 certs
+	@if [ ! -f certs/localhost.pem ] || [ ! -f certs/localhost-key.pem ]; then \
+		echo "🔒 Generating self-signed SSL certificate for localhost..."; \
+		openssl req -x509 -newkey rsa:2048 -nodes \
+			-keyout certs/localhost-key.pem \
+			-out certs/localhost.pem \
+			-days 365 \
+			-subj "/CN=localhost" \
+			-addext "subjectAltName=DNS:localhost,IP:127.0.0.1"; \
+		chmod 600 certs/localhost-key.pem && chmod 644 certs/localhost.pem; \
+		echo "✅ SSL certificate generated at certs/"; \
+	else \
+		echo "🔒 SSL certificate already exists at certs/"; \
+	fi
+
 secrets:
 	@mkdir -p secrets
 	@for s in $(GENERATED_SECRETS); do \
@@ -124,4 +140,4 @@ volumes:
 containers:
 	podman ps -a
 
-.PHONY: up build down clean re rebuild restart logs env secrets volumes containers studio backup restore
+.PHONY: up build down clean re rebuild restart logs env certs secrets volumes containers studio backup restore
