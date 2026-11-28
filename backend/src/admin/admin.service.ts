@@ -16,7 +16,7 @@ export class AdminService {
                 displayName: true,
                 avatarUrl: true,
                 role: true,
-                isBanned: true,
+                // isBanned: true, // GDPR-TODO: ban disabled
                 createdAt: true,
                 rsvps: {
                     select: {
@@ -46,7 +46,7 @@ export class AdminService {
                 handle: `@${user.username}`,
                 avatar: user.avatarUrl || null,
                 role: user.role,
-                isBanned: user.isBanned,
+                // isBanned: user.isBanned, // GDPR-TODO: ban disabled
                 joinedDate: user.createdAt.toISOString().split('T')[0],
                 rsvps: {
                     attended,
@@ -98,6 +98,8 @@ export class AdminService {
         });
     }
 
+    // GDPR-TODO: disabled until the GDPR implementation (ban / remove member)
+    /*
     async removeMember(currentAdminId: string, targetUserId: string) {
         // 1. 防止管理员删除自己
         if (currentAdminId === targetUserId) {
@@ -126,6 +128,7 @@ export class AdminService {
 
         return { message: 'User removed successfully', id: targetUserId };
     }
+    */
 
     async resignAdmin(currentAdminId: string, targetUserId: string) {
         // 1. 只能辞去自己的管理员权限，不能通过此接口降级别人
@@ -170,6 +173,8 @@ export class AdminService {
         });
     }
 
+    // GDPR-TODO: disabled until the GDPR implementation (ban / remove member)
+    /*
     async banMember(currentAdminId: string, targetUserId: string) {
         // 1. 防止管理员封禁自己
         if (currentAdminId === targetUserId) {
@@ -235,4 +240,5 @@ export class AdminService {
             },
         });
     }
+    */
 }

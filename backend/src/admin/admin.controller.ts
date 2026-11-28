@@ -5,7 +5,7 @@ import {
     Param,
     Patch,
     Post,
-    Delete,
+    // Delete, // GDPR-TODO: only used by the disabled remove route
     Req,
     UseGuards,
 } from '@nestjs/common';
@@ -38,6 +38,8 @@ export class AdminController {
         return this.adminService.updateUserRole(req.user.id, targetUserId, role);
     }
 
+    // GDPR-TODO: disabled until the GDPR implementation (ban / remove member)
+    /*
     @Delete(':id')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(Role.ADMIN)
@@ -47,6 +49,7 @@ export class AdminController {
     ) {
         return this.adminService.removeMember(req.user.id, targetUserId);
     }
+    */
 
     @Post(':id/resign')
     @UseGuards(JwtAuthGuard, RolesGuard)
@@ -59,6 +62,8 @@ export class AdminController {
         return this.adminService.resignAdmin(currentAdminId, targetUserId);
     }
 
+    // GDPR-TODO: disabled until the GDPR implementation (ban / remove member)
+    /*
     @Post(':id/ban')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(Role.ADMIN)
@@ -80,5 +85,6 @@ export class AdminController {
         const currentAdminId = req.user.userId ?? req.user.id;
         return this.adminService.unbanMember(currentAdminId, targetUserId);
     }
+    */
 
 }

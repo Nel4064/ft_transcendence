@@ -14,13 +14,14 @@ export class ChatService
 	): Promise<void> {
 		const user = await this.prisma.user.findUnique({
 			where: { id: userId },
-			select: { isBanned: true },
+			select: { id: true }, // GDPR-TODO: was { isBanned: true }, ban disabled
 		});
 
 		if (!user)
 			throw new UnauthorizedException('User not found');
-		if (user.isBanned)
-			throw new ForbiddenException(bannedMessage);
+		// GDPR-TODO: ban disabled until the GDPR implementation
+		// if (user.isBanned)
+		// 	throw new ForbiddenException(bannedMessage);
 	}
 
 	private async checkFriendship(senderId: string, receiverId: string): Promise<boolean>{

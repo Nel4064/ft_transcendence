@@ -20,7 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         id: true,
         username: true,
         role: true,
-        isBanned: true,
+        // isBanned: true, // GDPR-TODO: ban disabled
       },
     });
 
@@ -28,9 +28,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User not found');
     }
 
-    if (user.isBanned) {
-      throw new ForbiddenException('Your account has been banned.');
-    }
+    // GDPR-TODO: ban disabled until the GDPR implementation
+    // if (user.isBanned) {
+    //   throw new ForbiddenException('Your account has been banned.');
+    // }
 
     // 保留原有的 userId 和 username，同时返回最新的 role（方便 RolesGuard 实时生效）
     return {
