@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../context/AuthContext'
 import AvatarLink from '../../components/Avatar/AvatarLink'
@@ -8,7 +8,7 @@ import Heading from '../../components/Heading/Heading'
 import RoleBadge from '../../components/Badge/RoleBadge'
 import Input from '../../components/Input/Input'
 import Select from '../../components/Select/Select'
-import Button from '../../components/button/Button'
+import Button, { buttonClass } from '../../components/button/Button'
 import Loader from '../../components/Loader/Loader'
 import EmptyState from '../../components/EmptyState/EmptyState'
 import Pagination from '../../components/Pagination/Pagination'
@@ -117,7 +117,13 @@ export default function AdminDashboard() {
 
 	return (
 		<main className="max-w-6xl mx-auto py-12 px-4">
-			<Heading className="tracking-tight mb-6">{t('admin.heading')}</Heading>
+			<div className="flex items-center justify-between gap-4 mb-6">
+				<Heading className="tracking-tight">{t('admin.heading')}</Heading>
+				<Link to="/status" className={buttonClass('secondary', 'md', 'inline-flex items-center gap-1.5')}>
+					<Icon name="bolt" size={16} />
+					{t('admin.statusButton')}
+				</Link>
+			</div>
 
 			<div className="flex flex-col sm:flex-row gap-4 mb-6">
 				<Input

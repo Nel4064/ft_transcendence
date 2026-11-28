@@ -300,9 +300,25 @@
       }
     }
   },
+   "status": {
+    "heading": "État des services",
+    "services": {
+      "frontend": "Frontend",
+      "api": "API",
+      "database": "Base de données"
+    },
+    "states": {
+      "checking": "Vérification...",
+      "up": "Opérationnel",
+      "down": "En panne",
+      "unknown": "Inconnu"
+    },
+    "lastCheck": "Dernière vérification : {{time}} · actualisé toutes les {{seconds}} s"
+  },
   "admin": {
     "loading": "Chargement des membres...",
     "heading": "Gérer les membres",
+	"statusButton": "État du système",
     "searchPlaceholder": "Rechercher un utilisateur par nom...",
     "filters": {
       "all": "Tous les utilisateurs",

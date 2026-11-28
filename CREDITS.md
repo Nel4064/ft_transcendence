@@ -87,6 +87,11 @@ and SIL OFL 1.1 for fonts.
 - Licence: MIT
 - Link: https://tabler.io/icons/icon/movie
 
+### `frontend/src/assets/bolt.png`
+- Author / Source: Tabler Icons by Paweł Kuna (codecalm), icon "bolt"
+- Licence: MIT
+- Link: https://tabler.io/icons/icon/bolt
+
 ### `frontend/src/assets/default-movie.jpg`
 - Author / Source: StockSnap.io, photo "camera vintage"
 - Licence: CC0

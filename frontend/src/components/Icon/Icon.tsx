@@ -8,6 +8,7 @@ import check from '../../assets/check.png'
 import messageCircle from '../../assets/message-circle.png'
 import calendarClock from '../../assets/calendar-clock.png'
 import movie from '../../assets/movie.png'
+import bolt from '../../assets/bolt.png'
 
 const icons = {
     'calendar-event': calendarEvent,
@@ -20,6 +21,7 @@ const icons = {
     'message-circle': messageCircle,
     'calendar-clock': calendarClock,
     'movie': movie,
+    'bolt': bolt,
 }
 
 type IconProps = {

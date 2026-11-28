@@ -300,9 +300,25 @@
       }
     }
   },
+  "status": {
+	"heading": "Service status",
+	"services": {
+		"frontend": "Frontend",
+		"api": "API",
+		"database": "Database"
+	},
+	"states": {
+		"checking": "Checking...",
+		"up": "Operational",
+		"down": "Down",
+		"unknown": "Unknown"
+	},
+	"lastCheck": "Last check: {{time}} · refreshed every {{seconds}} s"
+  },
   "admin": {
     "loading": "Loading members...",
     "heading": "Manage Members",
+	"statusButton": "System status",
     "searchPlaceholder": "Search user by name...",
     "filters": {
       "all": "All Users",
