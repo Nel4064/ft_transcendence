@@ -463,6 +463,9 @@
   },
   "common": {
     "back": "Retour",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "ok": "OK",
     "viewProfile": "Voir le profil",
     "pagination": {
       "previous": "Précédent",

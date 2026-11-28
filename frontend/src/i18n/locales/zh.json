@@ -463,6 +463,9 @@
   },
   "common": {
     "back": "返回",
+    "cancel": "取消",
+    "confirm": "确认",
+    "ok": "确定",
     "viewProfile": "查看资料",
     "pagination": {
       "previous": "上一页",

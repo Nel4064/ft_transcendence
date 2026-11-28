@@ -11,6 +11,7 @@ import PrivacyPolicyPage from './pages/privacy-policy/PrivacyPolicyPage'
 import TermsOfServicePage from './pages/terms-of-service/TermsOfServicePage'
 import FriendsPage from './pages/friends/FriendsPage'
 import { AuthProvider } from './context/AuthContext'
+import { DialogProvider } from './context/DialogContext'
 import ProfilePage from './pages/profile/ProfilePage'
 import EditProfilePage from './pages/profile/EditProfilePage'
 import Security2FAPage from './pages/profile/Security2FAPage'
@@ -29,6 +30,7 @@ import StatusPage from './pages/status/StatusPage'
 function App() {
 	return (
 		<AuthProvider>
+		<DialogProvider>
 			<BrowserRouter>
 			<div className="min-h-screen flex flex-col">
 			<Navbar />
@@ -71,6 +73,7 @@ function App() {
 			<BottomNav />
 			</div>
 			</BrowserRouter>
+		</DialogProvider>
 		</AuthProvider>
 	)
 }

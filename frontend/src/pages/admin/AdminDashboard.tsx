@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../context/AuthContext'
+import { useDialog } from '../../context/DialogContext'
 import AvatarLink from '../../components/Avatar/AvatarLink'
 import Icon from '../../components/Icon/Icon'
 import Heading from '../../components/Heading/Heading'
@@ -41,6 +42,7 @@ export default function AdminDashboard() {
 	const { t } = useTranslation()
 	const navigate = useNavigate()
 	const { user, apiFetch } = useAuth()
+	const { confirm, alert } = useDialog()
 
 	const [users, setUsers] = useState<UserStat[]>([])
 	const [isLoading, setIsLoading] = useState(true)
@@ -57,14 +59,18 @@ export default function AdminDashboard() {
 
 	// Shared flow for every action: confirm -> API call -> update the list, or alert on failure
 	async function runAction(action: Action, request: () => Promise<unknown>, update: (list: UserStat[]) => UserStat[]) {
-		if (!window.confirm(t(`admin.confirm.${action}`))) return false
+		const confirmed = await confirm(t(`admin.confirm.${action}`), {
+			danger: true,   // every admin action changes someone's rights: always a red confirm button
+			confirmLabel: t(`admin.actions.${action}`),
+		})
+		if (!confirmed) return false
 		try {
 			await request()
 			setUsers(update)
 			return true
 		} catch (error) {
 			console.error(error)
-			alert(t(`admin.errors.${action}`))
+			await alert(t(`admin.errors.${action}`), { tone: 'error' })
 			return false
 		}
 	}
@@ -80,7 +86,7 @@ export default function AdminDashboard() {
 
 	async function handleResign(id: string) {
 		if (users.filter((u) => u.role === 'ADMIN').length <= 1) {
-			alert(t('admin.errors.lastAdmin'))
+			await alert(t('admin.errors.lastAdmin'), { tone: 'error' })
 			return
 		}
 		if (await runAction('resign', () => resignAdmin(apiFetch, id), patch(id, { role: 'USER' })))
