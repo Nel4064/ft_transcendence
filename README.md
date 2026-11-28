@@ -68,11 +68,9 @@ make volumes
 
 | Service       | URL                                              |
 |---------------|--------------------------------------------------|
-| Website       | http://localhost:1024                            |
+| Website       | https://localhost:1024                           |
 | API           | http://localhost:3000                            |
 | Prisma Studio | http://localhost:5555 (when started, see below)  |
-
-⚠️ Type `http://` explicitly: Firefox may silently upgrade to `https://`, which fails in dev.
 
 ## Inspect the database (Prisma Studio)
 
